@@ -3,15 +3,14 @@ package main
 import (
 	"database/sql"
 	"log"
-	"net/http"
-
-	"github.com/spf13/viper"
-
 	"ne-project/internal/config"
 	"ne-project/internal/database"
 	"ne-project/internal/handlers"
 	"ne-project/internal/repositories"
 	"ne-project/internal/services"
+	"net/http"
+
+	"github.com/spf13/viper"
 )
 
 func main() {
@@ -42,27 +41,20 @@ func main() {
 }
 
 func startServer(db *sql.DB) {
-
-	// Dependency Injection
-	productRepo := repositories.NewProductRepository(db)
-	productService := services.NewProductService(productRepo)
-	productHandler := handlers.NewProductHandler(productService)
-
-	// Dependency Injection for Category
-	categoryRepo := repositories.NewCategoryRepository(db)
-	categoryService := services.NewCategoryService(categoryRepo)
-	categoryHandler := handlers.NewCategoryHandler(categoryService)
+	
+	repo := repositories.NewRepository(db)
+	service := services.NewServices(repo)
+	handlers := handlers.NewHandlers(service)
 
 	// Routing
 
 	// Products
-	http.HandleFunc("/api/products", productHandler.HandleProducts)
-	http.HandleFunc("/api/products/", productHandler.HandleProductByID)
+	http.HandleFunc("/api/products", handlers.Product.HandleProducts)
+	http.HandleFunc("/api/products/", handlers.Product.HandleProductByID)
 
 	// Categories
-	http.HandleFunc("/api/categories", categoryHandler.HandleCategories)
-	http.HandleFunc("/api/categories/", categoryHandler.HandleCategoryByID)
-
+	http.HandleFunc("/api/categories", handlers.Category.HandleCategories)
+	http.HandleFunc("/api/categories/", handlers.Category.HandleCategoryByID)
 
 	// Server config
 	port := viper.GetString("PORT")

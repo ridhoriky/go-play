@@ -1,4 +1,4 @@
-package handlers
+package dto
 
 import (
 	"encoding/json"
@@ -13,9 +13,7 @@ type APIResponse struct {
 }
 
 
-
-
-func RespondSuccess(w http.ResponseWriter, status int, message string, data interface{}) {
+func ResponseSuccess(w http.ResponseWriter, status int, message string, data interface{}) {
     w.Header().Set("Content-Type", "application/json")
     w.WriteHeader(status)
     json.NewEncoder(w).Encode(APIResponse{
@@ -25,7 +23,7 @@ func RespondSuccess(w http.ResponseWriter, status int, message string, data inte
     })
 }
 
-func RespondError(w http.ResponseWriter, status int, message string) {
+func ResponseError(w http.ResponseWriter, status int, message string) {
     w.Header().Set("Content-Type", "application/json")
     w.WriteHeader(status)
     json.NewEncoder(w).Encode(APIResponse{

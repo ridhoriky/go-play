@@ -6,6 +6,7 @@ import (
 )
 
 type CategoryDTO struct {
+	ID int `json:"id,omitempty"` // Omit in create requests
 	Name string `json:"name"`
 	Description string `json:"description,omitempty"` // Optional
 }
@@ -28,4 +29,9 @@ func (c *CategoryDTO) ToModel() models.Category {
 		Name: c.Name,
 		Description: c.Description,
 	}
+}
+
+func (d *CategoryDTO) ToModelPtr() *models.Category {
+	c := d.ToModel()
+	return &c
 }

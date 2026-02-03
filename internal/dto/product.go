@@ -7,11 +7,23 @@ import (
 )
 
 type ProductDTO struct {
+	ID		   int    `json:"id,omitempty"`  // Omit in create requests
 	Name       string `json:"name"`
 	Price      int    `json:"price"`
 	Stock      int    `json:"stock"`
 	CategoryID *int   `json:"category_id,omitempty"` // Optional
 }
+
+type ProductResponse struct {
+	ID                  int    `json:"id"`
+	Name                string `json:"name"`
+	Price               int    `json:"price"`
+	Stock               int    `json:"stock"`
+	CategoryID          *int   `json:"category_id"`
+	CategoryName        string `json:"category_name"`
+	CategoryDescription string `json:"category_description"`
+}
+
 
 func (p *ProductDTO) Validate() error {
 	if p.Name == "" {
@@ -43,4 +55,9 @@ func (p *ProductDTO) ToModel() models.Product {
 		Stock:      p.Stock,
 		CategoryID: categoryID,
 	}
+}
+
+func (d *ProductDTO) ToModelPtr() *models.Product {
+	p := d.ToModel()
+	return &p
 }
