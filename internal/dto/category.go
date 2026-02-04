@@ -26,6 +26,7 @@ func (c *CategoryDTO) Validate() error {
 
 func (c *CategoryDTO) ToModel() models.Category {
 	return models.Category{
+		ID: c.ID,
 		Name: c.Name,
 		Description: c.Description,
 	}

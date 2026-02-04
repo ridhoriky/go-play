@@ -50,6 +50,7 @@ func (p *ProductDTO) ToModel() models.Product {
 		categoryID = *p.CategoryID
 	}
 	return models.Product{
+		ID:         p.ID,
 		Name:       p.Name,
 		Price:      p.Price,
 		Stock:      p.Stock,
