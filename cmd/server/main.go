@@ -15,21 +15,14 @@ import (
 
 func main() {
 
-	// Load config
-	if err := config.Load(); err != nil {
-		log.Fatal("Failed load config:", err)
-	}
-
-	// Get DB config
-	dbConn := viper.GetString("DB_CONN")
-
-	if dbConn == "" {
-		log.Fatal("DB_CONN is empty")
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatal("Failed to load config:", err)
 	}
 
 
 	// Init DB
-	db, err := database.InitDB(dbConn)
+	db, err := database.InitDB(cfg)
 	if err != nil {
 		log.Fatal("Failed to initialize database:", err)
 	}

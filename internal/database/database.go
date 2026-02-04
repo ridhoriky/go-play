@@ -3,13 +3,14 @@ package database
 import (
 	"database/sql"
 	"log"
+	"ne-project/internal/config"
 
 	_ "github.com/lib/pq"
 )
 
-func InitDB(connectionString string) (*sql.DB, error) {
+func InitDB(cfg *config.Config) (*sql.DB, error) {
 	//open DB
-	db , err := sql.Open("postgres", connectionString)
+	db , err := sql.Open("postgres", cfg.Database.GetConnectionString())
 	
 	if err != nil {
 		return nil , err

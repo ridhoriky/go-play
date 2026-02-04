@@ -1,32 +1,76 @@
 package config
 
 import (
-	"os"
+	"fmt"
 	"strings"
 
 	"github.com/spf13/viper"
 )
 
-func Load() error {
+type Config struct {
+	App      AppConfig      `mapstructure:"app"`
+	Database DatabaseConfig `mapstructure:"database"`
+}
 
-	//get from env varible
-	viper.AutomaticEnv()
+type AppConfig struct {
+	Port int `mapstructure:"port"`
+}
 
-	// change DB.HOST -> DB_HOST
-	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+type DatabaseConfig struct {
+	Host     string `mapstructure:"host"`
+	Port     int    `mapstructure:"port"`
+	User     string `mapstructure:"user"`
+	Password string `mapstructure:"password"`
+	Name     string `mapstructure:"name"`
+	SSLMode  string `mapstructure:"ssl_mode"`
+}
 
-	// if already decalre in env
-	if _, err := os.Stat(".env"); err == nil {
-		viper.SetConfigFile(".env")
-		
-		viper.SetConfigType("env")
+func (db *DatabaseConfig) GetConnectionString() string {
+	 return fmt.Sprintf(
+		"postgresql://%s:%s@%s:%d/%s",
+		db.User,
+		db.Password,
+		db.Host,
+		db.Port,
+		db.Name,
+	)
+}
 
-		if err:= viper.ReadInConfig(); err != nil{
-			return  err
-		}
+
+func Load() (*Config, error) {
+
+	viper.SetConfigName("config")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(".")
+
+	if err := viper.ReadInConfig(); err != nil {
+		return nil, err
 	}
 
-	return nil
+	viper.SetEnvKeyReplacer(
+		strings.NewReplacer(".", "_"),
+	)
+
+	viper.AutomaticEnv()
+
+	var cfg Config
+
+	if err := viper.Unmarshal(&cfg); err != nil {
+		return nil, err
+	}
+
+	cfg.App.Port = parseInt(viper.GetString("APP.PORT"), 8080)
+	cfg.Database.Port = parseInt(viper.GetString("DATABASE.PORT"), 6543)
 
 
+	return &cfg, nil
+}
+
+func parseInt(s string, defaultVal int) int {
+	var val int
+	if _, err := fmt.Sscanf(s, "%d", &val); err == nil {
+		return val
+	}
+
+	return defaultVal
 }
