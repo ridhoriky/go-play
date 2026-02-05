@@ -1,0 +1,10 @@
+app:
+  name: KasirApp
+  port: 8080
+
+database:
+  host: localhost
+  port: 5432
+  user: postgres
+  password: password
+  name: kasir_db
