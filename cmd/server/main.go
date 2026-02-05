@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"ne-project/internal/config"
 	"ne-project/internal/database"
@@ -9,8 +10,6 @@ import (
 	"ne-project/internal/repositories"
 	"ne-project/internal/services"
 	"net/http"
-
-	"github.com/spf13/viper"
 )
 
 func main() {
@@ -30,10 +29,10 @@ func main() {
 	defer db.Close()
 
 	// Start server
-	startServer(db)
+	startServer(cfg, db)
 }
 
-func startServer(db *sql.DB) {
+func startServer(cfg *config.Config, db *sql.DB) {
 	
 	repo := repositories.NewRepository(db)
 	service := services.NewServices(repo)
@@ -50,13 +49,10 @@ func startServer(db *sql.DB) {
 	http.HandleFunc("/api/categories/", handlers.Category.HandleCategoryByID)
 
 	// Server config
-	port := viper.GetString("PORT")
-	if port == "" {
-		port = "8080"
-	}
+	port := cfg.App.Port
 
 	log.Println("Server running on port:", port)
 
 	// Start HTTP Server
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	log.Fatal(http.ListenAndServe(":"+fmt.Sprint(port), nil))
 }
