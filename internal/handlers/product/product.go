@@ -2,13 +2,13 @@ package product
 
 import (
 	"ne-project/internal/services/product"
-	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 
 type ProductHandlerItf interface {
-	HandleProducts(w http.ResponseWriter, r *http.Request)
-	HandleProductByID(w http.ResponseWriter, r *http.Request)
+	RegisterRoutes(r *gin.Engine)
 }
 
 type productHandler struct {
@@ -18,5 +18,16 @@ type productHandler struct {
 func NewProductHandler(productService product.ProductServiceItf) ProductHandlerItf {
 	return &productHandler{
 		productService: productService,
+	}
+}
+
+func (h *productHandler) RegisterRoutes(r *gin.Engine) {
+	productRoutes := r.Group("/products")
+	{
+		productRoutes.GET("", h.GetAll)
+		productRoutes.POST("", h.Create)
+		productRoutes.GET("/:id", h.GetByID)
+		productRoutes.PUT("/:id", h.Update)
+		productRoutes.DELETE("/:id", h.Delete)
 	}
 }

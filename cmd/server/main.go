@@ -9,7 +9,8 @@ import (
 	"ne-project/internal/handlers"
 	"ne-project/internal/repositories"
 	"ne-project/internal/services"
-	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -39,20 +40,15 @@ func startServer(cfg *config.Config, db *sql.DB) {
 	handlers := handlers.NewHandlers(service)
 
 	// Routing
-
-	// Products
-	http.HandleFunc("/api/products", handlers.Product.HandleProducts)
-	http.HandleFunc("/api/products/", handlers.Product.HandleProductByID)
-
-	// Categories
-	http.HandleFunc("/api/categories", handlers.Category.HandleCategories)
-	http.HandleFunc("/api/categories/", handlers.Category.HandleCategoryByID)
+	r := gin.Default()
+	handlers.RegisterRoutes(r)
 
 	// Server config
 	port := cfg.App.Port
 
 	log.Println("Server running on port:", port)
 
-	// Start HTTP Server
-	log.Fatal(http.ListenAndServe(":"+fmt.Sprint(port), nil))
+	if err := r.Run(fmt.Sprintf(":%d", port)); err != nil {
+		log.Fatal("Failed to run server:", err)
+	}
 }

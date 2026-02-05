@@ -4,6 +4,8 @@ import (
 	"ne-project/internal/handlers/category"
 	"ne-project/internal/handlers/product"
 	"ne-project/internal/services"
+
+	"github.com/gin-gonic/gin"
 )
 
 
@@ -17,4 +19,9 @@ func NewHandlers(services *services.Services) *Handlers {
 		Category: category.NewCategoryHandler(services.Category),
 		Product:  product.NewProductHandler(services.Product),
 	}
+}
+
+func (h *Handlers) RegisterRoutes(r *gin.Engine) {
+	h.Category.RegisterRoutes(r)
+	h.Product.RegisterRoutes(r)
 }

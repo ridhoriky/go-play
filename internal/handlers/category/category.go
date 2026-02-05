@@ -2,21 +2,33 @@ package category
 
 import (
 	"ne-project/internal/services/category"
-	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 
 type CategoryHandlerItf interface {
-	HandleCategories( w http.ResponseWriter, r *http.Request)
-	HandleCategoryByID( w http.ResponseWriter, r *http.Request)
+	RegisterRoutes(r *gin.Engine)
 }
 
 type categoryHandler struct {
+	gin *gin.Engine
 	categoryService category.CategoryServiceItf
 }
 
-func NewCategoryHandler(categoryService category.CategoryServiceItf) CategoryHandlerItf {
+func NewCategoryHandler( categoryService category.CategoryServiceItf) CategoryHandlerItf {
 	return &categoryHandler{
 		categoryService: categoryService,
+	}
+}
+
+func (h *categoryHandler) RegisterRoutes(r *gin.Engine) {
+	categoryRoutes := r.Group("/categories")
+	{
+		categoryRoutes.GET("", h.GetAll)
+		categoryRoutes.POST("", h.Create)
+		categoryRoutes.GET("/:id", h.GetByID)
+		categoryRoutes.PUT("/:id", h.Update)
+		categoryRoutes.DELETE("/:id", h.Delete)
 	}
 }
