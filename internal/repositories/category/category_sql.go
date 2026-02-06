@@ -7,8 +7,7 @@ import (
 )
 
 func (repo *CategoryRepository) GetAll(ctx context.Context) ([]models.Category, error) {
-	query := "SELECT id, name, description FROM categories"
-	rows, err := repo.db.QueryContext(ctx, query)
+	rows, err := repo.db.QueryContext(ctx, getAllCategoriesQuery)
 
 	if err != nil {
 		return nil, err
@@ -31,15 +30,13 @@ func (repo *CategoryRepository) GetAll(ctx context.Context) ([]models.Category, 
 }
 
 func (repo *CategoryRepository) Create(ctx context.Context, category *models.Category) error {
-	query := "INSERT INTO categories (name, description) VALUES ($1, $2) RETURNING id"
-	err := repo.db.QueryRowContext(ctx, query, category.Name, category.Description).Scan(&category.ID)
+	err := repo.db.QueryRowContext(ctx, createCategoryQuery, category.Name, category.Description).Scan(&category.ID)
 	return err
 }
 
 func (repo *CategoryRepository) GetByID(ctx context.Context, id int) (*models.Category, error) {
-	query := "SELECT id, name, description FROM categories WHERE id=$1"
 	var c models.Category
-	err := repo.db.QueryRowContext(ctx, query, id).Scan(&c.ID, &c.Name, &c.Description)
+	err := repo.db.QueryRowContext(ctx, getCategoryByIDQuery, id).Scan(&c.ID, &c.Name, &c.Description)
 	if err != nil {
 		return nil, err
 	}
@@ -48,8 +45,7 @@ func (repo *CategoryRepository) GetByID(ctx context.Context, id int) (*models.Ca
 }
 
 func (repo *CategoryRepository) Update(ctx context.Context, category *models.Category) error {
-	query := "UPDATE categories SET name=$1, description=$2 WHERE id=$3"
-	result, err := repo.db.ExecContext(ctx, query, category.Name, category.Description, category.ID)
+	result, err := repo.db.ExecContext(ctx, updateCategoryQuery, category.Name, category.Description, category.ID)
 	if err != nil {
 		return err
 	}
@@ -64,8 +60,7 @@ func (repo *CategoryRepository) Update(ctx context.Context, category *models.Cat
 }
 
 func (repo *CategoryRepository) Delete(ctx context.Context, id int) error {
-	query := "DELETE FROM categories WHERE id=$1"
-	result, err := repo.db.ExecContext(ctx, query, id)
+	result, err := repo.db.ExecContext(ctx, deleteCategoryQuery, id)
 		if err != nil {
 		return err
 	}
