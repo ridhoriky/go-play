@@ -4,19 +4,40 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"ne-project/internal/database"
 	"ne-project/internal/dto"
 	"ne-project/internal/models"
 )
 
-func (repo *ProductRepository) GetAll(ctx context.Context) ([]dto.ProductResponse, error){
+func (repo *ProductRepository) GetAll(ctx context.Context, req dto.ProductFilterRequest) ([]dto.ProductResponse, error){
 	query := getAllProductsQuery
 
-	rows, err := repo.db.QueryContext(ctx, query)
+	args := []any{}
+	i := 1
 
-	if err != nil {
-		return nil , err 
+	if req.Name != "" {
+		query += fmt.Sprintf(" AND p.name ILIKE $%d", i)
+		args = append(args, "%"+req.Name+"%")
+		i++
 	}
+
+	if req.Category != "" {
+		query += fmt.Sprintf(" AND c.name ILIKE $%d", i)
+		args = append(args, "%"+req.Category+"%")
+		i++
+	}
+	query += " ORDER BY p.id"
+
+	query += fmt.Sprintf(" LIMIT $%d OFFSET $%d", i, i+1)
+	args = append(args, req.Limit, (req.Page-1)*req.Limit)
+	
+
+	rows, err := repo.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+
 
 	defer rows.Close()
 

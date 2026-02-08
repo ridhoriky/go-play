@@ -1,11 +1,15 @@
 package product
 
 const (
-	getAllProductsQuery = `SELECT p.id, p.name, p.price, p.stock, p.category_id, 
-			COALESCE(c.name, ''), COALESCE(c.description, '')
-			FROM products p
-			LEFT JOIN categories c ON p.category_id = c.id
-			ORDER BY p.id`
+	getAllProductsQuery = `
+	SELECT 
+		p.id, p.name, p.price, p.stock,
+		p.category_id,
+		COALESCE(c.name,''),
+		COALESCE(c.description,'')
+	FROM products p
+	LEFT JOIN categories c ON c.id = p.category_id
+	WHERE 1=1`
 
 	insertProductQuery = `INSERT INTO products (name, price, stock, category_id) VALUES ($1, $2, $3, $4) RETURNING id`
 

@@ -24,6 +24,14 @@ type ProductResponse struct {
 	CategoryDescription string `json:"category_description"`
 }
 
+type ProductFilterRequest struct {
+	Name     string
+	Category string
+	Page     int
+	Limit    int
+}
+
+
 
 func (p *ProductDTO) Validate() error {
 	if p.Name == "" {

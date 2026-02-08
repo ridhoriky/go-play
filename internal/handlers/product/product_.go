@@ -11,7 +11,21 @@ import (
 
 func (h *productHandler) GetAll(c *gin.Context) {
 	ctx := c.Request.Context()
-	products, err := h.productService.GetAllProducts(ctx) 
+	
+
+	name := c.Query("name")
+	category := c.Query("category")
+
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+
+	req := dto.ProductFilterRequest{
+		Name:     name,
+		Category: category,
+		Page:     page,
+		Limit:    limit,
+	}
+	products, err := h.productService.GetAllProducts(ctx, req) 
 	if err != nil {
 		dto.ResponseError(c.Writer, http.StatusInternalServerError, err.Error())
 		return
@@ -22,6 +36,7 @@ func (h *productHandler) GetAll(c *gin.Context) {
 func (h *productHandler) Create(c *gin.Context) {
 	ctx := c.Request.Context()
 	var p dto.ProductDTO
+
 	if err := json.NewDecoder(c.Request.Body).Decode(&p); err != nil {
 		dto.ResponseError(c.Writer, http.StatusBadRequest, "Invalid request body")
 		return

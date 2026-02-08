@@ -7,7 +7,7 @@ import (
 )
 
 type ProductServiceItf interface {
-	GetAllProducts(ctx context.Context) ([]dto.ProductResponse, error)
+	GetAllProducts(ctx context.Context, req dto.ProductFilterRequest) ([]dto.ProductResponse, error)
 	GetProductByID(ctx context.Context, id int) (*dto.ProductResponse, error)
 	CreateProduct(ctx context.Context, product *dto.ProductDTO) error
 	UpdateProduct(ctx context.Context, product *dto.ProductDTO) error

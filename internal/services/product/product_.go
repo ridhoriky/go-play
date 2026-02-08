@@ -6,8 +6,15 @@ import (
 	"ne-project/internal/models"
 )
 
-func (s *productService) GetAllProducts(ctx context.Context) ([]dto.ProductResponse, error) {
-	return s.productRepository.GetAll(ctx)
+func (s *productService) GetAllProducts(ctx context.Context, req dto.ProductFilterRequest) ([]dto.ProductResponse, error) {
+	if req.Limit > 100 {
+		req.Limit = 100
+	}
+
+	if req.Page < 1 {
+		req.Page = 1
+	}
+	return s.productRepository.GetAll(ctx, req)
 }
 
 func (s *productService) CreateProduct(ctx context.Context, product *dto.ProductDTO) error {
