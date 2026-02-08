@@ -134,77 +134,37 @@ func (r *TransactionRepository) Checkout(
 
 func (r *TransactionRepository) GetToday(
 	ctx context.Context,
-) ([]models.Transaction, error) {
+) (*dto.TodaySummaryResponse, error) {
 
-	query := getTodayTransaction
+	var summary dto.TodaySummaryResponse
 
-	rows, err := r.db.QueryContext(ctx, query)
+	err := r.db.QueryRowContext(ctx, querySummary).
+		Scan(&summary.TotalRevenue, &summary.TotalTransactions)
+
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
 
-	txMap := make(map[int]*models.Transaction)
+	var best dto.BestSellingProduct
 
-	for rows.Next() {
+	err = r.db.QueryRowContext(ctx, queryBestProduct).
+		Scan(&best.Name, &best.QuantitySold)
 
-		var (
-			txID      int
-			total     int
-			createdAt time.Time
+	if err == sql.ErrNoRows {
 
-			txDetailID int
-			transactionID int
-			productID int
-			name      string
-			qty       int
-			subtotal  int
-		)
-
-		err := rows.Scan(
-			&txID,
-			&total,
-			&createdAt,
-			&txDetailID,
-			&transactionID,
-			&productID,
-			&name,
-			&qty,
-			&subtotal,
-		)
-
-		if err != nil {
-			return nil, err
+		summary.BestSelling = dto.BestSellingProduct{
+			Name:         "-",
+			QuantitySold: 0,
 		}
 
-		tx, ok := txMap[txID]
-		if !ok {
-
-			tx = &models.Transaction{
-				ID:          txID,
-				TotalAmount: total,
-				CreatedAt:   createdAt,
-				Details:     []models.TransactionDetail{},
-			}
-
-			txMap[txID] = tx
-		}
-
-		tx.Details = append(tx.Details, models.TransactionDetail{
-			ID: 			txDetailID,
-			TransactionID: 	transactionID,
-			ProductID:   	productID,
-			ProductName: 	name,
-			Quantity:    	qty,
-			Subtotal:    	subtotal,
-		})
+		return &summary, nil
 	}
 
-	result := make([]models.Transaction, 0, len(txMap))
-
-	for _, tx := range txMap {
-		result = append(result, *tx)
+	if err != nil {
+		return nil, err
 	}
 
-	return result, nil
+	summary.BestSelling = best
+
+	return &summary, nil
 }

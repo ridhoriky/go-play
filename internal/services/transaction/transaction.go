@@ -11,7 +11,7 @@ type TransactionServiceItf interface {
 		ctx context.Context,
 		req *dto.CheckoutRequest,
 	) (*dto.TransactionResponse, error)
-	GetToday(ctx context.Context) ([]dto.TransactionResponse, error)
+	GetToday(ctx context.Context) (*dto.TodaySummaryResponse, error)
 }
 
 	

@@ -12,7 +12,7 @@ type TransactionRepositoryItf interface {
 		ctx context.Context,
 		req *dto.CheckoutRequest,
 	) (*models.Transaction, error)
-	GetToday(ctx context.Context) ([]models.Transaction, error)
+	GetToday(ctx context.Context) (*dto.TodaySummaryResponse, error)
 }
 type TransactionRepository struct {
 	db  *sql.DB

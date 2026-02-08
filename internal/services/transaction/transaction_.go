@@ -20,38 +20,8 @@ func (s *transactionService) Checkout(
 
 func (s *transactionService) GetToday(
 	ctx context.Context,
-) ([]dto.TransactionResponse, error) {
+) (*dto.TodaySummaryResponse, error) {
 
-	txs, err := s.transactionRepository.GetToday(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	res := make([]dto.TransactionResponse, 0)
-
-	for _, t := range txs {
-
-		details := make([]dto.TransactionDetailDTO, 0)
-
-		for _, d := range t.Details {
-
-			details = append(details, dto.TransactionDetailDTO{
-				ID: 			d.ID,
-				TransactionID:	d.TransactionID,
-				ProductID:   	d.ProductID,
-				ProductName: 	d.ProductName,
-				Quantity:    	d.Quantity,
-				Subtotal:    	d.Subtotal,
-			})
-		}
-
-		res = append(res, dto.TransactionResponse{
-			ID:          t.ID,
-			TotalAmount: t.TotalAmount,
-			CreatedAt:   t.CreatedAt,
-			Details:     details,
-		})
-	}
-
-	return res, nil
+	
+	return s.transactionRepository.GetToday(ctx)
 }

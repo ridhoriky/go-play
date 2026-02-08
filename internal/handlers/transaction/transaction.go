@@ -26,6 +26,6 @@ func (h *transactionHandler) RegisterRoutes(r *gin.Engine) {
 	transactionRoutes := r.Group("/transactions")
 	{
 		transactionRoutes.POST("/checkout", h.Checkout)
-		transactionRoutes.GET("/thisday", h.GetToday)
+		transactionRoutes.GET("/today", h.GetToday)
 	}
 }
