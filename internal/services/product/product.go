@@ -12,6 +12,7 @@ type ProductServiceItf interface {
 	CreateProduct(ctx context.Context, product *dto.ProductDTO) error
 	UpdateProduct(ctx context.Context, product *dto.ProductDTO) error
 	DeleteProduct(ctx context.Context, id int) error
+	CreateMultipleProducts(ctx context.Context, products []dto.ProductDTO) ([]dto.ProductResponse, error)
 }
 
 	

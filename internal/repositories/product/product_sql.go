@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"ne-project/internal/database"
 	"ne-project/internal/dto"
 	"ne-project/internal/models"
 )
@@ -38,7 +39,7 @@ func (repo *ProductRepository) GetAll(ctx context.Context) ([]dto.ProductRespons
 }
 
 func (repo *ProductRepository) Create(ctx context.Context, product *models.Product) error{
-	query := createProductQuery
+	query := insertProductQuery
 	err := repo.db.QueryRowContext(ctx, query, product.Name, product.Price, product.Stock, product.CategoryID).Scan(&product.ID)
 
 	return err
@@ -83,7 +84,7 @@ func (repo *ProductRepository) Delete(ctx context.Context, id int) error{
 
 func (repo *ProductRepository) GetByID(ctx context.Context, id int) (*dto.ProductResponse, error){
 	query := getProductByIDQuery
-	
+
 	var p dto.ProductResponse
 
 	err := repo.db.
@@ -106,4 +107,77 @@ func (repo *ProductRepository) GetByID(ctx context.Context, id int) (*dto.Produc
 	}
 
 	return &p, nil
+}
+
+func (repo *ProductRepository) CreateMultiple(ctx context.Context, products []models.Product) ([]dto.ProductResponse, error) {
+
+	var responses []dto.ProductResponse
+
+	err := database.WithTransaction(ctx, repo.db, func(tx *sql.Tx) error {
+
+		insertStmt, err := tx.PrepareContext(ctx, insertProductQuery)
+		if err != nil {
+			return err
+		}
+		defer insertStmt.Close()
+
+		selectStmt, err := tx.PrepareContext(ctx, getProductByIDQuery)
+		if err != nil {
+			return err
+		}
+		defer selectStmt.Close()
+
+		responses = make([]dto.ProductResponse, 0, len(products))
+
+		for _, p := range products {
+
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			default:
+			}
+
+			var productID int
+
+			err := insertStmt.QueryRowContext(
+				ctx,
+				p.Name,
+				p.Price,
+				p.Stock,
+				p.CategoryID,
+			).Scan(&productID)
+
+			if err != nil {
+				return err
+			}
+
+			var resp dto.ProductResponse
+
+			err = selectStmt.QueryRowContext(ctx, productID).
+				Scan(
+					&resp.ID,
+					&resp.Name,
+					&resp.Price,
+					&resp.Stock,
+					&resp.CategoryID,
+					&resp.CategoryName,
+					&resp.CategoryDescription,
+				)
+
+			if err != nil {
+				return err
+			}
+
+			responses = append(responses, resp)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return responses, nil
+
 }

@@ -92,3 +92,22 @@ func (h *productHandler) Delete(c *gin.Context) {
 	}
 	dto.ResponseSuccess(c.Writer, http.StatusOK, "Product deleted successfully", nil)
 }
+
+func (h *productHandler) CreateMultiple(c *gin.Context) {
+	ctx := c.Request.Context()
+	var products []dto.ProductDTO
+	if err := json.NewDecoder(c.Request.Body).Decode(&products); err != nil {
+		dto.ResponseError(c.Writer, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+	if len(products) == 0 {
+		dto.ResponseError(c.Writer, http.StatusBadRequest, "No products to create")
+		return
+	}
+	responses, err := h.productService.CreateMultipleProducts(ctx, products); 
+	if err != nil {
+		dto.ResponseError(c.Writer, http.StatusInternalServerError, "Failed to create products")
+		return
+	}
+	dto.ResponseSuccess(c.Writer, http.StatusCreated, "Products created successfully", responses)
+}

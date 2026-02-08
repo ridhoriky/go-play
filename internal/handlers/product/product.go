@@ -29,5 +29,6 @@ func (h *productHandler) RegisterRoutes(r *gin.Engine) {
 		productRoutes.GET("/:id", h.GetByID)
 		productRoutes.PUT("/:id", h.Update)
 		productRoutes.DELETE("/:id", h.Delete)
+		productRoutes.POST("/bulk", h.CreateMultiple)
 	}
 }

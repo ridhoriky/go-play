@@ -8,6 +8,7 @@ import (
 )
 
 type ProductRepositoryItf interface {
+	CreateMultiple(ctx context.Context, products []models.Product) ([]dto.ProductResponse, error)
 	GetAll(ctx context.Context) ([]dto.ProductResponse, error)
 	Create(ctx context.Context, product *models.Product) error
 	GetByID(ctx context.Context, id int) (*dto.ProductResponse, error)
