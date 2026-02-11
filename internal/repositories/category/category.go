@@ -2,8 +2,9 @@ package category
 
 import (
 	"context"
-	"database/sql"
 	"ne-project/internal/models"
+
+	"github.com/jmoiron/sqlx"
 )
 
 type CategoryRepositoryItf interface {
@@ -15,10 +16,10 @@ type CategoryRepositoryItf interface {
 }
 
 type CategoryRepository struct {
-	db  *sql.DB
+	db  *sqlx.DB
 }
 
-func NewCategoryRepository(db *sql.DB) CategoryRepositoryItf {
+func NewCategoryRepository(db *sqlx.DB) CategoryRepositoryItf {
 	return &CategoryRepository{
 		db: db,
 	}

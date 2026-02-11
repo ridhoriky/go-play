@@ -1,10 +1,11 @@
 package repositories
 
 import (
-	"database/sql"
 	"ne-project/internal/repositories/category"
 	"ne-project/internal/repositories/product"
 	"ne-project/internal/repositories/transaction"
+
+	"github.com/jmoiron/sqlx"
 )
 
 type Repositories struct {
@@ -13,7 +14,7 @@ type Repositories struct {
 	Transaction  transaction.TransactionRepositoryItf
 }
 
-func NewRepository(db *sql.DB) *Repositories {
+func NewRepository(db *sqlx.DB) *Repositories {
 	return &Repositories{
 		Category: category.NewCategoryRepository(db),
 		Product:  product.NewProductRepository(db),

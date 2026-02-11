@@ -7,22 +7,24 @@ import (
 )
 
 type ProductDTO struct {
-	ID		   int    `json:"id,omitempty"`  // Omit in create requests
-	Name       string `json:"name"`
-	Price      int    `json:"price"`
-	Stock      int    `json:"stock"`
-	CategoryID *int   `json:"category_id,omitempty"` // Optional
+	ID		   int    `db:"id" json:"id,omitempty"`  // Omit in create requests
+	Name       string `db:"name" json:"name"`
+	Price      int    `db:"price" json:"price"`
+	Stock      int    `db:"stock" json:"stock"`
+	CategoryID *int   `db:"category_id" json:"category_id,omitempty"` // Optional
 }
 
 type ProductResponse struct {
-	ID                  int    `json:"id"`
-	Name                string `json:"name"`
-	Price               int    `json:"price"`
-	Stock               int    `json:"stock"`
-	CategoryID          *int   `json:"category_id"`
-	CategoryName        string `json:"category_name"`
-	CategoryDescription string `json:"category_description"`
+	ID                  int    `db:"id" json:"id"`
+	Name                string `db:"name" json:"name"`
+	Price               int    `db:"price" json:"price"`
+	Stock               int    `db:"stock" json:"stock"`
+
+	CategoryID          *int   `db:"category_id" json:"category_id"`
+	CategoryName        string `db:"category_name" json:"category_name"`
+	CategoryDescription string `db:"category_description" json:"category_description"`
 }
+
 
 type ProductFilterRequest struct {
 	Name     string

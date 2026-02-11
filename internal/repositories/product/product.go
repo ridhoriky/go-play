@@ -2,13 +2,14 @@ package product
 
 import (
 	"context"
-	"database/sql"
 	"ne-project/internal/dto"
 	"ne-project/internal/models"
+
+	"github.com/jmoiron/sqlx"
 )
 
 type ProductRepositoryItf interface {
-	CreateMultiple(ctx context.Context, products []models.Product) ([]dto.ProductResponse, error)
+	CreateMultiple(ctx context.Context, products []models.Product) ([]dto.ProductDTO, error)
 	GetAll(ctx context.Context, req dto.ProductFilterRequest) ([]dto.ProductResponse, error)
 	Create(ctx context.Context, product *models.Product) error
 	GetByID(ctx context.Context, id int) (*dto.ProductResponse, error)
@@ -17,10 +18,10 @@ type ProductRepositoryItf interface {
 }
 
 type ProductRepository struct {
-	db  *sql.DB
+	db  *sqlx.DB
 }
 
-func NewProductRepository(db *sql.DB) ProductRepositoryItf {
+func NewProductRepository(db *sqlx.DB) ProductRepositoryItf {
 	return &ProductRepository{
 		db: db,
 	}

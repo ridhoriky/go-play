@@ -2,20 +2,19 @@ package database
 
 import (
 	"context"
-	"database/sql"
+
+	"github.com/jmoiron/sqlx"
 )
 
-type TxFunc func(*sql.Tx) error
+type TxFunc func(*sqlx.Tx) error
 
-func WithTransaction(
+func WithTransactionX(
 	ctx context.Context,
-	db *sql.DB,
-	fn TxFunc,
+	db *sqlx.DB,
+	fn func(*sqlx.Tx) error,
 ) error {
 
-	tx, err := db.BeginTx(ctx, &sql.TxOptions{
-		Isolation: sql.LevelReadCommitted,
-	})
+	tx, err := db.BeginTxx(ctx, nil)
 	if err != nil {
 		return err
 	}

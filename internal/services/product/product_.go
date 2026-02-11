@@ -33,7 +33,7 @@ func (s *productService) DeleteProduct(ctx context.Context, id int) error {
 	return s.productRepository.Delete(ctx, id)
 }
 
-func (s *productService) CreateMultipleProducts(ctx context.Context, products []dto.ProductDTO) ([]dto.ProductResponse, error) {
+func (s *productService) CreateMultipleProducts(ctx context.Context, products []dto.ProductDTO) ([]dto.ProductDTO, error) {
 	models := make([]models.Product, len(products))
 	for i, p := range products {
 		models[i] = *p.ToModelPtr()

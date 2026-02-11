@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"ne-project/internal/config"
@@ -11,6 +10,7 @@ import (
 	"ne-project/internal/services"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
 )
 
 func main() {
@@ -33,7 +33,7 @@ func main() {
 	startServer(cfg, db)
 }
 
-func startServer(cfg *config.Config, db *sql.DB) {
+func startServer(cfg *config.Config, db *sqlx.DB) {
 	
 	repo := repositories.NewRepository(db)
 	service := services.NewServices(repo)
