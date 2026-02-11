@@ -2,9 +2,10 @@ package transaction
 
 import (
 	"context"
-	"database/sql"
 	"ne-project/internal/dto"
 	"ne-project/internal/models"
+
+	"github.com/jmoiron/sqlx"
 )
 
 type TransactionRepositoryItf interface {
@@ -15,10 +16,10 @@ type TransactionRepositoryItf interface {
 	GetToday(ctx context.Context) (*dto.TodaySummaryResponse, error)
 }
 type TransactionRepository struct {
-	db  *sql.DB
+	db  *sqlx.DB
 }
 
-func NewTransactionRepository(db *sql.DB) TransactionRepositoryItf {
+func NewTransactionRepository(db *sqlx.DB) TransactionRepositoryItf {
 	return &TransactionRepository{
 		db: db,
 	}

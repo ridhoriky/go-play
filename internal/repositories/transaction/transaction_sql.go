@@ -9,6 +9,8 @@ import (
 	"ne-project/internal/dto"
 	"ne-project/internal/models"
 	"time"
+
+	"github.com/jmoiron/sqlx"
 )
 func (r *TransactionRepository) Checkout(
 	ctx context.Context,
@@ -17,7 +19,7 @@ func (r *TransactionRepository) Checkout(
 
 	var result *models.Transaction
 
-	err := database.WithTransaction(ctx, r.db, func(tx *sql.Tx) error {
+	err := database.WithTransactionX(ctx, r.db, func(tx *sqlx.Tx) error {
 
 		totalAmount := 0
 		details := make([]models.TransactionDetail, 0)
