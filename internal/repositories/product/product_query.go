@@ -22,4 +22,6 @@ const (
 			FROM products p
 			LEFT JOIN categories c ON p.category_id = c.id
 			WHERE p.id = $1`
+
+	insertBulkProductQuery = `INSERT INTO products (%s)	VALUES %s RETURNING %s`
 )

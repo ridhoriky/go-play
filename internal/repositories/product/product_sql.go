@@ -5,14 +5,12 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"ne-project/internal/database"
 	"ne-project/internal/dto"
 	"ne-project/internal/models"
-
-	"github.com/jmoiron/sqlx"
+	"strings"
 )
 
-func (repo *ProductRepository) GetAll(ctx context.Context, req dto.ProductFilterRequest) ([]dto.ProductResponse, error){
+func (repo *ProductRepository) GetAll(ctx context.Context, req dto.ProductFilterRequest) ([]dto.ProductResponse, error) {
 	query := getAllProductsQuery
 
 	args := []any{}
@@ -33,19 +31,17 @@ func (repo *ProductRepository) GetAll(ctx context.Context, req dto.ProductFilter
 
 	query += fmt.Sprintf(" LIMIT $%d OFFSET $%d", i, i+1)
 	args = append(args, req.Limit, (req.Page-1)*req.Limit)
-	
 
 	rows, err := repo.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
 
-
 	defer rows.Close()
 
 	products := make([]dto.ProductResponse, 0)
 
-	for rows.Next(){
+	for rows.Next() {
 		var p dto.ProductResponse
 		err := rows.Scan(&p.ID, &p.Name, &p.Price, &p.Stock, &p.CategoryID, &p.CategoryName, &p.CategoryDescription)
 		if err != nil {
@@ -61,16 +57,16 @@ func (repo *ProductRepository) GetAll(ctx context.Context, req dto.ProductFilter
 	return products, nil
 }
 
-func (repo *ProductRepository) Create(ctx context.Context, product *models.Product) error{
+func (repo *ProductRepository) Create(ctx context.Context, product *models.Product) error {
 	query := insertProductQuery
 	err := repo.db.QueryRowContext(ctx, query, product.Name, product.Price, product.Stock, product.CategoryID).Scan(&product.ID)
 
 	return err
 }
 
-func (repo *ProductRepository) Update(ctx context.Context, product *models.Product) error{
+func (repo *ProductRepository) Update(ctx context.Context, product *models.Product) error {
 	query := updateProductQuery
-	result , err := repo.db.ExecContext(ctx, query, product.Name, product.Price, product.Stock, product.CategoryID, product.ID)
+	result, err := repo.db.ExecContext(ctx, query, product.Name, product.Price, product.Stock, product.CategoryID, product.ID)
 	if err != nil {
 		return err
 	}
@@ -87,7 +83,7 @@ func (repo *ProductRepository) Update(ctx context.Context, product *models.Produ
 	return nil
 }
 
-func (repo *ProductRepository) Delete(ctx context.Context, id int) error{
+func (repo *ProductRepository) Delete(ctx context.Context, id int) error {
 	query := deleteProductQuery
 	result, err := repo.db.ExecContext(ctx, query, id)
 	if err != nil {
@@ -105,7 +101,7 @@ func (repo *ProductRepository) Delete(ctx context.Context, id int) error{
 	return err
 }
 
-func (repo *ProductRepository) GetByID(ctx context.Context, id int) (*dto.ProductResponse, error){
+func (repo *ProductRepository) GetByID(ctx context.Context, id int) (*dto.ProductResponse, error) {
 	query := getProductByIDQuery
 
 	var p dto.ProductResponse
@@ -117,11 +113,11 @@ func (repo *ProductRepository) GetByID(ctx context.Context, id int) (*dto.Produc
 			&p.Name,
 			&p.Price,
 			&p.Stock,
-			&p.CategoryID, 
-			&p.CategoryName, 
+			&p.CategoryID,
+			&p.CategoryName,
 			&p.CategoryDescription,
 		)
-	
+
 	if err == sql.ErrNoRows {
 		return nil, errors.New("Product not found")
 	}
@@ -131,79 +127,99 @@ func (repo *ProductRepository) GetByID(ctx context.Context, id int) (*dto.Produc
 
 	return &p, nil
 }
+
 func (repo *ProductRepository) CreateMultiple(
 	ctx context.Context,
 	products []models.Product,
-) ([]dto.ProductDTO, error) {
+) (response []dto.ProductDTO, err error) {
 
 	if len(products) == 0 {
 		return nil, errors.New("empty products")
 	}
 
+	tx, err := repo.db.BeginTxx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		if p := recover(); p != nil {
+			_ = tx.Rollback()
+			panic(p)
+		} else if err != nil {
+			_ = tx.Rollback()
+		}
+	}()
+
+	insertColumns := []string{"name", "price", "stock", "category_id"}
+
+	returningColumns := []string{
+		"id",
+		"name",
+		"price",
+		"stock",
+		"category_id",
+	}
+
+	var (
+		values []string
+		args   []any
+		argPos = 1
+	)
+
+	for _, p := range products {
+
+		values = append(values,
+			fmt.Sprintf("($%d,$%d,$%d,$%d)",
+				argPos,
+				argPos+1,
+				argPos+2,
+				argPos+3,
+			),
+		)
+
+		args = append(args,
+			p.Name,
+			p.Price,
+			p.Stock,
+			p.CategoryID,
+		)
+
+		argPos += 4
+	}
+
+	query := fmt.Sprintf(
+		insertBulkProductQuery,
+		strings.Join(insertColumns, ","),
+		strings.Join(values, ","),
+		strings.Join(returningColumns, ","),
+	)
+
+	rows, err := tx.QueryxContext(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
 	var responses []dto.ProductDTO
 
-	err := database.WithTransactionX(ctx, repo.db, func(tx *sqlx.Tx) error {
+	for rows.Next() {
 
-		columns := []string{
-			"name",
-			"price",
-			"stock",
-			"category_id",
+		var resp dto.ProductDTO
+
+		if err := rows.StructScan(&resp); err != nil {
+			tx.Rollback()
+			return nil, err
 		}
 
-		rowsData := make([][]any, 0, len(products))
+		responses = append(responses, resp)
+	}
 
-		for _, p := range products {
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
 
-			row := []any{
-				p.Name,
-				p.Price,
-				p.Stock,
-				p.CategoryID,
-			}
-
-			rowsData = append(rowsData, row)
-		}
-
-		query, args, err := database.BuildBulkInsert(
-			"products",
-			columns,
-			rowsData,
-		)
-		if err != nil {
-			return err
-		}
-
-		query += `
-			RETURNING
-				id,
-				name,
-				price,
-				stock,
-				category_id
-		`
-
-		rows, err := tx.QueryxContext(ctx, query, args...)
-		if err != nil {
-			return err
-		}
-		defer rows.Close()
-
-		for rows.Next() {
-
-			var resp dto.ProductDTO
-
-			if err := rows.StructScan(&resp); err != nil {
-				return err
-			}
-
-			responses = append(responses, resp)
-		}
-
-		return nil
-	})
-
-	if err != nil {
+	if err := tx.Commit(); err != nil {
 		return nil, err
 	}
 
