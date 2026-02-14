@@ -131,7 +131,7 @@ func (repo *ProductRepository) GetByID(ctx context.Context, id int) (*dto.Produc
 func (repo *ProductRepository) CreateMultiple(
 	ctx context.Context,
 	products []models.Product,
-) (response []dto.ProductDTO, err error) {
+) ([]dto.ProductDTO, error) {
 
 	if len(products) == 0 {
 		return nil, errors.New("empty products")
@@ -142,11 +142,10 @@ func (repo *ProductRepository) CreateMultiple(
 		return nil, err
 	}
 
+	committed := false
+
 	defer func() {
-		if p := recover(); p != nil {
-			_ = tx.Rollback()
-			panic(p)
-		} else if err != nil {
+		if !committed {
 			_ = tx.Rollback()
 		}
 	}()
@@ -208,7 +207,6 @@ func (repo *ProductRepository) CreateMultiple(
 		var resp dto.ProductDTO
 
 		if err := rows.StructScan(&resp); err != nil {
-			tx.Rollback()
 			return nil, err
 		}
 
@@ -222,6 +220,8 @@ func (repo *ProductRepository) CreateMultiple(
 	if err := tx.Commit(); err != nil {
 		return nil, err
 	}
+
+	committed = true
 
 	return responses, nil
 }
