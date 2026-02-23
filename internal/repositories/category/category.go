@@ -2,21 +2,22 @@ package category
 
 import (
 	"context"
-	"ne-project/internal/models"
+
+	"ne-project/internal/models/entity"
 
 	"github.com/jmoiron/sqlx"
 )
 
 type CategoryRepositoryItf interface {
-	GetAll(ctx context.Context) ([]models.Category, error)
-	Create(ctx context.Context, category *models.Category) (error)
-	GetByID(ctx context.Context, id int) (*models.Category, error)
-	Update(ctx context.Context, category *models.Category) error
+	GetAll(ctx context.Context) ([]entity.Category, error)
+	Create(ctx context.Context, category *entity.Category) error
+	GetByID(ctx context.Context, id int) (*entity.Category, error)
+	Update(ctx context.Context, category *entity.Category) error
 	Delete(ctx context.Context, id int) error
 }
 
 type CategoryRepository struct {
-	db  *sqlx.DB
+	db *sqlx.DB
 }
 
 func NewCategoryRepository(db *sqlx.DB) CategoryRepositoryItf {

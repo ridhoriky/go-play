@@ -2,7 +2,8 @@ package product
 
 import (
 	"context"
-	"ne-project/internal/dto"
+
+	"ne-project/internal/models/dto"
 	"ne-project/internal/repositories/product"
 )
 
@@ -15,7 +16,6 @@ type ProductServiceItf interface {
 	CreateMultipleProducts(ctx context.Context, products []dto.ProductDTO) ([]dto.ProductDTO, error)
 }
 
-	
 type productService struct {
 	productRepository product.ProductRepositoryItf
 }

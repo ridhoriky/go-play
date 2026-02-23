@@ -2,18 +2,19 @@ package category
 
 import (
 	"context"
-	"ne-project/internal/dto"
-	"ne-project/internal/models"
+
+	"ne-project/internal/models/dto"
+	"ne-project/internal/models/entity"
 )
 
-func (s *categoryService) GetAllCategories(ctx context.Context) ([]models.Category, error) {
+func (s *categoryService) GetAllCategories(ctx context.Context) ([]entity.Category, error) {
 	return s.categoryRepository.GetAll(ctx)
 }
 func (s *categoryService) CreateCategory(ctx context.Context, data *dto.CategoryDTO) error {
 	return s.categoryRepository.Create(ctx, data.ToModelPtr())
 }
 
-func (s *categoryService) GetCategoryByID(ctx context.Context, id int) (*models.Category, error) {
+func (s *categoryService) GetCategoryByID(ctx context.Context, id int) (*entity.Category, error) {
 	return s.categoryRepository.GetByID(ctx, id)
 }
 

@@ -3,16 +3,17 @@ package dto
 import (
 	"errors"
 	"fmt"
-	"ne-project/internal/models"
 	"time"
-)
-type TransactionResponse struct {
-	ID          int                     `json:"id"`
-	TotalAmount int                     `json:"total_amount"`
-	CreatedAt   time.Time               `json:"created_at"`
-	Details     []TransactionDetailDTO  `json:"details"`
-}
 
+	"ne-project/internal/models/entity"
+)
+
+type TransactionResponse struct {
+	ID          int                    `json:"id"`
+	TotalAmount int                    `json:"total_amount"`
+	CreatedAt   time.Time              `json:"created_at"`
+	Details     []TransactionDetailDTO `json:"details"`
+}
 
 type TransactionDetailDTO struct {
 	ID            int    `json:"id"`
@@ -22,8 +23,6 @@ type TransactionDetailDTO struct {
 	Quantity      int    `json:"quantity"`
 	Subtotal      int    `json:"subtotal"`
 }
-
-
 
 func (r *CheckoutRequest) Validate() error {
 
@@ -52,7 +51,7 @@ func (r *CheckoutRequest) Validate() error {
 
 	return nil
 }
-func ToTransactionResponse(m *models.Transaction) *TransactionResponse {
+func ToTransactionResponse(m *entity.Transaction) *TransactionResponse {
 
 	if m == nil {
 		return nil
@@ -79,13 +78,12 @@ func ToTransactionResponse(m *models.Transaction) *TransactionResponse {
 	return resp
 }
 
+func ToTransactionResponses(entity []entity.Transaction) []TransactionResponse {
 
-func ToTransactionResponses(models []models.Transaction) []TransactionResponse {
+	res := make([]TransactionResponse, 0, len(entity))
 
-	res := make([]TransactionResponse, 0, len(models))
-
-	for i := range models {
-		res = append(res, *ToTransactionResponse(&models[i]))
+	for i := range entity {
+		res = append(res, *ToTransactionResponse(&entity[i]))
 	}
 
 	return res

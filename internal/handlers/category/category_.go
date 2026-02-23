@@ -2,17 +2,17 @@ package category
 
 import (
 	"encoding/json"
-	"ne-project/internal/dto"
 	"net/http"
 	"strconv"
+
+	"ne-project/internal/models/dto"
 
 	"github.com/gin-gonic/gin"
 )
 
-
 func (h *categoryHandler) GetAll(c *gin.Context) {
 	ctx := c.Request.Context()
-	categories, err := h.categoryService.GetAllCategories(ctx) 
+	categories, err := h.categoryService.GetAllCategories(ctx)
 	if err != nil {
 		dto.ResponseError(c.Writer, http.StatusInternalServerError, err.Error())
 		return
@@ -90,4 +90,3 @@ func (h *categoryHandler) Delete(c *gin.Context) {
 	}
 	dto.ResponseSuccess(c.Writer, http.StatusOK, "Category deleted successfully", nil)
 }
-

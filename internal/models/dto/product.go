@@ -3,11 +3,11 @@ package dto
 import (
 	"errors"
 
-	"ne-project/internal/models"
+	"ne-project/internal/models/entity"
 )
 
 type ProductDTO struct {
-	ID		   int    `db:"id" json:"id,omitempty"`  // Omit in create requests
+	ID         int    `db:"id" json:"id,omitempty"` // Omit in create requests
 	Name       string `db:"name" json:"name"`
 	Price      int    `db:"price" json:"price"`
 	Stock      int    `db:"stock" json:"stock"`
@@ -15,16 +15,15 @@ type ProductDTO struct {
 }
 
 type ProductResponse struct {
-	ID                  int    `db:"id" json:"id"`
-	Name                string `db:"name" json:"name"`
-	Price               int    `db:"price" json:"price"`
-	Stock               int    `db:"stock" json:"stock"`
+	ID    int    `db:"id" json:"id"`
+	Name  string `db:"name" json:"name"`
+	Price int    `db:"price" json:"price"`
+	Stock int    `db:"stock" json:"stock"`
 
 	CategoryID          *int   `db:"category_id" json:"category_id"`
 	CategoryName        string `db:"category_name" json:"category_name"`
 	CategoryDescription string `db:"category_description" json:"category_description"`
 }
-
 
 type ProductFilterRequest struct {
 	Name     string
@@ -32,8 +31,6 @@ type ProductFilterRequest struct {
 	Page     int
 	Limit    int
 }
-
-
 
 func (p *ProductDTO) Validate() error {
 	if p.Name == "" {
@@ -54,12 +51,12 @@ func (p *ProductDTO) Validate() error {
 	return nil
 }
 
-func (p *ProductDTO) ToModel() models.Product {
+func (p *ProductDTO) ToModel() entity.Product {
 	var categoryID int
 	if p.CategoryID != nil {
 		categoryID = *p.CategoryID
 	}
-	return models.Product{
+	return entity.Product{
 		ID:         p.ID,
 		Name:       p.Name,
 		Price:      p.Price,
@@ -68,7 +65,7 @@ func (p *ProductDTO) ToModel() models.Product {
 	}
 }
 
-func (d *ProductDTO) ToModelPtr() *models.Product {
+func (d *ProductDTO) ToModelPtr() *entity.Product {
 	p := d.ToModel()
 	return &p
 }

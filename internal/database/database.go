@@ -2,6 +2,7 @@ package database
 
 import (
 	"log"
+
 	"ne-project/internal/config"
 
 	"github.com/jmoiron/sqlx"

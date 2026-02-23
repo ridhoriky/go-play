@@ -5,9 +5,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"ne-project/internal/dto"
-	"ne-project/internal/models"
 	"strings"
+
+	"ne-project/internal/models/dto"
+	"ne-project/internal/models/entity"
 )
 
 func (repo *ProductRepository) GetAll(ctx context.Context, req dto.ProductFilterRequest) ([]dto.ProductResponse, error) {
@@ -57,14 +58,14 @@ func (repo *ProductRepository) GetAll(ctx context.Context, req dto.ProductFilter
 	return products, nil
 }
 
-func (repo *ProductRepository) Create(ctx context.Context, product *models.Product) error {
+func (repo *ProductRepository) Create(ctx context.Context, product *entity.Product) error {
 	query := insertProductQuery
 	err := repo.db.QueryRowContext(ctx, query, product.Name, product.Price, product.Stock, product.CategoryID).Scan(&product.ID)
 
 	return err
 }
 
-func (repo *ProductRepository) Update(ctx context.Context, product *models.Product) error {
+func (repo *ProductRepository) Update(ctx context.Context, product *entity.Product) error {
 	query := updateProductQuery
 	result, err := repo.db.ExecContext(ctx, query, product.Name, product.Price, product.Stock, product.CategoryID, product.ID)
 	if err != nil {
@@ -95,7 +96,7 @@ func (repo *ProductRepository) Delete(ctx context.Context, id int) error {
 	}
 
 	if rows == 0 {
-		return errors.New("Product not found")
+		return errors.New(`Product + MESSAGE_404`)
 	}
 
 	return err
@@ -130,7 +131,7 @@ func (repo *ProductRepository) GetByID(ctx context.Context, id int) (*dto.Produc
 
 func (repo *ProductRepository) CreateMultiple(
 	ctx context.Context,
-	products []models.Product,
+	products []entity.Product,
 ) ([]dto.ProductDTO, error) {
 
 	if len(products) == 0 {

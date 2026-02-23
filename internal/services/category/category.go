@@ -2,19 +2,19 @@ package category
 
 import (
 	"context"
-	"ne-project/internal/dto"
-	"ne-project/internal/models"
+
+	"ne-project/internal/models/dto"
+	"ne-project/internal/models/entity"
 	"ne-project/internal/repositories/category"
 )
 
 type CategoryServiceItf interface {
-	GetAllCategories(ctx context.Context) ([]models.Category, error)
-	GetCategoryByID(ctx context.Context, id int) (*models.Category, error)
+	GetAllCategories(ctx context.Context) ([]entity.Category, error)
+	GetCategoryByID(ctx context.Context, id int) (*entity.Category, error)
 	CreateCategory(ctx context.Context, category *dto.CategoryDTO) error
 	UpdateCategory(ctx context.Context, category *dto.CategoryDTO) error
 	DeleteCategory(ctx context.Context, id int) error
 }
-
 
 type categoryService struct {
 	categoryRepository category.CategoryRepositoryItf
@@ -25,4 +25,3 @@ func NewCategoryService(categoryRepository category.CategoryRepositoryItf) Categ
 		categoryRepository: categoryRepository,
 	}
 }
-

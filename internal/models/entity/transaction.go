@@ -1,4 +1,4 @@
-package models
+package entity
 
 import "time"
 
@@ -17,4 +17,3 @@ type TransactionDetail struct {
 	Quantity      int    `json:"quantity"`
 	Subtotal      int    `json:"subtotal"`
 }
-

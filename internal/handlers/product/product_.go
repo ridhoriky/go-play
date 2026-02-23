@@ -2,16 +2,16 @@ package product
 
 import (
 	"encoding/json"
-	"ne-project/internal/dto"
 	"net/http"
 	"strconv"
+
+	"ne-project/internal/models/dto"
 
 	"github.com/gin-gonic/gin"
 )
 
 func (h *productHandler) GetAll(c *gin.Context) {
 	ctx := c.Request.Context()
-	
 
 	name := c.Query("name")
 	category := c.Query("category")
@@ -25,7 +25,7 @@ func (h *productHandler) GetAll(c *gin.Context) {
 		Page:     page,
 		Limit:    limit,
 	}
-	products, err := h.productService.GetAllProducts(ctx, req) 
+	products, err := h.productService.GetAllProducts(ctx, req)
 	if err != nil {
 		dto.ResponseError(c.Writer, http.StatusInternalServerError, err.Error())
 		return
@@ -53,7 +53,7 @@ func (h *productHandler) Create(c *gin.Context) {
 }
 
 func (h *productHandler) GetByID(c *gin.Context) {
-	ctx:= c.Request.Context()
+	ctx := c.Request.Context()
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -69,7 +69,7 @@ func (h *productHandler) GetByID(c *gin.Context) {
 }
 
 func (h *productHandler) Update(c *gin.Context) {
-	ctx:= c.Request.Context()
+	ctx := c.Request.Context()
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -94,7 +94,7 @@ func (h *productHandler) Update(c *gin.Context) {
 }
 
 func (h *productHandler) Delete(c *gin.Context) {
-	ctx:= c.Request.Context()
+	ctx := c.Request.Context()
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -119,7 +119,7 @@ func (h *productHandler) CreateMultiple(c *gin.Context) {
 		dto.ResponseError(c.Writer, http.StatusBadRequest, "No products to create")
 		return
 	}
-	responses, err := h.productService.CreateMultipleProducts(ctx, products); 
+	responses, err := h.productService.CreateMultipleProducts(ctx, products)
 	if err != nil {
 		dto.ResponseError(c.Writer, http.StatusInternalServerError, "Failed to create products")
 		return
