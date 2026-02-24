@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"ne-project/internal/models/dto"
+	"ne-project/internal/preference"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -26,7 +27,7 @@ func (h *categoryHandler) Create(c *gin.Context) {
 	var cat dto.CategoryDTO
 	if err := json.NewDecoder(c.Request.Body).Decode(&cat); err != nil {
 		log.Println(err)
-		dto.ResponseError(c.Writer, http.StatusBadRequest, "Invalid request body")
+		dto.ResponseError(c.Writer, http.StatusBadRequest, preference.ErrInvalidReqBody)
 		return
 	}
 	if err := cat.Validate(); err != nil {
@@ -48,7 +49,7 @@ func (h *categoryHandler) GetByID(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 
 	if err != nil {
-		dto.ResponseError(c.Writer, http.StatusBadRequest, "Invalid category ID")
+		dto.ResponseError(c.Writer, http.StatusBadRequest, preference.ErrInvalidCategoryID)
 		return
 	}
 	category, err := h.categoryService.GetCategoryByID(ctx, id.String())
@@ -64,12 +65,12 @@ func (h *categoryHandler) Update(c *gin.Context) {
 
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
-		dto.ResponseError(c.Writer, http.StatusBadRequest, "Invalid category ID")
+		dto.ResponseError(c.Writer, http.StatusBadRequest, preference.ErrInvalidCategoryID)
 		return
 	}
 	var cat dto.CategoryDTO
 	if err := json.NewDecoder(c.Request.Body).Decode(&cat); err != nil {
-		dto.ResponseError(c.Writer, http.StatusBadRequest, "Invalid request body")
+		dto.ResponseError(c.Writer, http.StatusBadRequest, preference.ErrInvalidReqBody)
 		return
 	}
 	if err := cat.Validate(); err != nil {
@@ -90,7 +91,7 @@ func (h *categoryHandler) Delete(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 
 	if err != nil {
-		dto.ResponseError(c.Writer, http.StatusBadRequest, "Invalid category ID")
+		dto.ResponseError(c.Writer, http.StatusBadRequest, preference.ErrInvalidCategoryID)
 		return
 	}
 	if err := h.categoryService.DeleteCategory(ctx, id.String()); err != nil {

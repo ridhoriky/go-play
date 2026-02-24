@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"ne-project/internal/models/dto"
+	"ne-project/internal/preference"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -39,7 +40,7 @@ func (h *productHandler) Create(c *gin.Context) {
 	var p dto.ProductDTO
 
 	if err := json.NewDecoder(c.Request.Body).Decode(&p); err != nil {
-		dto.ResponseError(c.Writer, http.StatusBadRequest, "Invalid request body")
+		dto.ResponseError(c.Writer, http.StatusBadRequest, preference.ErrInvalidReqBody)
 		return
 	}
 	if err := p.Validate(); err != nil {
@@ -59,7 +60,7 @@ func (h *productHandler) GetByID(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 
 	if err != nil {
-		dto.ResponseError(c.Writer, http.StatusBadRequest, "Invalid product ID")
+		dto.ResponseError(c.Writer, http.StatusBadRequest, preference.ErrInvalidProductID)
 		return
 	}
 	product, err := h.productService.GetProductByID(ctx, id.String())
@@ -76,12 +77,12 @@ func (h *productHandler) Update(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 
 	if err != nil {
-		dto.ResponseError(c.Writer, http.StatusBadRequest, "Invalid product ID")
+		dto.ResponseError(c.Writer, http.StatusBadRequest, preference.ErrInvalidProductID)
 		return
 	}
 	var p dto.ProductDTO
 	if err := json.NewDecoder(c.Request.Body).Decode(&p); err != nil {
-		dto.ResponseError(c.Writer, http.StatusBadRequest, "Invalid request body")
+		dto.ResponseError(c.Writer, http.StatusBadRequest, preference.ErrInvalidReqBody)
 		return
 	}
 	if err := p.Validate(); err != nil {
@@ -102,7 +103,7 @@ func (h *productHandler) Delete(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 
 	if err != nil {
-		dto.ResponseError(c.Writer, http.StatusBadRequest, "Invalid product ID")
+		dto.ResponseError(c.Writer, http.StatusBadRequest, preference.ErrInvalidProductID)
 		return
 	}
 	if err := h.productService.DeleteProduct(ctx, id.String()); err != nil {
@@ -116,7 +117,7 @@ func (h *productHandler) CreateMultiple(c *gin.Context) {
 	ctx := c.Request.Context()
 	var products []dto.ProductDTO
 	if err := json.NewDecoder(c.Request.Body).Decode(&products); err != nil {
-		dto.ResponseError(c.Writer, http.StatusBadRequest, "Invalid request body")
+		dto.ResponseError(c.Writer, http.StatusBadRequest, preference.ErrInvalidReqBody)
 		return
 	}
 	if len(products) == 0 {
