@@ -3,9 +3,10 @@ package main
 import (
 	"fmt"
 	"log"
+
 	"ne-project/internal/config"
 	"ne-project/internal/database"
-	"ne-project/internal/handlers"
+	"ne-project/internal/handlers/rest"
 	"ne-project/internal/repositories"
 	"ne-project/internal/services"
 
@@ -20,7 +21,6 @@ func main() {
 		log.Fatal("Failed to load config:", err)
 	}
 
-
 	// Init DB
 	db, err := database.InitDB(cfg)
 	if err != nil {
@@ -34,10 +34,10 @@ func main() {
 }
 
 func startServer(cfg *config.Config, db *sqlx.DB) {
-	
+
 	repo := repositories.NewRepository(db)
 	service := services.NewServices(repo)
-	handlers := handlers.NewHandlers(service)
+	handlers := rest.NewHandlers(service)
 
 	// Routing
 	r := gin.Default()
