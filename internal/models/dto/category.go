@@ -7,7 +7,7 @@ import (
 )
 
 type CategoryDTO struct {
-	ID          int    `json:"id,omitempty"` // Omit in create requests
+	ID          string `json:"id,omitempty"` // Omit in create requests
 	Name        string `json:"name"`
 	Description string `json:"description,omitempty"` // Optional
 }

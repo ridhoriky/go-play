@@ -35,7 +35,7 @@ func (repo *CategoryRepository) Create(ctx context.Context, category *entity.Cat
 	return err
 }
 
-func (repo *CategoryRepository) GetByID(ctx context.Context, id int) (*entity.Category, error) {
+func (repo *CategoryRepository) GetByID(ctx context.Context, id string) (*entity.Category, error) {
 	var c entity.Category
 	err := repo.db.QueryRowContext(ctx, getCategoryByIDQuery, id).Scan(&c.ID, &c.Name, &c.Description)
 	if err != nil {
@@ -60,7 +60,7 @@ func (repo *CategoryRepository) Update(ctx context.Context, category *entity.Cat
 	return nil
 }
 
-func (repo *CategoryRepository) Delete(ctx context.Context, id int) error {
+func (repo *CategoryRepository) Delete(ctx context.Context, id string) error {
 	result, err := repo.db.ExecContext(ctx, deleteCategoryQuery, id)
 	if err != nil {
 		return err

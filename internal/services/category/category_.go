@@ -14,7 +14,7 @@ func (s *categoryService) CreateCategory(ctx context.Context, data *dto.Category
 	return s.categoryRepository.Create(ctx, data.ToModelPtr())
 }
 
-func (s *categoryService) GetCategoryByID(ctx context.Context, id int) (*entity.Category, error) {
+func (s *categoryService) GetCategoryByID(ctx context.Context, id string) (*entity.Category, error) {
 	return s.categoryRepository.GetByID(ctx, id)
 }
 
@@ -22,6 +22,6 @@ func (s *categoryService) UpdateCategory(ctx context.Context, category *dto.Cate
 	return s.categoryRepository.Update(ctx, category.ToModelPtr())
 }
 
-func (s *categoryService) DeleteCategory(ctx context.Context, id int) error {
+func (s *categoryService) DeleteCategory(ctx context.Context, id string) error {
 	return s.categoryRepository.Delete(ctx, id)
 }

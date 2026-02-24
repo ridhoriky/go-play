@@ -1,0 +1,1 @@
+-- CREATE EXTENSION "uuidv7-sql";

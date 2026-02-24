@@ -9,10 +9,10 @@ import (
 
 type ProductServiceItf interface {
 	GetAllProducts(ctx context.Context, req dto.ProductFilterRequest) ([]dto.ProductResponse, error)
-	GetProductByID(ctx context.Context, id int) (*dto.ProductResponse, error)
+	GetProductByID(ctx context.Context, id string) (*dto.ProductResponse, error)
 	CreateProduct(ctx context.Context, product *dto.ProductDTO) error
 	UpdateProduct(ctx context.Context, product *dto.ProductDTO) error
-	DeleteProduct(ctx context.Context, id int) error
+	DeleteProduct(ctx context.Context, id string) error
 	CreateMultipleProducts(ctx context.Context, products []dto.ProductDTO) ([]dto.ProductDTO, error)
 }
 

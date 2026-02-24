@@ -6,19 +6,21 @@ import (
 	"time"
 
 	"ne-project/internal/models/entity"
+
+	"github.com/google/uuid"
 )
 
 type TransactionResponse struct {
-	ID          int                    `json:"id"`
+	ID          string                 `json:"id"`
 	TotalAmount int                    `json:"total_amount"`
 	CreatedAt   time.Time              `json:"created_at"`
 	Details     []TransactionDetailDTO `json:"details"`
 }
 
 type TransactionDetailDTO struct {
-	ID            int    `json:"id"`
-	TransactionID int    `json:"transaction_id"`
-	ProductID     int    `json:"product_id"`
+	ID            string `json:"id"`
+	TransactionID string `json:"transaction_id"`
+	ProductID     string `json:"product_id"`
 	ProductName   string `json:"product_name"`
 	Quantity      int    `json:"quantity"`
 	Subtotal      int    `json:"subtotal"`
@@ -30,12 +32,15 @@ func (r *CheckoutRequest) Validate() error {
 		return errors.New("checkout items cannot be empty")
 	}
 
-	seen := map[int]struct{}{}
+	seen := make(map[string]struct{})
 
 	for i, item := range r.Items {
+		if item.ProductID == "" {
+			return fmt.Errorf("invalid product_id at item[%d]: cannot be empty", i)
+		}
 
-		if item.ProductID <= 0 {
-			return fmt.Errorf("invalid product_id at item[%d]", i)
+		if _, err := uuid.Parse(item.ProductID); err != nil {
+			return fmt.Errorf("invalid uuid format at item[%d]: %w", i, err)
 		}
 
 		if item.Quantity <= 0 {
@@ -43,7 +48,7 @@ func (r *CheckoutRequest) Validate() error {
 		}
 
 		if _, ok := seen[item.ProductID]; ok {
-			return fmt.Errorf("duplicate product_id: %d", item.ProductID)
+			return fmt.Errorf("duplicate product_id: %s", item.ProductID)
 		}
 
 		seen[item.ProductID] = struct{}{}

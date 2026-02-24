@@ -10,10 +10,10 @@ import (
 
 type CategoryServiceItf interface {
 	GetAllCategories(ctx context.Context) ([]entity.Category, error)
-	GetCategoryByID(ctx context.Context, id int) (*entity.Category, error)
+	GetCategoryByID(ctx context.Context, id string) (*entity.Category, error)
 	CreateCategory(ctx context.Context, category *dto.CategoryDTO) error
 	UpdateCategory(ctx context.Context, category *dto.CategoryDTO) error
-	DeleteCategory(ctx context.Context, id int) error
+	DeleteCategory(ctx context.Context, id string) error
 }
 
 type categoryService struct {

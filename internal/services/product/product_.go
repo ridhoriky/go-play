@@ -22,7 +22,7 @@ func (s *productService) CreateProduct(ctx context.Context, product *dto.Product
 	return s.productRepository.Create(ctx, product.ToModelPtr())
 }
 
-func (s *productService) GetProductByID(ctx context.Context, id int) (*dto.ProductResponse, error) {
+func (s *productService) GetProductByID(ctx context.Context, id string) (*dto.ProductResponse, error) {
 	return s.productRepository.GetByID(ctx, id)
 }
 
@@ -30,7 +30,7 @@ func (s *productService) UpdateProduct(ctx context.Context, product *dto.Product
 	return s.productRepository.Update(ctx, product.ToModelPtr())
 }
 
-func (s *productService) DeleteProduct(ctx context.Context, id int) error {
+func (s *productService) DeleteProduct(ctx context.Context, id string) error {
 	return s.productRepository.Delete(ctx, id)
 }
 

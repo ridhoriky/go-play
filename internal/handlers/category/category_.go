@@ -2,12 +2,13 @@ package category
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
-	"strconv"
 
 	"ne-project/internal/models/dto"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 func (h *categoryHandler) GetAll(c *gin.Context) {
@@ -24,14 +25,17 @@ func (h *categoryHandler) Create(c *gin.Context) {
 	ctx := c.Request.Context()
 	var cat dto.CategoryDTO
 	if err := json.NewDecoder(c.Request.Body).Decode(&cat); err != nil {
+		log.Println(err)
 		dto.ResponseError(c.Writer, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 	if err := cat.Validate(); err != nil {
+		log.Println(err)
 		dto.ResponseError(c.Writer, http.StatusBadRequest, err.Error())
 		return
 	}
 	if err := h.categoryService.CreateCategory(ctx, &cat); err != nil {
+		log.Println(err)
 		dto.ResponseError(c.Writer, http.StatusInternalServerError, "Failed to create category")
 		return
 	}
@@ -40,12 +44,14 @@ func (h *categoryHandler) Create(c *gin.Context) {
 
 func (h *categoryHandler) GetByID(c *gin.Context) {
 	ctx := c.Request.Context()
-	id, err := strconv.Atoi(c.Param("id"))
+
+	id, err := uuid.Parse(c.Param("id"))
+
 	if err != nil {
 		dto.ResponseError(c.Writer, http.StatusBadRequest, "Invalid category ID")
 		return
 	}
-	category, err := h.categoryService.GetCategoryByID(ctx, id)
+	category, err := h.categoryService.GetCategoryByID(ctx, id.String())
 	if err != nil {
 		dto.ResponseError(c.Writer, http.StatusInternalServerError, "Failed to fetch category")
 		return
@@ -55,7 +61,8 @@ func (h *categoryHandler) GetByID(c *gin.Context) {
 
 func (h *categoryHandler) Update(c *gin.Context) {
 	ctx := c.Request.Context()
-	id, err := strconv.Atoi(c.Param("id"))
+
+	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		dto.ResponseError(c.Writer, http.StatusBadRequest, "Invalid category ID")
 		return
@@ -69,7 +76,7 @@ func (h *categoryHandler) Update(c *gin.Context) {
 		dto.ResponseError(c.Writer, http.StatusBadRequest, err.Error())
 		return
 	}
-	cat.ID = id
+	cat.ID = id.String()
 	if err := h.categoryService.UpdateCategory(ctx, &cat); err != nil {
 		dto.ResponseError(c.Writer, http.StatusInternalServerError, "Failed to update category")
 		return
@@ -79,12 +86,14 @@ func (h *categoryHandler) Update(c *gin.Context) {
 
 func (h *categoryHandler) Delete(c *gin.Context) {
 	ctx := c.Request.Context()
-	id, err := strconv.Atoi(c.Param("id"))
+
+	id, err := uuid.Parse(c.Param("id"))
+
 	if err != nil {
 		dto.ResponseError(c.Writer, http.StatusBadRequest, "Invalid category ID")
 		return
 	}
-	if err := h.categoryService.DeleteCategory(ctx, id); err != nil {
+	if err := h.categoryService.DeleteCategory(ctx, id.String()); err != nil {
 		dto.ResponseError(c.Writer, http.StatusInternalServerError, "Failed to delete category")
 		return
 	}

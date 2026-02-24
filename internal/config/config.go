@@ -27,16 +27,16 @@ type DatabaseConfig struct {
 }
 
 func (db *DatabaseConfig) GetConnectionString() string {
-	 return fmt.Sprintf(
-		"postgresql://%s:%s@%s:%d/%s",
+	return fmt.Sprintf(
+		"postgresql://%s:%s@%s:%d/%s?sslmode=%s",
 		db.User,
 		db.Password,
 		db.Host,
 		db.Port,
 		db.Name,
+		db.SSLMode,
 	)
 }
-
 
 func Load() (*Config, error) {
 
@@ -88,7 +88,7 @@ func overrideWithEnv(cfg *Config) {
 	if val := os.Getenv("DB_NAME"); val != "" {
 		cfg.Database.Name = val
 	}
-	
+
 	if val := os.Getenv("PORT"); val != "" {
 		cfg.App.Port = parseInt(val, cfg.App.Port)
 	}

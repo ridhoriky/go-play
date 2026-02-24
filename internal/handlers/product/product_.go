@@ -8,6 +8,7 @@ import (
 	"ne-project/internal/models/dto"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 func (h *productHandler) GetAll(c *gin.Context) {
@@ -54,13 +55,14 @@ func (h *productHandler) Create(c *gin.Context) {
 
 func (h *productHandler) GetByID(c *gin.Context) {
 	ctx := c.Request.Context()
-	idStr := c.Param("id")
-	id, err := strconv.Atoi(idStr)
+
+	id, err := uuid.Parse(c.Param("id"))
+
 	if err != nil {
 		dto.ResponseError(c.Writer, http.StatusBadRequest, "Invalid product ID")
 		return
 	}
-	product, err := h.productService.GetProductByID(ctx, id)
+	product, err := h.productService.GetProductByID(ctx, id.String())
 	if err != nil {
 		dto.ResponseError(c.Writer, http.StatusInternalServerError, "Failed to fetch product")
 		return
@@ -70,8 +72,9 @@ func (h *productHandler) GetByID(c *gin.Context) {
 
 func (h *productHandler) Update(c *gin.Context) {
 	ctx := c.Request.Context()
-	idStr := c.Param("id")
-	id, err := strconv.Atoi(idStr)
+
+	id, err := uuid.Parse(c.Param("id"))
+
 	if err != nil {
 		dto.ResponseError(c.Writer, http.StatusBadRequest, "Invalid product ID")
 		return
@@ -85,7 +88,7 @@ func (h *productHandler) Update(c *gin.Context) {
 		dto.ResponseError(c.Writer, http.StatusBadRequest, err.Error())
 		return
 	}
-	p.ID = id
+	p.ID = id.String()
 	if err := h.productService.UpdateProduct(ctx, &p); err != nil {
 		dto.ResponseError(c.Writer, http.StatusInternalServerError, "Failed to update product")
 		return
@@ -95,13 +98,14 @@ func (h *productHandler) Update(c *gin.Context) {
 
 func (h *productHandler) Delete(c *gin.Context) {
 	ctx := c.Request.Context()
-	idStr := c.Param("id")
-	id, err := strconv.Atoi(idStr)
+
+	id, err := uuid.Parse(c.Param("id"))
+
 	if err != nil {
 		dto.ResponseError(c.Writer, http.StatusBadRequest, "Invalid product ID")
 		return
 	}
-	if err := h.productService.DeleteProduct(ctx, id); err != nil {
+	if err := h.productService.DeleteProduct(ctx, id.String()); err != nil {
 		dto.ResponseError(c.Writer, http.StatusInternalServerError, "Failed to delete product")
 		return
 	}

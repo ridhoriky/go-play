@@ -1,8 +1,8 @@
 package dto
 
 type CheckoutItem struct {
-	ProductID int `json:"product_id"`
-	Quantity  int `json:"quantity"`
+	ProductID string `json:"product_id"`
+	Quantity  int    `json:"quantity"`
 }
 
 type CheckoutRequest struct {

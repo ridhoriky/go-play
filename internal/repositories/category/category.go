@@ -11,9 +11,9 @@ import (
 type CategoryRepositoryItf interface {
 	GetAll(ctx context.Context) ([]entity.Category, error)
 	Create(ctx context.Context, category *entity.Category) error
-	GetByID(ctx context.Context, id int) (*entity.Category, error)
+	GetByID(ctx context.Context, id string) (*entity.Category, error)
 	Update(ctx context.Context, category *entity.Category) error
-	Delete(ctx context.Context, id int) error
+	Delete(ctx context.Context, id string) error
 }
 
 type CategoryRepository struct {

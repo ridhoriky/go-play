@@ -84,7 +84,7 @@ func (repo *ProductRepository) Update(ctx context.Context, product *entity.Produ
 	return nil
 }
 
-func (repo *ProductRepository) Delete(ctx context.Context, id int) error {
+func (repo *ProductRepository) Delete(ctx context.Context, id string) error {
 	query := deleteProductQuery
 	result, err := repo.db.ExecContext(ctx, query, id)
 	if err != nil {
@@ -102,7 +102,7 @@ func (repo *ProductRepository) Delete(ctx context.Context, id int) error {
 	return err
 }
 
-func (repo *ProductRepository) GetByID(ctx context.Context, id int) (*dto.ProductResponse, error) {
+func (repo *ProductRepository) GetByID(ctx context.Context, id string) (*dto.ProductResponse, error) {
 	query := getProductByIDQuery
 
 	var p dto.ProductResponse

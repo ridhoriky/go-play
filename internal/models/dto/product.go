@@ -2,27 +2,30 @@ package dto
 
 import (
 	"errors"
+	"fmt"
 
 	"ne-project/internal/models/entity"
+
+	"github.com/google/uuid"
 )
 
 type ProductDTO struct {
-	ID         int    `db:"id" json:"id,omitempty"` // Omit in create requests
-	Name       string `db:"name" json:"name"`
-	Price      int    `db:"price" json:"price"`
-	Stock      int    `db:"stock" json:"stock"`
-	CategoryID *int   `db:"category_id" json:"category_id,omitempty"` // Optional
+	ID         string  `db:"id" json:"id,omitempty"` // Omit in create requests
+	Name       string  `db:"name" json:"name"`
+	Price      int     `db:"price" json:"price"`
+	Stock      int     `db:"stock" json:"stock"`
+	CategoryID *string `db:"category_id" json:"category_id,omitempty"` // Optional
 }
 
 type ProductResponse struct {
-	ID    int    `db:"id" json:"id"`
+	ID    string `db:"id" json:"id"`
 	Name  string `db:"name" json:"name"`
 	Price int    `db:"price" json:"price"`
 	Stock int    `db:"stock" json:"stock"`
 
-	CategoryID          *int   `db:"category_id" json:"category_id"`
-	CategoryName        string `db:"category_name" json:"category_name"`
-	CategoryDescription string `db:"category_description" json:"category_description"`
+	CategoryID          *string `db:"category_id" json:"category_id"`
+	CategoryName        string  `db:"category_name" json:"category_name"`
+	CategoryDescription string  `db:"category_description" json:"category_description"`
 }
 
 type ProductFilterRequest struct {
@@ -45,14 +48,14 @@ func (p *ProductDTO) Validate() error {
 	if p.Stock < 0 {
 		return errors.New("product stock cannot be negative")
 	}
-	if p.CategoryID != nil && *p.CategoryID <= 0 {
-		return errors.New("category ID must be positive if provided")
+	if _, err := uuid.Parse(*p.CategoryID); err != nil {
+		return fmt.Errorf("invalid uuid format at category_id")
 	}
 	return nil
 }
 
 func (p *ProductDTO) ToModel() entity.Product {
-	var categoryID int
+	var categoryID string
 	if p.CategoryID != nil {
 		categoryID = *p.CategoryID
 	}
