@@ -1,5 +1,5 @@
 CREATE TABLE transaction_details (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT uuidv7(),
 
   product_id UUID NOT NULL,
   transaction_id UUID NOT NULL,

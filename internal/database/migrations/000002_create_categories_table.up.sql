@@ -1,5 +1,5 @@
 CREATE TABLE categories (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT uuidv7(),
 
   name VARCHAR(255) UNIQUE NOT NULL,
   description TEXT,

@@ -1,5 +1,5 @@
 CREATE TABLE products (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT uuidv7(),
 
   name VARCHAR(255) UNIQUE NOT NULL,
   price DECIMAL(12,2) NOT NULL CHECK (price >= 0),
