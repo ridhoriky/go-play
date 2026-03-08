@@ -68,7 +68,7 @@ export DB_URL="postgres://postgres:postgre@localhost:5432/kasir_db?sslmode=disab
 Run migration:
 
 ```bash
-migrate -path ./internal/database/migrations -database "$DB_URL" up
+migrate -path ./etc/migrations -database "$DB_URL" up
 ```
 
 ▶️ Run Application
