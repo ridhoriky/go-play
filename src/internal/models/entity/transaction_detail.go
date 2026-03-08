@@ -9,5 +9,5 @@ type TransactionDetail struct {
 	ProductName   string          `db:"product_name" json:"product_name,omitempty"`
 	Quantity      int             `db:"quantity" json:"quantity"`
 	Price         decimal.Decimal `db:"price" json:"price"`
-	Subtotal      int             `db:"subtotal" json:"subtotal"`
+	Subtotal      decimal.Decimal `db:"subtotal" json:"subtotal"`
 }

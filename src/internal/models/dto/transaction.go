@@ -19,12 +19,12 @@ type TransactionResponse struct {
 }
 
 type TransactionDetailDTO struct {
-	ID            string `json:"id"`
-	TransactionID string `json:"transaction_id"`
-	ProductID     string `json:"product_id"`
-	ProductName   string `json:"product_name"`
-	Quantity      int    `json:"quantity"`
-	Subtotal      int    `json:"subtotal"`
+	ID            string          `json:"id"`
+	TransactionID string          `json:"transaction_id"`
+	ProductID     string          `json:"product_id"`
+	ProductName   string          `json:"product_name"`
+	Quantity      int             `json:"quantity"`
+	Subtotal      decimal.Decimal `json:"subtotal"`
 }
 
 func (r *CheckoutRequest) Validate() error {
