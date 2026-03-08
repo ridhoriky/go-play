@@ -1,7 +1,7 @@
 package entity
 
 type Category struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	ID          string `db:"id" json:"id"`
+	Name        string `db:"name" json:"name"`
+	Description string `db:"description" json:"description"`
 }

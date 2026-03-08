@@ -7,21 +7,22 @@ import (
 	"ne-project/src/internal/models/entity"
 
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 type ProductDTO struct {
-	ID         string  `db:"id" json:"id,omitempty"` // Omit in create requests
-	Name       string  `db:"name" json:"name"`
-	Price      int     `db:"price" json:"price"`
-	Stock      int     `db:"stock" json:"stock"`
-	CategoryID *string `db:"category_id" json:"category_id,omitempty"` // Optional
+	ID         string          `db:"id" json:"id,omitempty"` // Omit in create requests
+	Name       string          `db:"name" json:"name"`
+	Price      decimal.Decimal `db:"price" json:"price"`
+	Stock      int             `db:"stock" json:"stock"`
+	CategoryID *string         `db:"category_id" json:"category_id,omitempty"` // Optional
 }
 
 type ProductResponse struct {
-	ID    string `db:"id" json:"id"`
-	Name  string `db:"name" json:"name"`
-	Price int    `db:"price" json:"price"`
-	Stock int    `db:"stock" json:"stock"`
+	ID    string          `db:"id" json:"id"`
+	Name  string          `db:"name" json:"name"`
+	Price decimal.Decimal `db:"price" json:"price"`
+	Stock int             `db:"stock" json:"stock"`
 
 	CategoryID          *string `db:"category_id" json:"category_id"`
 	CategoryName        string  `db:"category_name" json:"category_name"`
@@ -42,7 +43,7 @@ func (p *ProductDTO) Validate() error {
 	if len(p.Name) > 255 {
 		return errors.New("product name too long (max 255 chars)")
 	}
-	if p.Price <= 0 {
+	if p.Price.LessThanOrEqual(decimal.NewFromInt(0)) {
 		return errors.New("product price must be greater than 0")
 	}
 	if p.Stock < 0 {

@@ -8,11 +8,12 @@ import (
 	"ne-project/src/internal/models/entity"
 
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 type TransactionResponse struct {
 	ID          string                 `json:"id"`
-	TotalAmount int                    `json:"total_amount"`
+	TotalAmount decimal.Decimal        `json:"total_amount"`
 	CreatedAt   time.Time              `json:"created_at"`
 	Details     []TransactionDetailDTO `json:"details"`
 }

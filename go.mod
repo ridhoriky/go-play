@@ -7,6 +7,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/lib/pq v1.10.9
+	github.com/shopspring/decimal v1.4.0
 	github.com/spf13/viper v1.21.0
 )
 

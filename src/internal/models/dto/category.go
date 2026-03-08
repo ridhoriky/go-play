@@ -7,9 +7,9 @@ import (
 )
 
 type CategoryDTO struct {
-	ID          string `json:"id,omitempty"` // Omit in create requests
-	Name        string `json:"name"`
-	Description string `json:"description,omitempty"` // Optional
+	ID          string `db:"id" json:"id,omitempty"` // Omit in create requests
+	Name        string `db:"name" json:"name"`
+	Description string `db:"description" json:"description,omitempty"` // Optional
 }
 
 func (c *CategoryDTO) Validate() error {
