@@ -2,7 +2,6 @@ package product
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"ne-project/src/internal/handlers/helpers"
@@ -95,7 +94,6 @@ func (h *productHandler) Update(c *gin.Context) {
 	}
 
 	product, err := h.productService.UpdateProduct(ctx, id.String(), &p)
-	log.Println(product, err)
 	if err != nil {
 		helpers.ResponseError(c.Writer, err)
 		return

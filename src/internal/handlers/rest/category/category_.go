@@ -1,7 +1,6 @@
 package category
 
 import (
-	"log"
 	"net/http"
 
 	"ne-project/src/internal/handlers/helpers"
@@ -45,7 +44,6 @@ func (h *categoryHandler) Create(c *gin.Context) {
 	}
 
 	if _, err := h.categoryService.CreateCategory(ctx, &cat); err != nil {
-		log.Println(err)
 		helpers.ResponseError(c.Writer, err)
 		return
 	}

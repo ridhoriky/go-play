@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 
 	"ne-project/src/internal/models/dto"
@@ -146,7 +145,6 @@ func (repo *CategoryRepository) Delete(ctx context.Context, id string) error {
 		return err
 	}
 	rows, err := result.RowsAffected()
-	log.Println((rows))
 	if err != nil {
 		return err
 	}
