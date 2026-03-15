@@ -8,7 +8,7 @@ import (
 )
 
 type TransactionServiceItf interface {
-	GetToday(ctx context.Context) (*dto.TodaySummaryResponse, error)
+	GetToday(ctx context.Context) (*dto.TransactionListResponse, error)
 }
 
 type transactionService struct {

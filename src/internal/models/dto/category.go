@@ -1,39 +1,50 @@
 package dto
 
-import (
-	"errors"
+import "time"
 
-	"ne-project/src/internal/models/entity"
-)
+// ─── Request ────────────────────────────────────────────────────────────────
 
-type CategoryDTO struct {
-	ID          string `db:"id" json:"id,omitempty"` // Omit in create requests
-	Name        string `db:"name" json:"name"`
-	Description string `db:"description" json:"description,omitempty"` // Optional
+type CreateCategoryRequest struct {
+	Name        string  `json:"name"        binding:"required,min=1,max=100"`
+	Description *string `json:"description" binding:"omitempty,max=500"`
 }
 
-func (c *CategoryDTO) Validate() error {
-	if c.Name == "" {
-		return errors.New("category name is required")
-	}
-	if len(c.Name) > 255 {
-		return errors.New("category name too long (max 255 chars)")
-	}
-	if len(c.Description) > 1000 {
-		return errors.New("category description too long (max 1000 chars)")
-	}
-	return nil
+type UpdateCategoryRequest struct {
+	Name        string  `json:"name"        binding:"required,min=1,max=100"`
+	Description *string `json:"description" binding:"omitempty,max=500"`
 }
 
-func (c *CategoryDTO) ToModel() entity.Category {
-	return entity.Category{
-		ID:          c.ID,
-		Name:        c.Name,
-		Description: c.Description,
-	}
+type GetCategoriesQuery struct {
+	Page           int    `form:"page"            binding:"omitempty,min=1"`
+	Limit          int    `form:"limit"           binding:"omitempty,min=1,max=100"`
+	Search         string `form:"search"          binding:"omitempty,max=100"`
+	IncludeDeleted bool   `form:"include_deleted" binding:"omitempty"`
+	SortBy         string `form:"sort_by"     binding:"omitempty,oneof=name created_at"`
+	SortDir        string `form:"sort_dir"    binding:"omitempty,oneof=asc desc"`
 }
 
-func (d *CategoryDTO) ToModelPtr() *entity.Category {
-	c := d.ToModel()
-	return &c
+// ─── Response ────────────────────────────────────────────────────────────────
+
+type CategoryResponse struct {
+	ID          string     `json:"id"`
+	Name        string     `json:"name"`
+	Description *string    `json:"description"`
+	CreatedAt   time.Time  `json:"created_at"`
+	UpdatedAt   time.Time  `json:"updated_at"`
+	DeletedAt   *time.Time `json:"deleted_at"`
+}
+
+type CategoryDetailResponse struct {
+	CategoryResponse
+	ProductsCount int `json:"products_count"`
+}
+
+type CategoryListResponse struct {
+	Data []CategoryResponse `json:"data"`
+	Meta PaginationMeta     `json:"meta"`
+}
+
+type DeleteCategoryResponse struct {
+	Message   string    `json:"message"`
+	DeletedAt time.Time `json:"deleted_at"`
 }

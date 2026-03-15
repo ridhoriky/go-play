@@ -3,7 +3,9 @@ package transaction
 import (
 	"net/http"
 
+	"ne-project/src/internal/handlers/helpers"
 	"ne-project/src/internal/models/dto"
+	"ne-project/src/internal/preference"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,15 +16,17 @@ func (h *transactionHandler) GetToday(c *gin.Context) {
 
 	result, err := h.transactionService.GetToday(ctx)
 	if err != nil {
-		dto.ResponseError(
+		helpers.ResponseError(
 			c.Writer,
-			http.StatusInternalServerError,
-			err.Error(),
+			&dto.Error{
+				Code:    http.StatusBadRequest,
+				Message: preference.ErrNoProductCreated,
+			},
 		)
 		return
 	}
 
-	dto.ResponseSuccess(
+	helpers.ResponseSuccess(
 		c.Writer,
 		http.StatusOK,
 		"success",

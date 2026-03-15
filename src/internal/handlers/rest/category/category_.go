@@ -1,10 +1,10 @@
 package category
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 
+	"ne-project/src/internal/handlers/helpers"
 	"ne-project/src/internal/models/dto"
 	"ne-project/src/internal/preference"
 
@@ -14,33 +14,43 @@ import (
 
 func (h *categoryHandler) GetAll(c *gin.Context) {
 	ctx := c.Request.Context()
-	categories, err := h.categoryService.GetAllCategories(ctx)
-	if err != nil {
-		dto.ResponseError(c.Writer, http.StatusInternalServerError, err.Error())
+
+	var req dto.GetCategoriesQuery
+	if err := c.ShouldBindQuery(&req); err != nil {
+		helpers.ResponseError(c.Writer, &dto.Error{
+			Code:    http.StatusBadRequest,
+			Message: preference.ErrInvalidReqBody,
+		})
 		return
 	}
-	dto.ResponseSuccess(c.Writer, http.StatusOK, "Success", categories)
+
+	categories, err := h.categoryService.GetAllCategories(ctx, &req)
+	if err != nil {
+		helpers.ResponseError(c.Writer, err)
+		return
+	}
+	helpers.ResponseSuccess(c.Writer, http.StatusOK, "Success", categories)
 }
 
 func (h *categoryHandler) Create(c *gin.Context) {
 	ctx := c.Request.Context()
-	var cat dto.CategoryDTO
-	if err := json.NewDecoder(c.Request.Body).Decode(&cat); err != nil {
-		log.Println(err)
-		dto.ResponseError(c.Writer, http.StatusBadRequest, preference.ErrInvalidReqBody)
+
+	var cat dto.CreateCategoryRequest
+	if err := c.ShouldBindJSON(&cat); err != nil {
+		helpers.ResponseError(c.Writer, &dto.Error{
+			Code:    http.StatusBadRequest,
+			Message: preference.ErrInvalidReqBody,
+		})
 		return
 	}
-	if err := cat.Validate(); err != nil {
+
+	if _, err := h.categoryService.CreateCategory(ctx, &cat); err != nil {
 		log.Println(err)
-		dto.ResponseError(c.Writer, http.StatusBadRequest, err.Error())
+		helpers.ResponseError(c.Writer, err)
 		return
 	}
-	if err := h.categoryService.CreateCategory(ctx, &cat); err != nil {
-		log.Println(err)
-		dto.ResponseError(c.Writer, http.StatusInternalServerError, "Failed to create category")
-		return
-	}
-	dto.ResponseSuccess(c.Writer, http.StatusCreated, "Category created successfully", cat)
+
+	helpers.ResponseSuccess(c.Writer, http.StatusCreated, "Category created successfully", cat)
 }
 
 func (h *categoryHandler) GetByID(c *gin.Context) {
@@ -49,15 +59,18 @@ func (h *categoryHandler) GetByID(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 
 	if err != nil {
-		dto.ResponseError(c.Writer, http.StatusBadRequest, preference.ErrInvalidCategoryID)
+		helpers.ResponseError(c.Writer, &dto.Error{
+			Code:    http.StatusBadRequest,
+			Message: preference.ErrInvalidCategoryID,
+		})
 		return
 	}
 	category, err := h.categoryService.GetCategoryByID(ctx, id.String())
 	if err != nil {
-		dto.ResponseError(c.Writer, http.StatusInternalServerError, "Failed to fetch category")
+		helpers.ResponseError(c.Writer, err)
 		return
 	}
-	dto.ResponseSuccess(c.Writer, http.StatusOK, "Success", category)
+	helpers.ResponseSuccess(c.Writer, http.StatusOK, "Success", category)
 }
 
 func (h *categoryHandler) Update(c *gin.Context) {
@@ -65,24 +78,28 @@ func (h *categoryHandler) Update(c *gin.Context) {
 
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
-		dto.ResponseError(c.Writer, http.StatusBadRequest, preference.ErrInvalidCategoryID)
+		helpers.ResponseError(c.Writer, &dto.Error{
+			Code:    http.StatusBadRequest,
+			Message: preference.ErrInvalidCategoryID,
+		})
 		return
 	}
-	var cat dto.CategoryDTO
-	if err := json.NewDecoder(c.Request.Body).Decode(&cat); err != nil {
-		dto.ResponseError(c.Writer, http.StatusBadRequest, preference.ErrInvalidReqBody)
+
+	var cat dto.UpdateCategoryRequest
+	if err := c.ShouldBindJSON(&cat); err != nil {
+		helpers.ResponseError(c.Writer, &dto.Error{
+			Code:    http.StatusBadRequest,
+			Message: preference.ErrInvalidReqBody,
+		})
 		return
 	}
-	if err := cat.Validate(); err != nil {
-		dto.ResponseError(c.Writer, http.StatusBadRequest, err.Error())
+
+	if err := h.categoryService.UpdateCategory(ctx, id.String(), &cat); err != nil {
+		helpers.ResponseError(c.Writer, err)
 		return
 	}
-	cat.ID = id.String()
-	if err := h.categoryService.UpdateCategory(ctx, &cat); err != nil {
-		dto.ResponseError(c.Writer, http.StatusInternalServerError, "Failed to update category")
-		return
-	}
-	dto.ResponseSuccess(c.Writer, http.StatusOK, "Category updated successfully", cat)
+
+	helpers.ResponseSuccess(c.Writer, http.StatusOK, "Category updated successfully", cat)
 }
 
 func (h *categoryHandler) Delete(c *gin.Context) {
@@ -91,12 +108,15 @@ func (h *categoryHandler) Delete(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 
 	if err != nil {
-		dto.ResponseError(c.Writer, http.StatusBadRequest, preference.ErrInvalidCategoryID)
+		helpers.ResponseError(c.Writer, &dto.Error{
+			Code:    http.StatusBadRequest,
+			Message: preference.ErrInvalidCategoryID,
+		})
 		return
 	}
 	if err := h.categoryService.DeleteCategory(ctx, id.String()); err != nil {
-		dto.ResponseError(c.Writer, http.StatusInternalServerError, "Failed to delete category")
+		helpers.ResponseError(c.Writer, err)
 		return
 	}
-	dto.ResponseSuccess(c.Writer, http.StatusOK, "Category deleted successfully", nil)
+	helpers.ResponseSuccess(c.Writer, http.StatusOK, "Category deleted successfully", nil)
 }

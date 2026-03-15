@@ -2,43 +2,133 @@ package product
 
 import (
 	"context"
+	"math"
+	"net/http"
 
 	"ne-project/src/internal/models/dto"
 	"ne-project/src/internal/models/entity"
+	"ne-project/src/internal/preference"
+
+	"github.com/shopspring/decimal"
 )
 
-func (s *productService) GetAllProducts(ctx context.Context, req dto.ProductFilterRequest) ([]dto.ProductResponse, error) {
-	if req.Limit > 100 {
-		req.Limit = 100
-	}
-
-	if req.Page < 1 {
+func (s *productService) GetAllProducts(ctx context.Context, req *dto.GetProductsQuery) (*dto.ProductListResponse, error) {
+	if req.Page == 0 {
 		req.Page = 1
 	}
-	return s.productRepository.GetAll(ctx, req)
+
+	if req.Limit == 0 {
+		req.Limit = 10
+	}
+
+	products, total, err := s.productRepository.GetAll(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	res := make([]entity.ProductWithCategory, 0, len(products))
+
+	for _, p := range products {
+		resProduct := entity.ProductWithCategory{
+			Product: entity.Product{
+				ID:        p.ID,
+				Name:      p.Name,
+				Price:     p.Price,
+				Stock:     p.Stock,
+				CreatedAt: p.CreatedAt,
+				UpdatedAt: p.UpdatedAt,
+			},
+			CategoryName: p.CategoryName,
+		}
+
+		res = append(res, resProduct)
+	}
+
+	totalPages := int(math.Ceil(float64(total) / float64(req.Limit)))
+
+	resp := &dto.ProductListResponse{
+		Data: res,
+		Meta: dto.PaginationMeta{
+			Total:      total,
+			Page:       req.Page,
+			Limit:      req.Limit,
+			TotalPages: totalPages,
+		},
+	}
+
+	return resp, nil
 }
 
-func (s *productService) CreateProduct(ctx context.Context, product *dto.ProductDTO) error {
-	return s.productRepository.Create(ctx, product.ToModelPtr())
+func (s *productService) CreateProduct(ctx context.Context, product *dto.CreateProductRequest) (*entity.Product, error) {
+
+	p := entity.Product{
+		Name:       product.Name,
+		Price:      decimal.NewFromFloat(product.Price),
+		Stock:      product.Stock,
+		CategoryID: product.CategoryID,
+	}
+	if err := s.productRepository.Create(ctx, &p); err != nil {
+		return nil, err
+	}
+
+	return &p, nil
 }
 
 func (s *productService) GetProductByID(ctx context.Context, id string) (*dto.ProductResponse, error) {
-	return s.productRepository.GetByID(ctx, id)
+	product, CategoryName, err := s.productRepository.GetByID(ctx, id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &dto.ProductResponse{
+		ID:           product.ID,
+		Name:         product.Name,
+		Price:        product.Price,
+		Stock:        product.Stock,
+		CategoryID:   product.CategoryID,
+		CategoryName: CategoryName,
+		CreatedAt:    product.CreatedAt,
+		UpdatedAt:    product.UpdatedAt,
+	}, nil
+
 }
 
-func (s *productService) UpdateProduct(ctx context.Context, product *dto.ProductDTO) error {
-	return s.productRepository.Update(ctx, product.ToModelPtr())
+func (s *productService) UpdateProduct(ctx context.Context, id string, product *dto.UpdateProductRequest) (*entity.Product, error) {
+	existingProduct, _, err := s.productRepository.GetByID(ctx, id)
+
+	if err != nil {
+		return nil, &dto.Error{
+			Code:    http.StatusNotFound,
+			Message: preference.ErrInvalidProductID,
+		}
+	}
+
+	if product.Name != "" {
+		existingProduct.Name = product.Name
+	}
+
+	if decimal.NewFromFloat(product.Price).Equal(decimal.NewFromInt(existingProduct.Price.IntPart())) {
+		existingProduct.Price = decimal.NewFromFloat(product.Price)
+	}
+
+	if product.Stock > 0 {
+		existingProduct.Stock = product.Stock
+	}
+
+	if err := s.productRepository.Update(ctx, id, existingProduct); err != nil {
+		return existingProduct, err
+	}
+	updatedProduct, _, err := s.productRepository.GetByID(ctx, id)
+
+	return updatedProduct, err
 }
 
 func (s *productService) DeleteProduct(ctx context.Context, id string) error {
 	return s.productRepository.Delete(ctx, id)
 }
 
-func (s *productService) CreateMultipleProducts(ctx context.Context, products []dto.ProductDTO) ([]dto.ProductDTO, error) {
-	models := make([]entity.Product, len(products))
-	for i, p := range products {
-		models[i] = *p.ToModelPtr()
-	}
+func (s *productService) CreateMultipleProducts(ctx context.Context, products []entity.Product) ([]entity.Product, error) {
 
-	return s.productRepository.CreateMultiple(ctx, models)
+	return s.productRepository.CreateMultiple(ctx, products)
 }

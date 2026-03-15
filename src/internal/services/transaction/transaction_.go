@@ -8,7 +8,7 @@ import (
 
 func (s *transactionService) GetToday(
 	ctx context.Context,
-) (*dto.TodaySummaryResponse, error) {
+) (*dto.TransactionListResponse, error) {
 
 	return s.transactionRepository.GetToday(ctx)
 }

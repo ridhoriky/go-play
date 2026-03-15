@@ -9,37 +9,37 @@ import (
 
 func (r *TransactionRepository) GetToday(
 	ctx context.Context,
-) (*dto.TodaySummaryResponse, error) {
+) (*dto.TransactionListResponse, error) {
 
-	var summary dto.TodaySummaryResponse
+	var trx dto.TransactionListResponse
 
 	err := r.db.QueryRowContext(ctx, querySummary).
-		Scan(&summary.TotalRevenue, &summary.TotalTransactions)
+		Scan(&trx.Data)
 
 	if err != nil {
 		return nil, err
 	}
 
-	var best dto.BestSellingProduct
+	// var best dto.BestSellingProduct
 
-	err = r.db.QueryRowContext(ctx, queryBestProduct).
-		Scan(&best.Name, &best.QuantitySold)
+	// err = r.db.QueryRowContext(ctx, queryBestProduct).
+	// 	Scan(&best.Name, &best.QuantitySold)
 
 	if err == sql.ErrNoRows {
 
-		summary.BestSelling = dto.BestSellingProduct{
-			Name:         "-",
-			QuantitySold: 0,
-		}
+		// summary.BestSelling = dto.BestSellingProduct{
+		// 	Name:         "-",
+		// 	QuantitySold: 0,
+		// }
 
-		return &summary, nil
+		return &trx, nil
 	}
 
-	if err != nil {
-		return nil, err
-	}
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	summary.BestSelling = best
+	// summary.BestSelling = best
 
-	return &summary, nil
+	return &trx, nil
 }

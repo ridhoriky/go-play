@@ -5,57 +5,120 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"net/http"
 	"strings"
 
 	"ne-project/src/internal/models/dto"
 	"ne-project/src/internal/models/entity"
+	"ne-project/src/internal/preference"
 )
 
-func (repo *ProductRepository) GetAll(ctx context.Context, req dto.ProductFilterRequest) ([]dto.ProductResponse, error) {
-	query := getAllProductsQuery
+func (repo *ProductRepository) GetAll(ctx context.Context, filter *dto.GetProductsQuery) ([]entity.ProductWithCategory, int, error) {
+	filterQuery, args := buildProductFilters(filter)
 
-	args := []any{}
-	i := 1
+	dataQuery := getAllProductsQuery + filterQuery
 
-	if req.Name != "" {
-		query += fmt.Sprintf(" AND p.name ILIKE $%d", i)
-		args = append(args, "%"+req.Name+"%")
-		i++
+	// sorting
+	sortBy := "p.created_at"
+	if filter.SortBy != "" {
+		sortBy = "p." + filter.SortBy
 	}
 
-	if req.Category != "" {
-		query += fmt.Sprintf(" AND c.name ILIKE $%d", i)
-		args = append(args, "%"+req.Category+"%")
-		i++
+	sortDir := "DESC"
+	if filter.SortDir != "" {
+		sortDir = filter.SortDir
 	}
-	query += " ORDER BY p.id"
 
-	query += fmt.Sprintf(" LIMIT $%d OFFSET $%d", i, i+1)
-	args = append(args, req.Limit, (req.Page-1)*req.Limit)
+	dataQuery += fmt.Sprintf(" ORDER BY %s %s", sortBy, sortDir)
 
-	rows, err := repo.db.QueryContext(ctx, query, args...)
+	dataQuery += fmt.Sprintf(" LIMIT $%d OFFSET $%d", len(args)+1, len(args)+2)
+
+	offset := (filter.Page - 1) * filter.Limit
+
+	argsData := append(args, filter.Limit, offset)
+
+	rows, err := repo.db.QueryContext(ctx, dataQuery, argsData...)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	defer rows.Close()
 
-	products := make([]dto.ProductResponse, 0)
+	products := []entity.ProductWithCategory{}
 
 	for rows.Next() {
-		var p dto.ProductResponse
-		err := rows.Scan(&p.ID, &p.Name, &p.Price, &p.Stock, &p.CategoryID, &p.CategoryName, &p.CategoryDescription)
+
+		var p entity.ProductWithCategory
+		var categoryName string
+
+		err := rows.Scan(
+			&p.ID,
+			&p.Name,
+			&p.Price,
+			&p.Stock,
+			&p.CategoryID,
+			&categoryName,
+		)
+
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
+
 		products = append(products, p)
 	}
 
-	if err := rows.Err(); err != nil {
-		return nil, err
+	countQuery := countProductsQuery + filterQuery
+
+	var total int
+
+	err = repo.db.QueryRowContext(ctx, countQuery, args...).Scan(&total)
+	if err != nil {
+		return nil, 0, err
 	}
 
-	return products, nil
+	return products, total, nil
+}
+
+func buildProductFilters(filter *dto.GetProductsQuery) (string, []interface{}) {
+
+	query := ""
+	args := []interface{}{}
+	argPos := 1
+
+	// search
+	if filter.Search != "" {
+		query += fmt.Sprintf(" AND p.name ILIKE $%d", argPos)
+		args = append(args, "%"+filter.Search+"%")
+		argPos++
+	}
+
+	// category
+	if filter.CategoryID != "" {
+		query += fmt.Sprintf(" AND p.category_id = $%d", argPos)
+		args = append(args, filter.CategoryID)
+		argPos++
+	}
+
+	// min price
+	if !filter.MinPrice.IsZero() {
+		query += fmt.Sprintf(" AND p.price >= $%d", argPos)
+		args = append(args, filter.MinPrice)
+		argPos++
+	}
+
+	// max price
+	if !filter.MaxPrice.IsZero() {
+		query += fmt.Sprintf(" AND p.price <= $%d", argPos)
+		args = append(args, filter.MaxPrice)
+		argPos++
+	}
+
+	// stock filter
+	if filter.InStock {
+		query += " AND p.stock > 0"
+	}
+
+	return query, args
 }
 
 func (repo *ProductRepository) Create(ctx context.Context, product *entity.Product) error {
@@ -65,9 +128,9 @@ func (repo *ProductRepository) Create(ctx context.Context, product *entity.Produ
 	return err
 }
 
-func (repo *ProductRepository) Update(ctx context.Context, product *entity.Product) error {
+func (repo *ProductRepository) Update(ctx context.Context, id string, product *entity.Product) error {
 	query := updateProductQuery
-	result, err := repo.db.ExecContext(ctx, query, product.Name, product.Price, product.Stock, product.CategoryID, product.ID)
+	result, err := repo.db.ExecContext(ctx, query, product.Name, product.Price, product.Stock, product.CategoryID, id)
 	if err != nil {
 		return err
 	}
@@ -78,7 +141,10 @@ func (repo *ProductRepository) Update(ctx context.Context, product *entity.Produ
 	}
 
 	if rows == 0 {
-		return errors.New("Product not found")
+		return &dto.Error{
+			Code:    http.StatusNotFound,
+			Message: preference.ErrProductNotFound,
+		}
 	}
 
 	return nil
@@ -96,16 +162,20 @@ func (repo *ProductRepository) Delete(ctx context.Context, id string) error {
 	}
 
 	if rows == 0 {
-		return errors.New(`Product + MESSAGE_404`)
+		return &dto.Error{
+			Code:    http.StatusNotFound,
+			Message: preference.ErrProductNotFound,
+		}
 	}
 
 	return err
 }
 
-func (repo *ProductRepository) GetByID(ctx context.Context, id string) (*dto.ProductResponse, error) {
+func (repo *ProductRepository) GetByID(ctx context.Context, id string) (*entity.Product, string, error) {
 	query := getProductByIDQuery
 
-	var p dto.ProductResponse
+	var p entity.Product
+	categoryName := ""
 
 	err := repo.db.
 		QueryRowContext(ctx, query, id).
@@ -115,38 +185,44 @@ func (repo *ProductRepository) GetByID(ctx context.Context, id string) (*dto.Pro
 			&p.Price,
 			&p.Stock,
 			&p.CategoryID,
-			&p.CategoryName,
-			&p.CategoryDescription,
+			&categoryName,
 		)
 
-	if err == sql.ErrNoRows {
-		return nil, errors.New("Product not found")
-	}
-	if err != nil {
-		return nil, err
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, categoryName, &dto.Error{
+			Code:    http.StatusNotFound,
+			Message: preference.ErrProductNotFound,
+		}
 	}
 
-	return &p, nil
+	if err != nil {
+		return nil, categoryName, err
+	}
+
+	return &p, categoryName, nil
 }
 
 func (repo *ProductRepository) CreateMultiple(
 	ctx context.Context,
 	products []entity.Product,
-) ([]dto.ProductDTO, error) {
+) ([]entity.Product, error) {
 
 	if len(products) == 0 {
-		return nil, errors.New("empty products")
+		return nil, &dto.Error{
+			Code:    http.StatusInternalServerError,
+			Message: preference.ErrProductEmpty,
+		}
 	}
+	var err error
 
 	tx, err := repo.db.BeginTxx(ctx, nil)
+
 	if err != nil {
 		return nil, err
 	}
 
-	committed := false
-
 	defer func() {
-		if !committed {
+		if err != nil {
 			_ = tx.Rollback()
 		}
 	}()
@@ -201,11 +277,11 @@ func (repo *ProductRepository) CreateMultiple(
 	}
 	defer rows.Close()
 
-	var responses []dto.ProductDTO
+	var responses []entity.Product
 
 	for rows.Next() {
 
-		var resp dto.ProductDTO
+		var resp entity.Product
 
 		if err := rows.StructScan(&resp); err != nil {
 			return nil, err
@@ -221,8 +297,6 @@ func (repo *ProductRepository) CreateMultiple(
 	if err := tx.Commit(); err != nil {
 		return nil, err
 	}
-
-	committed = true
 
 	return responses, nil
 }

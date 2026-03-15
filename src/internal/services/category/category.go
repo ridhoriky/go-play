@@ -9,10 +9,10 @@ import (
 )
 
 type CategoryServiceItf interface {
-	GetAllCategories(ctx context.Context) ([]entity.Category, error)
+	GetAllCategories(ctx context.Context, query *dto.GetCategoriesQuery) (*dto.CategoryListResponse, error)
 	GetCategoryByID(ctx context.Context, id string) (*entity.Category, error)
-	CreateCategory(ctx context.Context, category *dto.CategoryDTO) error
-	UpdateCategory(ctx context.Context, category *dto.CategoryDTO) error
+	CreateCategory(ctx context.Context, category *dto.CreateCategoryRequest) (*entity.Category, error)
+	UpdateCategory(ctx context.Context, id string, category *dto.UpdateCategoryRequest) error
 	DeleteCategory(ctx context.Context, id string) error
 }
 

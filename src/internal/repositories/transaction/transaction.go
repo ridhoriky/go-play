@@ -8,7 +8,7 @@ import (
 )
 
 type TransactionRepositoryItf interface {
-	GetToday(ctx context.Context) (*dto.TodaySummaryResponse, error)
+	GetToday(ctx context.Context) (*dto.TransactionListResponse, error)
 }
 type TransactionRepository struct {
 	db *sqlx.DB

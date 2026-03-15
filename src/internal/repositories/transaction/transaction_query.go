@@ -45,16 +45,16 @@ const (
 	WHERE DATE(created_at) = CURRENT_DATE
 	`
 
-	queryBestProduct = `
-	SELECT
-		p.name,
-		SUM(td.quantity) AS total_qty
-	FROM transaction_details td
-	JOIN transactions t ON t.id = td.transaction_id
-	JOIN products p ON p.id = td.product_id
-	WHERE DATE(t.created_at) = CURRENT_DATE
-	GROUP BY p.name
-	ORDER BY total_qty DESC
-	LIMIT 1
-	`
+	// queryBestProduct = `
+	// SELECT
+	// 	p.name,
+	// 	SUM(td.quantity) AS total_qty
+	// FROM transaction_details td
+	// JOIN transactions t ON t.id = td.transaction_id
+	// JOIN products p ON p.id = td.product_id
+	// WHERE DATE(t.created_at) = CURRENT_DATE
+	// GROUP BY p.name
+	// ORDER BY total_qty DESC
+	// LIMIT 1
+	// `
 )
