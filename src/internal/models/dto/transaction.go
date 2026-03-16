@@ -59,3 +59,10 @@ type TransactionListResponse struct {
 	Data []TransactionResponse `json:"data"`
 	Meta PaginationMeta        `json:"meta"`
 }
+
+type ProductSnapshot struct {
+	ID    string
+	Name  string
+	Price float64
+	Stock int
+}

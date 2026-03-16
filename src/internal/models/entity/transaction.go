@@ -32,6 +32,6 @@ type TransactionDetail struct {
 }
 
 type TransactionWithDetails struct {
-	Transaction
+	*Transaction
 	Items []TransactionDetail `json:"items"`
 }

@@ -3,12 +3,13 @@ package transaction
 import (
 	"context"
 	"ne-project/src/internal/models/dto"
+	"ne-project/src/internal/models/entity"
 
 	"github.com/jmoiron/sqlx"
 )
 
 type TransactionRepositoryItf interface {
-	GetToday(ctx context.Context) (*dto.TransactionListResponse, error)
+	Checkout(ctx context.Context, req *dto.CreateTransactionRequest) (*entity.TransactionWithDetails, error)
 }
 type TransactionRepository struct {
 	db *sqlx.DB

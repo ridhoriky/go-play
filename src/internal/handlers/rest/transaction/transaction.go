@@ -23,6 +23,6 @@ func NewTransactionHandler(transactionService transaction.TransactionServiceItf)
 func (h *transactionHandler) RegisterRoutes(r *gin.Engine) {
 	transactionRoutes := r.Group("/transactions")
 	{
-		transactionRoutes.GET("/today", h.GetToday)
+		transactionRoutes.POST("/", h.Checkout)
 	}
 }

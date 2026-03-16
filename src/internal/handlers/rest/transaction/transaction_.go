@@ -10,26 +10,25 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (h *transactionHandler) GetToday(c *gin.Context) {
+func (h *transactionHandler) Checkout(c *gin.Context) {
 
 	ctx := c.Request.Context()
 
-	result, err := h.transactionService.GetToday(ctx)
-	if err != nil {
-		helpers.ResponseError(
-			c.Writer,
-			&dto.Error{
-				Code:    http.StatusBadRequest,
-				Message: preference.ErrNoProductCreated,
-			},
-		)
+	var req dto.CreateTransactionRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		helpers.ResponseError(c.Writer, &dto.Error{
+			Code:    http.StatusBadRequest,
+			Message: preference.ErrInvalidReqBody,
+		})
 		return
 	}
 
-	helpers.ResponseSuccess(
-		c.Writer,
-		http.StatusOK,
-		"success",
-		result,
-	)
+	result, err := h.transactionService.Checkout(ctx, &req)
+	if err != nil {
+		helpers.ResponseError(c.Writer, err)
+		return
+	}
+
+	helpers.ResponseSuccess(c.Writer, http.StatusOK, "Checkout successfully", result)
+
 }

@@ -8,7 +8,7 @@ import (
 )
 
 type TransactionServiceItf interface {
-	GetToday(ctx context.Context) (*dto.TransactionListResponse, error)
+	Checkout(ctx context.Context, req *dto.CreateTransactionRequest) (*dto.TransactionDetailResponse, error)
 }
 
 type transactionService struct {
