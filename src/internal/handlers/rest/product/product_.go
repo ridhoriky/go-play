@@ -1,7 +1,6 @@
 package product
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"ne-project/src/internal/handlers/helpers"
@@ -11,8 +10,28 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
+// GetProducts godoc
+// @Summary      List Product
+// @Description  Get list of products
+// @Tags         products
+// @Accept       json
+// @Produce      json
+// @Param        search       		query   	string  false  "Filter by product name"
+// @Param        category_id  		query   	string  false  "Filter by category ID (UUID)"
+// @Param        min_price    		query   	number  false  "Minimum product price"
+// @Param        max_price    		query   	number  false  "Maximum product price"
+// @Param        in_stock     		query   	bool    false  "Filter products that have stock"
+// @Param		 page				query		int		false	"Page number"	default(1)
+// @Param		 limit				query		int		false	"Page size"		default(10)
+// @Param		 sort_by			query		string	false	"Sort by field"
+// @Param		 sort_dir			query		string	false	"Sort direction (asc/desc)"	default(asc)
+// @Success      200  {object}  	dto.APIResponse{data=[]entity.ProductWithCategory}
+// @Failure      400  {object} 		dto.APIResponse
+// @Failure      404  {object}  	dto.APIResponse
+// @Router       /products [get]
 func (h *productHandler) GetAll(c *gin.Context) {
 	ctx := c.Request.Context()
 
@@ -32,6 +51,17 @@ func (h *productHandler) GetAll(c *gin.Context) {
 	helpers.ResponseSuccess(c.Writer, http.StatusOK, "Success", products)
 }
 
+// CreateProduct godoc
+// @Summary      Create Single product
+// @Description  Create a product
+// @Tags         products
+// @Accept       json
+// @Produce      json
+// @Param		 product	body		dto.CreateProductRequest		true	"Product data"
+// @Success      201		{object}  	dto.APIResponse{data=entity.Product}
+// @Failure      400  		{object} 	dto.APIResponse
+// @Failure      404  		{object}  	dto.APIResponse
+// @Router       /products [post]
 func (h *productHandler) Create(c *gin.Context) {
 	ctx := c.Request.Context()
 	var p dto.CreateProductRequest
@@ -51,6 +81,16 @@ func (h *productHandler) Create(c *gin.Context) {
 	helpers.ResponseSuccess(c.Writer, http.StatusCreated, "Product created successfully", p)
 }
 
+// GetProductByID godoc
+// @Summary      Get Single product
+// @Description  Get data product by id
+// @Tags         products
+// @Produce      json
+// @Param 		 id   path 		string true "Product ID (UUID)" format(uuid)
+// @Success      200  {object}  dto.APIResponse{data=entity.Product}
+// @Failure      400  {object} 	dto.APIResponse
+// @Failure      404  {object}  dto.APIResponse
+// @Router       /products/{id} [get]
 func (h *productHandler) GetByID(c *gin.Context) {
 	ctx := c.Request.Context()
 
@@ -71,6 +111,18 @@ func (h *productHandler) GetByID(c *gin.Context) {
 	helpers.ResponseSuccess(c.Writer, http.StatusOK, "Success", product)
 }
 
+// UpdateProduct godoc
+// @Summary      Update Product
+// @Description  Update a product by their id
+// @Tags         products
+// @Accept       json
+// @Produce      json
+// @Param 		 id 	  path 	string true "Product ID (UUID)" format(uuid)
+// @Param 		 product  body 	dto.UpdateProductRequest true "Product data"
+// @Success      200  {object}  dto.APIResponse{data=entity.Product}
+// @Failure      400  {object} 	dto.APIResponse
+// @Failure      404  {object}  dto.APIResponse
+// @Router       /products/{id} [put]
 func (h *productHandler) Update(c *gin.Context) {
 	ctx := c.Request.Context()
 
@@ -101,6 +153,17 @@ func (h *productHandler) Update(c *gin.Context) {
 	helpers.ResponseSuccess(c.Writer, http.StatusOK, "Product updated successfully", product)
 }
 
+// DeleteProduct godoc
+// @Summary Delete Product
+// @Description  Delete a product by their id
+// @Tags         products
+// @Accept       json
+// @Produce      json
+// @Param 		 id   path 	string true "Product ID (UUID)" format(uuid)
+// @Success      200  {object}  dto.APIResponse
+// @Failure      400  {object} 	dto.APIResponse
+// @Failure      404  {object}  dto.APIResponse
+// @Router       /products/{id} [delete]
 func (h *productHandler) Delete(c *gin.Context) {
 	ctx := c.Request.Context()
 
@@ -120,23 +183,45 @@ func (h *productHandler) Delete(c *gin.Context) {
 	helpers.ResponseSuccess(c.Writer, http.StatusOK, "Product deleted successfully", nil)
 }
 
+// CreateProduct godoc
+// @Summary      Create Multiple product
+// @Description  Create multiple products in a single request
+// @Tags         products
+// @Accept       json
+// @Produce      json
+// @Param 		 product 	body 		dto.CreateMultipleProducts true "Product data"
+// @Success 	 201 		{object} 	dto.APIResponse{data=[]entity.Product}
+// @Failure      400  		{object} 	dto.APIResponse
+// @Failure      404  		{object}  	dto.APIResponse
+// @Router       /products/bulk [post]
 func (h *productHandler) CreateMultiple(c *gin.Context) {
 	ctx := c.Request.Context()
-	var products []entity.Product
-	if err := json.NewDecoder(c.Request.Body).Decode(&products); err != nil {
+	var req dto.CreateMultipleProducts
+	if err := c.ShouldBindJSON(&req); err != nil {
 		helpers.ResponseError(c.Writer, &dto.Error{
 			Code:    http.StatusBadRequest,
 			Message: preference.ErrInvalidReqBody,
 		})
 		return
 	}
-	if len(products) == 0 {
+
+	if len(req.Data) == 0 {
 		helpers.ResponseError(c.Writer, &dto.Error{
 			Code:    http.StatusBadRequest,
 			Message: preference.ErrNoProductCreated,
 		})
 		return
 	}
+
+	var products []entity.Product
+	for _, p := range req.Data {
+		products = append(products, entity.Product{
+			Name:       p.Name,
+			Price:      decimal.NewFromFloat(p.Price),
+			CategoryID: p.CategoryID,
+		})
+	}
+
 	responses, err := h.productService.CreateMultipleProducts(ctx, products)
 	if err != nil {
 		helpers.ResponseError(c.Writer, err)

@@ -48,10 +48,10 @@ type TransactionResponse struct {
 }
 
 type TransactionDetailResponse struct {
-	ID          string                    `json:"id"`
-	TotalAmount float64                   `json:"total_amount"`
-	Status      string                    `json:"status"`
-	CreatedAt   time.Time                 `json:"created_at"`
+	ID          string                    `json:"id" example:"trx-123"`
+	TotalAmount float64                   `json:"total_amount" example:"15000"`
+	Status      string                    `json:"status" example:"paid"`
+	CreatedAt   time.Time                 `json:"created_at" example:"2025-01-01T10:00:00Z"`
 	Items       []TransactionItemResponse `json:"items"`
 }
 

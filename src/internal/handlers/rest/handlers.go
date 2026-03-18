@@ -23,7 +23,7 @@ func NewHandlers(services *services.Services) *Handlers {
 	}
 }
 
-func (h *Handlers) RegisterRoutes(r *gin.Engine) {
+func (h *Handlers) RegisterRoutes(r *gin.RouterGroup) {
 	h.Category.RegisterRoutes(r)
 	h.Product.RegisterRoutes(r)
 	h.Transaction.RegisterRoutes(r)

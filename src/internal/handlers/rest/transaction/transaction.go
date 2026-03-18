@@ -7,7 +7,7 @@ import (
 )
 
 type TransactionHandlerItf interface {
-	RegisterRoutes(r *gin.Engine)
+	RegisterRoutes(r *gin.RouterGroup)
 }
 
 type transactionHandler struct {
@@ -20,7 +20,7 @@ func NewTransactionHandler(transactionService transaction.TransactionServiceItf)
 	}
 }
 
-func (h *transactionHandler) RegisterRoutes(r *gin.Engine) {
+func (h *transactionHandler) RegisterRoutes(r *gin.RouterGroup) {
 	transactionRoutes := r.Group("/transactions")
 	{
 		transactionRoutes.POST("/", h.Checkout)

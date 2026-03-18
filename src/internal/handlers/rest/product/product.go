@@ -7,7 +7,7 @@ import (
 )
 
 type ProductHandlerItf interface {
-	RegisterRoutes(r *gin.Engine)
+	RegisterRoutes(r *gin.RouterGroup)
 }
 
 type productHandler struct {
@@ -20,7 +20,7 @@ func NewProductHandler(productService product.ProductServiceItf) ProductHandlerI
 	}
 }
 
-func (h *productHandler) RegisterRoutes(r *gin.Engine) {
+func (h *productHandler) RegisterRoutes(r *gin.RouterGroup) {
 	productRoutes := r.Group("/products")
 	{
 		productRoutes.GET("", h.GetAll)

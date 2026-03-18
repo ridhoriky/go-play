@@ -12,7 +12,7 @@ type CategoryServiceItf interface {
 	GetAllCategories(ctx context.Context, query *dto.GetCategoriesQuery) (*dto.CategoryListResponse, error)
 	GetCategoryByID(ctx context.Context, id string) (*entity.Category, error)
 	CreateCategory(ctx context.Context, category *dto.CreateCategoryRequest) (*entity.Category, error)
-	UpdateCategory(ctx context.Context, id string, category *dto.UpdateCategoryRequest) error
+	UpdateCategory(ctx context.Context, id string, category *dto.UpdateCategoryRequest) (*entity.Category, error)
 	DeleteCategory(ctx context.Context, id string) error
 }
 

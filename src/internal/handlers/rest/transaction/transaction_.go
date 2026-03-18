@@ -10,6 +10,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// CreateTransaction godoc
+// @Summary      Create Transaction
+// @Description  Create a transaction with multiple items
+// @Tags         transactions
+// @Accept       json
+// @Produce      json
+// @Param 		 transaction 	body 	dto.CreateTransactionRequest true "Transaction data"
+// @Success 	 201 		{object} 	dto.APIResponse{data=dto.TransactionDetailResponse}
+// @Failure      400  		{object} 	dto.APIResponse
+// @Failure      404  		{object}  	dto.APIResponse
+// @Router       /transactions [post]
 func (h *transactionHandler) Checkout(c *gin.Context) {
 
 	ctx := c.Request.Context()

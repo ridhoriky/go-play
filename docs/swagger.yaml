@@ -1,0 +1,688 @@
+basePath: /api/v1
+definitions:
+  ne-project_src_internal_models_dto.APIResponse:
+    properties:
+      data: {}
+      error:
+        type: string
+      message:
+        type: string
+      meta:
+        $ref: '#/definitions/ne-project_src_internal_models_dto.PaginationMeta'
+      status:
+        type: integer
+    type: object
+  ne-project_src_internal_models_dto.CheckoutItem:
+    properties:
+      product_id:
+        type: string
+      quantity:
+        minimum: 1
+        type: integer
+    required:
+    - product_id
+    - quantity
+    type: object
+  ne-project_src_internal_models_dto.CreateCategoryRequest:
+    properties:
+      description:
+        maxLength: 500
+        type: string
+      name:
+        maxLength: 100
+        minLength: 1
+        type: string
+    required:
+    - name
+    type: object
+  ne-project_src_internal_models_dto.CreateMultipleProducts:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.CreateProductRequest'
+        minItems: 1
+        type: array
+    required:
+    - data
+    type: object
+  ne-project_src_internal_models_dto.CreateProductRequest:
+    properties:
+      category_id:
+        type: string
+      name:
+        maxLength: 255
+        minLength: 1
+        type: string
+      price:
+        minimum: 0
+        type: number
+      stock:
+        minimum: 0
+        type: integer
+    required:
+    - category_id
+    - name
+    - price
+    - stock
+    type: object
+  ne-project_src_internal_models_dto.CreateTransactionRequest:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.CheckoutItem'
+        minItems: 1
+        type: array
+    required:
+    - items
+    type: object
+  ne-project_src_internal_models_dto.PaginationMeta:
+    properties:
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  ne-project_src_internal_models_dto.TransactionDetailResponse:
+    properties:
+      created_at:
+        example: "2025-01-01T10:00:00Z"
+        type: string
+      id:
+        example: trx-123
+        type: string
+      items:
+        items:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.TransactionItemResponse'
+        type: array
+      status:
+        example: paid
+        type: string
+      total_amount:
+        example: 15000
+        type: number
+    type: object
+  ne-project_src_internal_models_dto.TransactionItemResponse:
+    properties:
+      id:
+        type: string
+      price:
+        type: number
+      product_id:
+        type: string
+      product_name:
+        type: string
+      quantity:
+        type: integer
+      subtotal:
+        type: number
+    type: object
+  ne-project_src_internal_models_dto.UpdateCategoryRequest:
+    properties:
+      description:
+        maxLength: 500
+        type: string
+      name:
+        maxLength: 100
+        minLength: 1
+        type: string
+    required:
+    - name
+    type: object
+  ne-project_src_internal_models_dto.UpdateProductRequest:
+    properties:
+      category_id:
+        type: string
+      name:
+        maxLength: 255
+        minLength: 1
+        type: string
+      price:
+        minimum: 0
+        type: number
+      stock:
+        minimum: 0
+        type: integer
+    required:
+    - category_id
+    - name
+    - price
+    - stock
+    type: object
+  ne-project_src_internal_models_entity.Category:
+    properties:
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  ne-project_src_internal_models_entity.Product:
+    properties:
+      category_id:
+        type: string
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      price:
+        type: number
+      stock:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  ne-project_src_internal_models_entity.ProductWithCategory:
+    properties:
+      category_id:
+        type: string
+      category_name:
+        type: string
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      price:
+        type: number
+      stock:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: KasirApp, a RESTful API built with Go for a simple cashier system using
+    Gin and PostgreSQL.
+  title: Kasir APP
+  version: "1.0"
+paths:
+  /categories:
+    get:
+      description: Retrieve list of categories with optional filters and pagination
+      parameters:
+      - description: Filter by name
+        in: query
+        name: search
+        type: string
+      - description: Include soft deleted categories
+        in: query
+        name: include_deleted
+        type: boolean
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Sort by field
+        in: query
+        name: sort_by
+        type: string
+      - default: asc
+        description: Sort direction (asc/desc)
+        in: query
+        name: sort_dir
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/ne-project_src_internal_models_entity.Category'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+      summary: List Category
+      tags:
+      - categories
+    post:
+      consumes:
+      - application/json
+      description: Create a category
+      parameters:
+      - description: Category data
+        in: body
+        name: category
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.CreateCategoryRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/ne-project_src_internal_models_entity.Category'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+      summary: Create Single category
+      tags:
+      - categories
+  /categories/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a category by their id
+      parameters:
+      - description: Category ID (UUID)
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+      summary: Delete Category
+      tags:
+      - categories
+    get:
+      description: Get data category by id
+      parameters:
+      - description: Category ID (UUID)
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/ne-project_src_internal_models_entity.Category'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+      summary: Get Single category
+      tags:
+      - categories
+    put:
+      consumes:
+      - application/json
+      description: Update a category by their id
+      parameters:
+      - description: Category ID (UUID)
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Category data
+        in: body
+        name: category
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.UpdateCategoryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/ne-project_src_internal_models_entity.Category'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+      summary: Update Category
+      tags:
+      - categories
+  /products:
+    get:
+      consumes:
+      - application/json
+      description: Get list of products
+      parameters:
+      - description: Filter by product name
+        in: query
+        name: search
+        type: string
+      - description: Filter by category ID (UUID)
+        in: query
+        name: category_id
+        type: string
+      - description: Minimum product price
+        in: query
+        name: min_price
+        type: number
+      - description: Maximum product price
+        in: query
+        name: max_price
+        type: number
+      - description: Filter products that have stock
+        in: query
+        name: in_stock
+        type: boolean
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Sort by field
+        in: query
+        name: sort_by
+        type: string
+      - default: asc
+        description: Sort direction (asc/desc)
+        in: query
+        name: sort_dir
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/ne-project_src_internal_models_entity.ProductWithCategory'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+      summary: List Product
+      tags:
+      - products
+    post:
+      consumes:
+      - application/json
+      description: Create a product
+      parameters:
+      - description: Product data
+        in: body
+        name: product
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.CreateProductRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/ne-project_src_internal_models_entity.Product'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+      summary: Create Single product
+      tags:
+      - products
+  /products/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a product by their id
+      parameters:
+      - description: Product ID (UUID)
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+      summary: Delete Product
+      tags:
+      - products
+    get:
+      description: Get data product by id
+      parameters:
+      - description: Product ID (UUID)
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/ne-project_src_internal_models_entity.Product'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+      summary: Get Single product
+      tags:
+      - products
+    put:
+      consumes:
+      - application/json
+      description: Update a product by their id
+      parameters:
+      - description: Product ID (UUID)
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Product data
+        in: body
+        name: product
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.UpdateProductRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/ne-project_src_internal_models_entity.Product'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+      summary: Update Product
+      tags:
+      - products
+  /products/bulk:
+    post:
+      consumes:
+      - application/json
+      description: Create multiple products in a single request
+      parameters:
+      - description: Product data
+        in: body
+        name: product
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.CreateMultipleProducts'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/ne-project_src_internal_models_entity.Product'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+      summary: Create Multiple product
+      tags:
+      - products
+  /transactions:
+    post:
+      consumes:
+      - application/json
+      description: Create a transaction with multiple items
+      parameters:
+      - description: Transaction data
+        in: body
+        name: transaction
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.CreateTransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/ne-project_src_internal_models_dto.TransactionDetailResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+      summary: Create Transaction
+      tags:
+      - transactions
+swagger: "2.0"

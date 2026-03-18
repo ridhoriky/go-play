@@ -27,6 +27,10 @@ type UpdateProductStockRequest struct {
 	Stock int `json:"stock" binding:"required,min=0"`
 }
 
+type CreateMultipleProducts struct {
+	Data []*CreateProductRequest `json:"data" binding:"required,min=1,dive"`
+}
+
 type GetProductsQuery struct {
 	Page       int             `form:"page"        binding:"omitempty,min=1"`
 	Limit      int             `form:"limit"       binding:"omitempty,min=1,max=100"`

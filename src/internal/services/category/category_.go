@@ -73,21 +73,24 @@ func (s *categoryService) GetCategoryByID(ctx context.Context, id string) (*enti
 	return s.categoryRepository.GetByID(ctx, id)
 }
 
-func (s *categoryService) UpdateCategory(ctx context.Context, id string, req *dto.UpdateCategoryRequest) error {
+func (s *categoryService) UpdateCategory(ctx context.Context, id string, req *dto.UpdateCategoryRequest) (*entity.Category, error) {
 	existingCategory, err := s.categoryRepository.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return &dto.Error{
+			return nil, &dto.Error{
 				Code:    http.StatusBadRequest,
 				Message: preference.ErrInvalidCategoryID,
 			}
 		}
-		return err
+		return nil, err
 	}
 
 	existingCategory.Name = req.Name
 
-	return s.categoryRepository.Update(ctx, id, existingCategory)
+	if err := s.categoryRepository.Update(ctx, id, existingCategory); err != nil {
+		return nil, err
+	}
+	return existingCategory, nil
 }
 
 func (s *categoryService) DeleteCategory(ctx context.Context, id string) error {

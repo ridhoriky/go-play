@@ -7,11 +7,11 @@ import (
 )
 
 type CategoryHandlerItf interface {
-	RegisterRoutes(r *gin.Engine)
+	RegisterRoutes(r *gin.RouterGroup)
 }
 
 type categoryHandler struct {
-	gin             *gin.Engine
+	gin             *gin.RouterGroup
 	categoryService category.CategoryServiceItf
 }
 
@@ -21,7 +21,7 @@ func NewCategoryHandler(categoryService category.CategoryServiceItf) CategoryHan
 	}
 }
 
-func (h *categoryHandler) RegisterRoutes(r *gin.Engine) {
+func (h *categoryHandler) RegisterRoutes(r *gin.RouterGroup) {
 	categoryRoutes := r.Group("/categories")
 	{
 		categoryRoutes.GET("", h.GetAll)
