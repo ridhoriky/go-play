@@ -18,15 +18,21 @@ func (repo *ProductRepository) GetAll(ctx context.Context, filter *dto.GetProduc
 
 	dataQuery := getAllProductsQuery + filterQuery
 
-	// sorting
 	sortBy := "p.created_at"
-	if filter.SortBy != "" {
-		sortBy = "p." + filter.SortBy
+	allowedSortColumns := map[string]string{
+		"name":       "p.name",
+		"price":      "p.price",
+		"stock":      "p.stock",
+		"created_at": "p.created_at",
 	}
 
-	sortDir := "DESC"
-	if filter.SortDir != "" {
-		sortDir = filter.SortDir
+	if val, ok := allowedSortColumns[filter.SortBy]; ok {
+		sortBy = val
+	}
+
+	sortDir := "ASC"
+	if filter.SortDir == "DESC" {
+		sortDir = "DESC"
 	}
 
 	dataQuery += fmt.Sprintf(" ORDER BY %s %s", sortBy, sortDir)

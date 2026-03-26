@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"ne-project/src/internal/models/dto"
 	"ne-project/src/internal/models/entity"
@@ -17,6 +18,10 @@ import (
 func (r *TransactionRepository) Checkout(
 	ctx context.Context, req *dto.CreateTransactionRequest,
 ) (*entity.TransactionWithDetails, error) {
+
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
 	tx, err := r.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
 	if err != nil {
 		return nil, err

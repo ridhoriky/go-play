@@ -16,15 +16,19 @@ func (repo *CategoryRepository) GetAll(ctx context.Context, filter *dto.GetCateg
 	filterQuery, args := buildCategoryFilters(filter)
 	dataQuery := getAllCategoriesQuery + filterQuery
 
-	// sorting
 	sortBy := "c.created_at"
-	if filter.SortBy != "" {
-		sortBy = "c." + filter.SortBy
+	allowedSortColumns := map[string]string{
+		"name":       "c.name",
+		"created_at": "c.created_at",
 	}
 
-	sortDir := "DESC"
-	if filter.SortDir != "" {
-		sortDir = filter.SortDir
+	if val, ok := allowedSortColumns[filter.SortBy]; ok {
+		sortBy = val
+	}
+
+	sortDir := "ASC"
+	if filter.SortDir == "DESC" {
+		sortDir = "DESC"
 	}
 
 	dataQuery += fmt.Sprintf(" ORDER BY %s %s", sortBy, sortDir)

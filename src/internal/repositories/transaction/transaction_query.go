@@ -4,7 +4,7 @@ const (
 	lockProductStockQuery = `
         SELECT stock FROM products
         WHERE id = $1 AND deleted_at IS NULL
-        FOR UPDATE`
+        FOR UPDATE NOWAIT`
 
 	deductStockQuery = `
         UPDATE products
