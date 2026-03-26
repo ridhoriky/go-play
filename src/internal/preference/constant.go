@@ -17,9 +17,7 @@ const (
 	ErrInternalServer      = "INTERNAL_SERVER_ERROR"
 
 	// Error message global
-	ErrInvalidReqBody   = "Invalid request body"
-	ErrInvalidQuantity  = "Quantity must be greater than 0"
-	ErrDuplicateProduct = "Duplicate product ID detected"
+	ErrInvalidReqBody = "Invalid request body"
 
 	// Error message product
 	ErrInvalidProductID     = "Invalid product ID"
