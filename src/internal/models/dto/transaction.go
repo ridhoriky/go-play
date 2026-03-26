@@ -1,6 +1,10 @@
 package dto
 
-import "time"
+import (
+	"time"
+
+	"github.com/shopspring/decimal"
+)
 
 // ─── Request ────────────────────────────────────────────────────────────────
 
@@ -63,6 +67,6 @@ type TransactionListResponse struct {
 type ProductSnapshot struct {
 	ID    string
 	Name  string
-	Price float64
+	Price decimal.Decimal
 	Stock int
 }

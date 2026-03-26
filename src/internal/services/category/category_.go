@@ -78,7 +78,7 @@ func (s *categoryService) UpdateCategory(ctx context.Context, id string, req *dt
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, &dto.Error{
-				Code:    http.StatusBadRequest,
+				Code:    http.StatusNotFound,
 				Message: preference.ErrInvalidCategoryID,
 			}
 		}
@@ -86,6 +86,7 @@ func (s *categoryService) UpdateCategory(ctx context.Context, id string, req *dt
 	}
 
 	existingCategory.Name = req.Name
+	existingCategory.Description = req.Description
 
 	if err := s.categoryRepository.Update(ctx, id, existingCategory); err != nil {
 		return nil, err

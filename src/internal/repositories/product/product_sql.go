@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"ne-project/src/internal/models/dto"
 	"ne-project/src/internal/models/entity"
@@ -219,6 +220,9 @@ func (repo *ProductRepository) CreateMultiple(
 			Message: preference.ErrProductEmpty,
 		}
 	}
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
 	var err error
 
 	tx, err := repo.db.BeginTxx(ctx, nil)

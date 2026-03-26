@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"ne-project/src/internal/models/dto"
@@ -22,7 +23,7 @@ func (r *TransactionRepository) Checkout(
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
-	tx, err := r.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
+	tx, err := r.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelRepeatableRead})
 	if err != nil {
 		return nil, err
 	}
@@ -52,17 +53,17 @@ func (r *TransactionRepository) Checkout(
 // processItem
 func (r *TransactionRepository) processItems(
 	ctx context.Context, tx *sql.Tx, items []dto.CheckoutItem,
-) ([]entity.TransactionDetail, float64, error) {
-	var totalAmount float64
-	var details []entity.TransactionDetail
+) ([]entity.TransactionDetail, decimal.Decimal, error) {
+	totalAmount := decimal.NewFromInt(0)
+	details := make([]entity.TransactionDetail, 0, len(items))
 
 	for _, item := range items {
 		detail, err := r.processSingleItem(ctx, tx, item)
 		if err != nil {
-			return nil, 0, err
+			return nil, decimal.Zero, err
 		}
-		totalAmount += detail.Subtotal.InexactFloat64()
-		details = append(details, *detail)
+		totalAmount = totalAmount.Add(detail.Subtotal)
+		details = append(details, detail)
 	}
 
 	return details, totalAmount, nil
@@ -71,18 +72,25 @@ func (r *TransactionRepository) processItems(
 // processSingleItem
 func (r *TransactionRepository) processSingleItem(
 	ctx context.Context, tx *sql.Tx, item dto.CheckoutItem,
-) (*entity.TransactionDetail, error) {
+) (entity.TransactionDetail, error) {
 	product, err := r.fetchProduct(ctx, tx, item.ProductID)
 	if err != nil {
-		return nil, err
+		return entity.TransactionDetail{}, err
 	}
 
 	if err = r.lockAndValidateStock(ctx, tx, product.Name, item); err != nil {
-		return nil, err
+		return entity.TransactionDetail{}, err
+	}
+
+	if item.Quantity <= 0 {
+		return entity.TransactionDetail{}, &dto.Error{
+			Code:    http.StatusBadRequest,
+			Message: fmt.Sprintf("Quantity for product with id '%s' must be greater than zero", item.ProductID),
+		}
 	}
 
 	if _, err = tx.ExecContext(ctx, deductStockQuery, item.Quantity, item.ProductID); err != nil {
-		return nil, err
+		return entity.TransactionDetail{}, err
 	}
 
 	return buildTransactionDetail(product, item), nil
@@ -130,14 +138,14 @@ func (r *TransactionRepository) lockAndValidateStock(
 
 // insertTransaction
 func (r *TransactionRepository) insertTransaction(
-	ctx context.Context, tx *sql.Tx, totalAmount float64,
-) (*entity.Transaction, error) {
-	trx := &entity.Transaction{}
+	ctx context.Context, tx *sql.Tx, totalAmount decimal.Decimal,
+) (entity.Transaction, error) {
+	trx := entity.Transaction{}
 	err := tx.QueryRowContext(ctx, insertTransactionQuery,
 		uuid.New().String(), totalAmount, entity.TransactionStatusPaid,
 	).Scan(&trx.ID, &trx.TotalAmount, &trx.Status, &trx.CreatedAt)
 	if err != nil {
-		return nil, err
+		return entity.Transaction{}, err
 	}
 	return trx, nil
 }
@@ -146,33 +154,43 @@ func (r *TransactionRepository) insertTransaction(
 func (r *TransactionRepository) insertTransactionDetails(
 	ctx context.Context, tx *sql.Tx, transactionID string, details []entity.TransactionDetail,
 ) error {
-	for i := range details {
-		details[i].TransactionID = transactionID
-		_, err := tx.ExecContext(ctx, insertTransactionDetailQuery,
-			details[i].ID,
-			details[i].TransactionID,
-			details[i].ProductID,
-			details[i].ProductName,
-			details[i].Quantity,
-			details[i].Price,
-			details[i].Subtotal,
+
+	const fieldPerRow = 7
+	placeholders := make([]string, len(details))
+	args := make([]any, 0, len(details)*fieldPerRow)
+
+	for i, detail := range details {
+		base := i * fieldPerRow
+		placeholders[i] = fmt.Sprintf("($%d, $%d, $%d, $%d, $%d,$%d, $%d)",
+			base+1, base+2, base+3, base+4, base+5, base+6, base+7,
 		)
-		if err != nil {
-			return err
-		}
+
+		detail.TransactionID = transactionID
+
+		args = append(args,
+			detail.ID,
+			detail.TransactionID,
+			detail.ProductID,
+			detail.ProductName,
+			detail.Quantity,
+			detail.Price,
+			detail.Subtotal,
+		)
 	}
-	return nil
+	query := insertTransactionDetailQuery + strings.Join(placeholders, ",")
+	_, err := tx.ExecContext(ctx, query, args...)
+	return err
 }
 
 // buildTransactionDetail
-func buildTransactionDetail(p *dto.ProductSnapshot, item dto.CheckoutItem) *entity.TransactionDetail {
-	subtotal := p.Price * float64(item.Quantity)
-	return &entity.TransactionDetail{
+func buildTransactionDetail(p *dto.ProductSnapshot, item dto.CheckoutItem) entity.TransactionDetail {
+	subtotal := p.Price.Mul(decimal.NewFromInt(int64(item.Quantity)))
+	return entity.TransactionDetail{
 		ID:          uuid.New().String(),
 		ProductID:   p.ID,
 		ProductName: p.Name,
 		Quantity:    item.Quantity,
-		Price:       decimal.NewFromFloat(p.Price),
-		Subtotal:    decimal.NewFromFloat(subtotal),
+		Price:       p.Price,
+		Subtotal:    subtotal,
 	}
 }

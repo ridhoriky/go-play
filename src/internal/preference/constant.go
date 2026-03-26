@@ -27,6 +27,9 @@ const (
 	ErrProductAlreadyExists = "Product name already exists"
 	ErrProductEmpty         = "Empty Product to add"
 	ErrProductNotFound      = "Product not found"
+	ErrProductPriceNegative = "Price cannot be negative"
+	ErrProductStockNegative = "Stock cannot be negative"
+	ErrProductNameRequied   = "Product name is required"
 
 	// Error message category
 	ErrInvalidCategoryID     = "Invalid category ID"

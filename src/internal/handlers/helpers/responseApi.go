@@ -3,6 +3,7 @@ package helpers
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"ne-project/src/internal/models/dto"
 	"ne-project/src/internal/preference"
 	"net/http"
@@ -77,7 +78,13 @@ func ResponseSuccess(w http.ResponseWriter, status int, message string, data int
 		Data:    data,
 	}
 
-	_ = json.NewEncoder(w).Encode(resp)
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		// log error
+		log.Printf("Failed to encode JSON response (success): %v", err)
+
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
 }
 
 func ResponseError(w http.ResponseWriter, err error) {
@@ -96,5 +103,11 @@ func ResponseError(w http.ResponseWriter, err error) {
 		Error:   preference.ErrorCodeByHTTPStatus[appErr.Code],
 	}
 
-	_ = json.NewEncoder(w).Encode(resp)
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		// log error
+		log.Printf("Failed to encode JSON response (error): %v", err)
+
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
 }

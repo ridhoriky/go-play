@@ -17,8 +17,9 @@ const (
         RETURNING id, total_amount, status, created_at`
 
 	insertTransactionDetailQuery = `
-        INSERT INTO transaction_details (id, transaction_id, product_id, product_name, quantity, price, subtotal)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)`
+        INSERT INTO transaction_details 
+                (id, transaction_id, product_id, product_name, quantity, price, subtotal)
+        VALUES `
 
 	getProductForCheckoutQuery = `
         SELECT id, name, price, stock FROM products

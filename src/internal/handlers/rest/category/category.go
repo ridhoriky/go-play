@@ -11,7 +11,6 @@ type CategoryHandlerItf interface {
 }
 
 type categoryHandler struct {
-	gin             *gin.RouterGroup
 	categoryService category.CategoryServiceItf
 }
 

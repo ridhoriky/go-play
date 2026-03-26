@@ -61,6 +61,27 @@ func (s *productService) GetAllProducts(ctx context.Context, req *dto.GetProduct
 
 func (s *productService) CreateProduct(ctx context.Context, product *dto.CreateProductRequest) (*entity.Product, error) {
 
+	if product.Price < 0 {
+		return nil, &dto.Error{
+			Code:    http.StatusBadRequest,
+			Message: preference.ErrProductPriceNegative,
+		}
+	}
+
+	if product.Stock < 0 {
+		return nil, &dto.Error{
+			Code:    http.StatusBadRequest,
+			Message: preference.ErrProductStockNegative,
+		}
+	}
+
+	if product.Name == "" {
+		return nil, &dto.Error{
+			Code:    http.StatusBadRequest,
+			Message: preference.ErrProductNameRequied,
+		}
+	}
+
 	p := entity.Product{
 		Name:       product.Name,
 		Price:      decimal.NewFromFloat(product.Price),
@@ -94,7 +115,7 @@ func (s *productService) GetProductByID(ctx context.Context, id string) (*dto.Pr
 
 }
 
-func (s *productService) UpdateProduct(ctx context.Context, id string, product *dto.UpdateProductRequest) (*entity.Product, error) {
+func (s *productService) UpdateProduct(ctx context.Context, id string, req *dto.UpdateProductRequest) (*entity.Product, error) {
 	existingProduct, _, err := s.productRepository.GetByID(ctx, id)
 
 	if err != nil {
@@ -104,24 +125,16 @@ func (s *productService) UpdateProduct(ctx context.Context, id string, product *
 		}
 	}
 
-	if product.Name != "" {
-		existingProduct.Name = product.Name
-	}
-
-	if decimal.NewFromFloat(product.Price).Equal(decimal.NewFromInt(existingProduct.Price.IntPart())) {
-		existingProduct.Price = decimal.NewFromFloat(product.Price)
-	}
-
-	if product.Stock > 0 {
-		existingProduct.Stock = product.Stock
-	}
+	existingProduct.Name = req.Name
+	existingProduct.Price = decimal.NewFromFloat(req.Price)
+	existingProduct.Stock = req.Stock
+	existingProduct.CategoryID = req.CategoryID
 
 	if err := s.productRepository.Update(ctx, id, existingProduct); err != nil {
-		return existingProduct, err
+		return nil, err
 	}
-	updatedProduct, _, err := s.productRepository.GetByID(ctx, id)
 
-	return updatedProduct, err
+	return existingProduct, err
 }
 
 func (s *productService) DeleteProduct(ctx context.Context, id string) error {

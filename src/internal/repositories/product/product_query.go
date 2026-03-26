@@ -11,7 +11,7 @@ const (
 		COALESCE(c.name, '')
 	FROM products p
 	LEFT JOIN categories c ON c.id = p.category_id
-	WHERE 1=1`
+	WHERE p.deleted_at IS NULL`
 
 	countProductsQuery = `
 	SELECT COUNT(*)
