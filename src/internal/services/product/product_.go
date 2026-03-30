@@ -125,6 +125,27 @@ func (s *productService) UpdateProduct(ctx context.Context, id string, req *dto.
 		}
 	}
 
+	if req.Price < 0 {
+		return nil, &dto.Error{
+			Code:    http.StatusBadRequest,
+			Message: preference.ErrProductPriceNegative,
+		}
+	}
+
+	if req.Stock < 0 {
+		return nil, &dto.Error{
+			Code:    http.StatusBadRequest,
+			Message: preference.ErrProductStockNegative,
+		}
+	}
+
+	if req.Name == "" {
+		return nil, &dto.Error{
+			Code:    http.StatusBadRequest,
+			Message: preference.ErrProductNameRequied,
+		}
+	}
+
 	existingProduct.Name = req.Name
 	existingProduct.Price = decimal.NewFromFloat(req.Price)
 	existingProduct.Stock = req.Stock
