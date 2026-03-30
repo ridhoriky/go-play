@@ -28,11 +28,16 @@ const (
 	ErrProductPriceNegative = "Price cannot be negative"
 	ErrProductStockNegative = "Stock cannot be negative"
 	ErrProductNameRequied   = "Product name is required"
+	ErrProductBatchTooLarge = "Number of products exceeds maximum batch size (max: 500)"
 
 	// Error message category
 	ErrInvalidCategoryID     = "Invalid category ID"
 	ErrCategoryAlreadyExists = "Category name already exists"
 	ErrCategoryNotFound      = "Category not found"
+	ErrCategoryNameRequied   = "Category name is required"
+
+	// Batch size
+	MaxBatchSizeProduct = 500
 )
 
 var ErrorCodeByHTTPStatus = map[int]string{

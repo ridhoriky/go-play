@@ -47,10 +47,12 @@ func (repo *CategoryRepository) GetAll(ctx context.Context, filter *dto.GetCateg
 	defer rows.Close()
 
 	categories := []entity.Category{}
+	var total int
 
 	for rows.Next() {
 
 		var c entity.Category
+		var rowCount int
 
 		err := rows.Scan(
 			&c.ID,
@@ -59,6 +61,7 @@ func (repo *CategoryRepository) GetAll(ctx context.Context, filter *dto.GetCateg
 			&c.CreatedAt,
 			&c.UpdatedAt,
 			&c.DeletedAt,
+			&rowCount,
 		)
 
 		if err != nil {
@@ -66,14 +69,14 @@ func (repo *CategoryRepository) GetAll(ctx context.Context, filter *dto.GetCateg
 		}
 
 		categories = append(categories, c)
+
+		// assign value total from firt row
+		if total == 0 {
+			total = rowCount
+		}
 	}
 
-	countQuery := countCategoriesQuery + filterQuery
-
-	var total int
-
-	err = repo.db.QueryRowContext(ctx, countQuery, args...).Scan(&total)
-	if err != nil {
+	if err := rows.Err(); err != nil {
 		return nil, 0, err
 	}
 
@@ -93,10 +96,7 @@ func buildCategoryFilters(filter *dto.GetCategoriesQuery) (string, []interface{}
 		argPos++
 	}
 
-	// isDeleted filter
-	if filter.IncludeDeleted {
-		query += " AND c.deleted_at IS NOT NULL"
-	} else {
+	if !filter.IncludeDeleted {
 		query += " AND c.deleted_at IS NULL"
 	}
 

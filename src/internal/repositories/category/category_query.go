@@ -8,14 +8,15 @@ const (
 		c.description,
 		c.created_at,
 		c.updated_at,
-		c.deleted_at
+		c.deleted_at,
+        COUNT(*) OVER() AS total_count
 	FROM categories c
 	WHERE 1=1`
 
-	countCategoriesQuery = `
-	SELECT COUNT(*)
-	FROM categories c
-	WHERE 1=1`
+	// countCategoriesQuery = `
+	// SELECT COUNT(*)
+	// FROM categories c
+	// WHERE 1=1`
 
 	createCategoryQuery = `
 	INSERT INTO categories (name, description)
