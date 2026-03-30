@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -72,6 +73,10 @@ func (repo *ProductRepository) GetAll(ctx context.Context, filter *dto.GetProduc
 		}
 
 		products = append(products, p)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, 0, err
 	}
 
 	countQuery := countProductsQuery + filterQuery
@@ -216,24 +221,40 @@ func (repo *ProductRepository) CreateMultiple(
 
 	if len(products) == 0 {
 		return nil, &dto.Error{
-			Code:    http.StatusInternalServerError,
+			Code:    http.StatusBadRequest,
 			Message: preference.ErrProductEmpty,
 		}
 	}
-	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+
+	if len(products) > preference.MaxBatchSizeProduct {
+		return nil, &dto.Error{
+			Code:    http.StatusBadRequest,
+			Message: preference.ErrProductBatchTooLarge,
+		}
+	}
+
+	timeout := min(
+		time.Duration(len(products))*200*time.Millisecond,
+		30*time.Second,
+	)
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	var err error
 
-	tx, err := repo.db.BeginTxx(ctx, nil)
+	tx, err := repo.db.BeginTxx(ctx, &sql.TxOptions{
+		Isolation: sql.LevelReadCommitted,
+		ReadOnly:  false,
+	})
 
 	if err != nil {
 		return nil, err
 	}
 
 	defer func() {
-		if err != nil {
-			_ = tx.Rollback()
+		if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
+			log.Printf("rollback error: %v", err)
 		}
 	}()
 
