@@ -74,11 +74,12 @@ func (h *productHandler) Create(c *gin.Context) {
 		return
 	}
 
-	if _, err := h.productService.CreateProduct(ctx, &p); err != nil {
+	createdProduct, err := h.productService.CreateProduct(ctx, &p)
+	if err != nil {
 		helpers.ResponseError(c.Writer, err)
 		return
 	}
-	helpers.ResponseSuccess(c.Writer, http.StatusCreated, "Product created successfully", p)
+	helpers.ResponseSuccess(c.Writer, http.StatusCreated, "Product created successfully", createdProduct)
 }
 
 // GetProductByID godoc
@@ -145,12 +146,12 @@ func (h *productHandler) Update(c *gin.Context) {
 		return
 	}
 
-	product, err := h.productService.UpdateProduct(ctx, id.String(), &p)
+	updatedProduct, err := h.productService.UpdateProduct(ctx, id.String(), &p)
 	if err != nil {
 		helpers.ResponseError(c.Writer, err)
 		return
 	}
-	helpers.ResponseSuccess(c.Writer, http.StatusOK, "Product updated successfully", product)
+	helpers.ResponseSuccess(c.Writer, http.StatusOK, "Product updated successfully", updatedProduct)
 }
 
 // DeleteProduct godoc
