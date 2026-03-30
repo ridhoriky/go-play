@@ -57,6 +57,13 @@ func (s *categoryService) GetAllCategories(ctx context.Context, req *dto.GetCate
 }
 func (s *categoryService) CreateCategory(ctx context.Context, req *dto.CreateCategoryRequest) (*entity.Category, error) {
 
+	if req.Name == "" {
+		return nil, &dto.Error{
+			Code:    http.StatusBadRequest,
+			Message: preference.ErrCategoryNameRequied,
+		}
+	}
+
 	c := &entity.Category{
 		Name:        req.Name,
 		Description: req.Description,
@@ -83,6 +90,13 @@ func (s *categoryService) UpdateCategory(ctx context.Context, id string, req *dt
 			}
 		}
 		return nil, err
+	}
+
+	if req.Name == "" {
+		return nil, &dto.Error{
+			Code:    http.StatusBadRequest,
+			Message: preference.ErrCategoryNameRequied,
+		}
 	}
 
 	existingCategory.Name = req.Name
