@@ -17,7 +17,8 @@ const (
 	ErrInternalServer      = "INTERNAL_SERVER_ERROR"
 
 	// Error message global
-	ErrInvalidReqBody = "Invalid request body"
+	ErrInvalidReqBody     = "Invalid request body"
+	ErrInvalidQueryParams = "Invalid query parameters"
 
 	// Error message product
 	ErrInvalidProductID     = "Invalid product ID"

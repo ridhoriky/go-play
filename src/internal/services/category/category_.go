@@ -2,8 +2,6 @@ package category
 
 import (
 	"context"
-	"database/sql"
-	"errors"
 	"math"
 	"net/http"
 
@@ -11,6 +9,8 @@ import (
 	"ne-project/src/internal/models/entity"
 	"ne-project/src/internal/preference"
 	"ne-project/src/internal/util"
+
+	"github.com/rs/zerolog"
 )
 
 func (s *categoryService) GetAllCategories(ctx context.Context, req *dto.GetCategoriesQuery) (*dto.CategoryListResponse, error) {
@@ -54,6 +54,7 @@ func (s *categoryService) GetAllCategories(ctx context.Context, req *dto.GetCate
 func (s *categoryService) CreateCategory(ctx context.Context, req *dto.CreateCategoryRequest) (*entity.Category, error) {
 
 	if req.Name == "" {
+		zerolog.Ctx(ctx).Error().Msg(preference.ErrCategoryNameRequied)
 		return nil, &dto.Error{
 			Code:    http.StatusBadRequest,
 			Message: preference.ErrCategoryNameRequied,
@@ -79,16 +80,11 @@ func (s *categoryService) GetCategoryByID(ctx context.Context, id string) (*enti
 func (s *categoryService) UpdateCategory(ctx context.Context, id string, req *dto.UpdateCategoryRequest) (*entity.Category, error) {
 	existingCategory, err := s.categoryRepository.GetByID(ctx, id)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, &dto.Error{
-				Code:    http.StatusNotFound,
-				Message: preference.ErrInvalidCategoryID,
-			}
-		}
 		return nil, err
 	}
 
 	if req.Name == "" {
+		zerolog.Ctx(ctx).Error().Msg(preference.ErrCategoryNameRequied)
 		return nil, &dto.Error{
 			Code:    http.StatusBadRequest,
 			Message: preference.ErrCategoryNameRequied,
