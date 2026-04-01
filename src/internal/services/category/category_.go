@@ -10,16 +10,12 @@ import (
 	"ne-project/src/internal/models/dto"
 	"ne-project/src/internal/models/entity"
 	"ne-project/src/internal/preference"
+	"ne-project/src/internal/util"
 )
 
 func (s *categoryService) GetAllCategories(ctx context.Context, req *dto.GetCategoriesQuery) (*dto.CategoryListResponse, error) {
-	if req.Page == 0 {
-		req.Page = 1
-	}
-
-	if req.Limit == 0 {
-		req.Limit = 10
-	}
+	req.Page = util.ValidatePage(req.Page)
+	req.Limit = util.ValidatePageSize(req.Limit)
 
 	categories, total, err := s.categoryRepository.GetAll(ctx, req)
 	if err != nil {

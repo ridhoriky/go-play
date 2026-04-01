@@ -8,18 +8,14 @@ import (
 	"ne-project/src/internal/models/dto"
 	"ne-project/src/internal/models/entity"
 	"ne-project/src/internal/preference"
+	"ne-project/src/internal/util"
 
 	"github.com/shopspring/decimal"
 )
 
 func (s *productService) GetAllProducts(ctx context.Context, req *dto.GetProductsQuery) (*dto.ProductListResponse, error) {
-	if req.Page == 0 {
-		req.Page = 1
-	}
-
-	if req.Limit == 0 {
-		req.Limit = 10
-	}
+	req.Page = util.ValidatePage(req.Page)
+	req.Limit = util.ValidatePageSize(req.Limit)
 
 	products, total, err := s.productRepository.GetAll(ctx, req)
 	if err != nil {
