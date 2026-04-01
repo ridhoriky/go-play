@@ -114,7 +114,7 @@ func (repo *CategoryRepository) Create(ctx context.Context, category *entity.Cat
 		zerolog.Ctx(ctx).Error().Err(err).Msg("err to create category")
 		return err
 	}
-	return err
+	return nil
 }
 
 func (repo *CategoryRepository) GetByID(ctx context.Context, id string) (*entity.Category, error) {
