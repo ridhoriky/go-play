@@ -8,6 +8,7 @@ import (
 	"ne-project/src/internal/preference"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog"
 )
 
 // CreateTransaction godoc
@@ -27,6 +28,7 @@ func (h *transactionHandler) Checkout(c *gin.Context) {
 
 	var req dto.CreateTransactionRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Msg(preference.ErrInvalidReqBody)
 		helpers.ResponseError(c.Writer, &dto.Error{
 			Code:    http.StatusBadRequest,
 			Message: preference.ErrInvalidReqBody,

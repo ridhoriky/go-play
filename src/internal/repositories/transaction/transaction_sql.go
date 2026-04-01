@@ -11,8 +11,10 @@ import (
 
 	"ne-project/src/internal/models/dto"
 	"ne-project/src/internal/models/entity"
+	"ne-project/src/internal/preference"
 
 	"github.com/google/uuid"
+	"github.com/rs/zerolog"
 	"github.com/shopspring/decimal"
 )
 
@@ -25,6 +27,7 @@ func (r *TransactionRepository) Checkout(
 
 	tx, err := r.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelRepeatableRead})
 	if err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Msg("err tx create users")
 		return nil, err
 	}
 	defer tx.Rollback()
@@ -83,6 +86,7 @@ func (r *TransactionRepository) processSingleItem(
 	}
 
 	if item.Quantity <= 0 {
+		zerolog.Ctx(ctx).Error().Str("id", item.ProductID).Msg("err product out of stock")
 		return entity.TransactionDetail{}, &dto.Error{
 			Code:    http.StatusBadRequest,
 			Message: fmt.Sprintf("Quantity for product with id '%s' must be greater than zero", item.ProductID),
@@ -90,6 +94,7 @@ func (r *TransactionRepository) processSingleItem(
 	}
 
 	if _, err = tx.ExecContext(ctx, deductStockQuery, item.Quantity, item.ProductID); err != nil {
+		zerolog.Ctx(ctx).Error().Str("id", item.ProductID).Msg("err update stock product")
 		return entity.TransactionDetail{}, err
 	}
 
@@ -104,12 +109,14 @@ func (r *TransactionRepository) fetchProduct(
 	err := tx.QueryRowContext(ctx, getProductForCheckoutQuery, productID).
 		Scan(&p.ID, &p.Name, &p.Price, &p.Stock)
 	if errors.Is(err, sql.ErrNoRows) {
+		zerolog.Ctx(ctx).Error().Err(err).Str("id", productID).Msg(preference.ErrProductNotFound)
 		return nil, &dto.Error{
 			Code:    http.StatusNotFound,
-			Message: "Product not found: " + productID,
+			Message: preference.ErrProductNotFound,
 		}
 	}
 	if err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Str("id", productID).Msg("err fetch product")
 		return nil, err
 	}
 	return p, nil
@@ -121,10 +128,12 @@ func (r *TransactionRepository) lockAndValidateStock(
 ) error {
 	var lockedStock int
 	if err := tx.QueryRowContext(ctx, lockProductStockQuery, item.ProductID).Scan(&lockedStock); err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Str("id", item.ProductID).Msg("err lock and validate product")
 		return err
 	}
 
 	if lockedStock < item.Quantity {
+		zerolog.Ctx(ctx).Error().Str("id", item.ProductID).Msg("err product out of stock")
 		return &dto.Error{
 			Code: http.StatusUnprocessableEntity,
 			Message: fmt.Sprintf(
@@ -145,6 +154,7 @@ func (r *TransactionRepository) insertTransaction(
 		uuid.New().String(), totalAmount, entity.TransactionStatusPaid,
 	).Scan(&trx.ID, &trx.TotalAmount, &trx.Status, &trx.CreatedAt)
 	if err != nil {
+		zerolog.Ctx(ctx).Error().Msg("err insert transaction")
 		return entity.Transaction{}, err
 	}
 	return trx, nil
@@ -179,7 +189,12 @@ func (r *TransactionRepository) insertTransactionDetails(
 	}
 	query := insertTransactionDetailQuery + strings.Join(placeholders, ",")
 	_, err := tx.ExecContext(ctx, query, args...)
-	return err
+	if err != nil {
+		zerolog.Ctx(ctx).Error().Msg("err insert transaction details")
+		return err
+	}
+
+	return nil
 }
 
 // buildTransactionDetail
