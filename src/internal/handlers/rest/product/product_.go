@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/rs/zerolog"
 	"github.com/shopspring/decimal"
 )
 
@@ -37,9 +38,10 @@ func (h *productHandler) GetAll(c *gin.Context) {
 
 	var req dto.GetProductsQuery
 	if err := c.ShouldBindQuery(&req); err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Msg(preference.ErrInvalidQueryParams)
 		helpers.ResponseError(c.Writer, &dto.Error{
 			Code:    http.StatusBadRequest,
-			Message: preference.ErrInvalidReqBody,
+			Message: preference.ErrInvalidQueryParams,
 		})
 		return
 	}
@@ -67,6 +69,7 @@ func (h *productHandler) Create(c *gin.Context) {
 	var p dto.CreateProductRequest
 
 	if err := c.ShouldBindJSON(&p); err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Msg(preference.ErrInvalidReqBody)
 		helpers.ResponseError(c.Writer, &dto.Error{
 			Code:    http.StatusBadRequest,
 			Message: preference.ErrInvalidReqBody,
@@ -98,6 +101,7 @@ func (h *productHandler) GetByID(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 
 	if err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Msg(preference.ErrInvalidProductID)
 		helpers.ResponseError(c.Writer, &dto.Error{
 			Code:    http.StatusBadRequest,
 			Message: preference.ErrInvalidProductID,
@@ -130,6 +134,7 @@ func (h *productHandler) Update(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 
 	if err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Msg(preference.ErrInvalidProductID)
 		helpers.ResponseError(c.Writer, &dto.Error{
 			Code:    http.StatusBadRequest,
 			Message: preference.ErrInvalidProductID,
@@ -171,6 +176,7 @@ func (h *productHandler) Delete(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 
 	if err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Msg(preference.ErrInvalidProductID)
 		helpers.ResponseError(c.Writer, &dto.Error{
 			Code:    http.StatusBadRequest,
 			Message: preference.ErrInvalidProductID,
@@ -199,17 +205,10 @@ func (h *productHandler) CreateMultiple(c *gin.Context) {
 	ctx := c.Request.Context()
 	var req dto.CreateMultipleProducts
 	if err := c.ShouldBindJSON(&req); err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Msg(preference.ErrInvalidReqBody)
 		helpers.ResponseError(c.Writer, &dto.Error{
 			Code:    http.StatusBadRequest,
 			Message: preference.ErrInvalidReqBody,
-		})
-		return
-	}
-
-	if len(req.Data) == 0 {
-		helpers.ResponseError(c.Writer, &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: preference.ErrNoProductCreated,
 		})
 		return
 	}

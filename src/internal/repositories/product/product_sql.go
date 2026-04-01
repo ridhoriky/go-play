@@ -13,6 +13,8 @@ import (
 	"ne-project/src/internal/models/dto"
 	"ne-project/src/internal/models/entity"
 	"ne-project/src/internal/preference"
+
+	"github.com/rs/zerolog"
 )
 
 func (repo *ProductRepository) GetAll(ctx context.Context, filter *dto.GetProductsQuery) ([]entity.ProductWithCategory, int, error) {
@@ -47,6 +49,7 @@ func (repo *ProductRepository) GetAll(ctx context.Context, filter *dto.GetProduc
 
 	rows, err := repo.db.QueryContext(ctx, dataQuery, argsData...)
 	if err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Msg("err find product with query")
 		return nil, 0, err
 	}
 
@@ -69,6 +72,7 @@ func (repo *ProductRepository) GetAll(ctx context.Context, filter *dto.GetProduc
 		)
 
 		if err != nil {
+			zerolog.Ctx(ctx).Error().Err(err).Str("productID", fmt.Sprintf("%v", p.ID)).Msg("err mapping product row")
 			return nil, 0, err
 		}
 
@@ -76,6 +80,7 @@ func (repo *ProductRepository) GetAll(ctx context.Context, filter *dto.GetProduc
 	}
 
 	if err = rows.Err(); err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Msg("err iterating product row")
 		return nil, 0, err
 	}
 
@@ -85,6 +90,7 @@ func (repo *ProductRepository) GetAll(ctx context.Context, filter *dto.GetProduc
 
 	err = repo.db.QueryRowContext(ctx, countQuery, args...).Scan(&total)
 	if err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Msg("err count product with query")
 		return nil, 0, err
 	}
 
@@ -136,23 +142,29 @@ func buildProductFilters(filter *dto.GetProductsQuery) (string, []interface{}) {
 func (repo *ProductRepository) Create(ctx context.Context, product *entity.Product) error {
 	query := insertProductQuery
 	err := repo.db.QueryRowContext(ctx, query, product.Name, product.Price, product.Stock, product.CategoryID).Scan(&product.ID)
-
-	return err
+	if err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Msg("err create product")
+		return err
+	}
+	return nil
 }
 
 func (repo *ProductRepository) Update(ctx context.Context, id string, product *entity.Product) error {
 	query := updateProductQuery
 	result, err := repo.db.ExecContext(ctx, query, product.Name, product.Price, product.Stock, product.CategoryID, id)
 	if err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg("err update product")
 		return err
 	}
 
 	rows, err := result.RowsAffected()
 	if err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg("err rows affected")
 		return err
 	}
 
 	if rows == 0 {
+		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg(preference.ErrProductNotFound)
 		return &dto.Error{
 			Code:    http.StatusNotFound,
 			Message: preference.ErrProductNotFound,
@@ -166,14 +178,17 @@ func (repo *ProductRepository) Delete(ctx context.Context, id string) error {
 	query := deleteProductQuery
 	result, err := repo.db.ExecContext(ctx, query, id)
 	if err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg("err delete product")
 		return err
 	}
 	rows, err := result.RowsAffected()
 	if err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg("err rows affected")
 		return err
 	}
 
 	if rows == 0 {
+		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg(preference.ErrProductNotFound)
 		return &dto.Error{
 			Code:    http.StatusNotFound,
 			Message: preference.ErrProductNotFound,
@@ -201,6 +216,7 @@ func (repo *ProductRepository) GetByID(ctx context.Context, id string) (*entity.
 		)
 
 	if errors.Is(err, sql.ErrNoRows) {
+		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg(preference.ErrProductNotFound)
 		return nil, categoryName, &dto.Error{
 			Code:    http.StatusNotFound,
 			Message: preference.ErrProductNotFound,
@@ -220,6 +236,7 @@ func (repo *ProductRepository) CreateMultiple(
 ) ([]entity.Product, error) {
 
 	if len(products) == 0 {
+		zerolog.Ctx(ctx).Error().Msg(preference.ErrProductEmpty)
 		return nil, &dto.Error{
 			Code:    http.StatusBadRequest,
 			Message: preference.ErrProductEmpty,
@@ -227,6 +244,7 @@ func (repo *ProductRepository) CreateMultiple(
 	}
 
 	if len(products) > preference.MaxBatchSizeProduct {
+		zerolog.Ctx(ctx).Error().Msg(preference.ErrProductBatchTooLarge)
 		return nil, &dto.Error{
 			Code:    http.StatusBadRequest,
 			Message: preference.ErrProductBatchTooLarge,
@@ -249,11 +267,13 @@ func (repo *ProductRepository) CreateMultiple(
 	})
 
 	if err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Msg("err tx create product")
 		return nil, err
 	}
 
 	defer func() {
 		if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
+			zerolog.Ctx(ctx).Error().Err(err).Msg("err rollback create product")
 			log.Printf("rollback error: %v", err)
 		}
 	}()
@@ -304,6 +324,7 @@ func (repo *ProductRepository) CreateMultiple(
 
 	rows, err := tx.QueryxContext(ctx, query, args...)
 	if err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Msg("err query create products")
 		return nil, err
 	}
 	defer rows.Close()
@@ -315,6 +336,7 @@ func (repo *ProductRepository) CreateMultiple(
 		var resp entity.Product
 
 		if err := rows.StructScan(&resp); err != nil {
+			zerolog.Ctx(ctx).Error().Err(err).Interface("row_data", resp).Msg("failed to scan product row")
 			return nil, err
 		}
 
@@ -322,10 +344,12 @@ func (repo *ProductRepository) CreateMultiple(
 	}
 
 	if err := rows.Err(); err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Msg("err iterate product row")
 		return nil, err
 	}
 
 	if err := tx.Commit(); err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Msg("err commit create products")
 		return nil, err
 	}
 

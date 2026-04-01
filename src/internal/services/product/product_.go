@@ -10,6 +10,7 @@ import (
 	"ne-project/src/internal/preference"
 	"ne-project/src/internal/util"
 
+	"github.com/rs/zerolog"
 	"github.com/shopspring/decimal"
 )
 
@@ -18,6 +19,7 @@ func (s *productService) GetAllProducts(ctx context.Context, req *dto.GetProduct
 	req.Limit = util.ValidatePageSize(req.Limit)
 
 	products, total, err := s.productRepository.GetAll(ctx, req)
+
 	if err != nil {
 		return nil, err
 	}
@@ -58,6 +60,7 @@ func (s *productService) GetAllProducts(ctx context.Context, req *dto.GetProduct
 func (s *productService) CreateProduct(ctx context.Context, product *dto.CreateProductRequest) (*entity.Product, error) {
 
 	if product.Price < 0 {
+		zerolog.Ctx(ctx).Error().Msg(preference.ErrProductPriceNegative)
 		return nil, &dto.Error{
 			Code:    http.StatusBadRequest,
 			Message: preference.ErrProductPriceNegative,
@@ -65,6 +68,7 @@ func (s *productService) CreateProduct(ctx context.Context, product *dto.CreateP
 	}
 
 	if product.Stock < 0 {
+		zerolog.Ctx(ctx).Error().Msg(preference.ErrProductStockNegative)
 		return nil, &dto.Error{
 			Code:    http.StatusBadRequest,
 			Message: preference.ErrProductStockNegative,
@@ -72,6 +76,7 @@ func (s *productService) CreateProduct(ctx context.Context, product *dto.CreateP
 	}
 
 	if product.Name == "" {
+		zerolog.Ctx(ctx).Error().Msg(preference.ErrProductNameRequied)
 		return nil, &dto.Error{
 			Code:    http.StatusBadRequest,
 			Message: preference.ErrProductNameRequied,
@@ -84,6 +89,7 @@ func (s *productService) CreateProduct(ctx context.Context, product *dto.CreateP
 		Stock:      product.Stock,
 		CategoryID: product.CategoryID,
 	}
+
 	if err := s.productRepository.Create(ctx, &p); err != nil {
 		return nil, err
 	}
@@ -114,14 +120,8 @@ func (s *productService) GetProductByID(ctx context.Context, id string) (*dto.Pr
 func (s *productService) UpdateProduct(ctx context.Context, id string, req *dto.UpdateProductRequest) (*entity.Product, error) {
 	existingProduct, _, err := s.productRepository.GetByID(ctx, id)
 
-	if err != nil {
-		return nil, &dto.Error{
-			Code:    http.StatusNotFound,
-			Message: preference.ErrInvalidProductID,
-		}
-	}
-
 	if req.Price < 0 {
+		zerolog.Ctx(ctx).Error().Msg(preference.ErrProductPriceNegative)
 		return nil, &dto.Error{
 			Code:    http.StatusBadRequest,
 			Message: preference.ErrProductPriceNegative,
@@ -129,6 +129,7 @@ func (s *productService) UpdateProduct(ctx context.Context, id string, req *dto.
 	}
 
 	if req.Stock < 0 {
+		zerolog.Ctx(ctx).Error().Msg(preference.ErrProductStockNegative)
 		return nil, &dto.Error{
 			Code:    http.StatusBadRequest,
 			Message: preference.ErrProductStockNegative,
@@ -136,6 +137,7 @@ func (s *productService) UpdateProduct(ctx context.Context, id string, req *dto.
 	}
 
 	if req.Name == "" {
+		zerolog.Ctx(ctx).Error().Msg(preference.ErrProductNameRequied)
 		return nil, &dto.Error{
 			Code:    http.StatusBadRequest,
 			Message: preference.ErrProductNameRequied,
@@ -159,6 +161,5 @@ func (s *productService) DeleteProduct(ctx context.Context, id string) error {
 }
 
 func (s *productService) CreateMultipleProducts(ctx context.Context, products []entity.Product) ([]entity.Product, error) {
-
 	return s.productRepository.CreateMultiple(ctx, products)
 }
