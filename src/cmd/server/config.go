@@ -1,49 +1,26 @@
-package config
+package main
 
 import (
 	"fmt"
+	"ne-project/src/internal/config/database"
+	"ne-project/src/internal/config/logger"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/spf13/viper"
 )
 
 type Config struct {
-	App      AppConfig      `mapstructure:"app"`
-	Database DatabaseConfig `mapstructure:"database"`
+	App      AppConfig               `yaml:"app"`
+	Database database.DatabaseConfig `yaml:"database"`
+	Logger   logger.LoggerOptions    `yaml:"logger"`
 }
 
 type AppConfig struct {
-	Port int `mapstructure:"port"`
+	Port int `yaml:"port"`
 }
 
-type DatabaseConfig struct {
-	Host            string        `mapstructure:"host"`
-	Port            int           `mapstructure:"port"`
-	User            string        `mapstructure:"user"`
-	Password        string        `mapstructure:"password"`
-	Name            string        `mapstructure:"name"`
-	SSLMode         string        `mapstructure:"ssl_mode"`
-	MaxOpenConns    int           `mapstructure:"max_open_conns"`
-	MaxIdleConns    int           `mapstructure:"max_idle_conns"`
-	ConnMaxLifetime time.Duration `mapstructure:"conn_max_lifetime"`
-	ConnMaxIdleTime time.Duration `mapstructure:"conn_max_idle_time"`
-}
-
-func (db *DatabaseConfig) GetConnectionString() string {
-	return fmt.Sprintf(
-		"postgresql://%s:%s@%s:%d/%s?sslmode=%s",
-		db.User,
-		db.Password,
-		db.Host,
-		db.Port,
-		db.Name,
-		db.SSLMode,
-	)
-}
-
-func Load() (*Config, error) {
+func LoadConfig() (*Config, error) {
 
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")

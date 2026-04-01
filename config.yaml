@@ -3,7 +3,9 @@ app:
   port: 8080
 
 database:
+  enabled: true
   host: localhost
+  driver: postgres
   port: 5432
   user: postgres
   password: ${DB_PASSWORD}
@@ -13,3 +15,14 @@ database:
   max_idle_conns: 5
   conn_max_lifetime: 1h
   conn_max_idle_time: 30m
+
+logger:
+  enabled: true
+  level: info # debug, info, warn, error
+  format: json # json, console
+  output: stdout # stdout, file
+  path: ./logs/app.log
+  max_size: 100 # megabytes
+  max_backups: 7
+  max_age: 30 # days
+  compress: true # disabled by default
