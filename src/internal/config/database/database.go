@@ -13,7 +13,7 @@ import (
 type DatabaseConfig struct {
 	Enabled         bool          `yaml:"enabled"`
 	Host            string        `yaml:"host"`
-	Driver          string        `yaml:"postgres"`
+	Driver          string        `yaml:"driver"`
 	Port            int           `yaml:"port"`
 	User            string        `yaml:"user"`
 	Password        string        `yaml:"password"`

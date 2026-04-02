@@ -5,9 +5,8 @@ import (
 	"ne-project/src/internal/config/database"
 	"ne-project/src/internal/config/logger"
 	"os"
-	"strings"
 
-	"github.com/spf13/viper"
+	"github.com/goccy/go-yaml"
 )
 
 type Config struct {
@@ -22,28 +21,17 @@ type AppConfig struct {
 
 func LoadConfig() (*Config, error) {
 
-	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".")
+	configPath := "config.yaml"
 
-	if err := viper.ReadInConfig(); err != nil {
+	data, err := os.ReadFile(configPath)
+	if err != nil {
 		return nil, err
 	}
-
-	viper.SetEnvKeyReplacer(
-		strings.NewReplacer(".", "_"),
-	)
-
-	viper.AutomaticEnv()
 
 	var cfg Config
-
-	if err := viper.Unmarshal(&cfg); err != nil {
+	if err := yaml.Unmarshal(data, &cfg); err != nil {
 		return nil, err
 	}
-
-	cfg.App.Port = parseInt(viper.GetString("APP.PORT"), 8080)
-	cfg.Database.Port = parseInt(viper.GetString("DATABASE.PORT"), 6543)
 
 	overrideWithEnv(&cfg)
 
