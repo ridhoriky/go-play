@@ -209,3 +209,98 @@ func buildTransactionDetail(p *dto.ProductSnapshot, item dto.CheckoutItem) entit
 		Subtotal:    subtotal,
 	}
 }
+
+func (repo *TransactionRepository) GetTransactionByID(ctx context.Context, id string) (*entity.TransactionWithDetails, error) {
+	query := getTransactionByIDQuery
+
+	rows, err := repo.db.QueryContext(ctx, query, id)
+	if err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Str("transaction_id", id).Msg("failed to query transaction with details")
+		return nil, err
+	}
+	defer rows.Close()
+
+	// Initialize result as pointer
+	result := &entity.TransactionWithDetails{
+		Items: make([]entity.TransactionDetail, 0),
+	}
+
+	// Track if we've scanned transaction header
+	txScanned := false
+
+	for rows.Next() {
+		var (
+			txID          string
+			txTotalAmount decimal.Decimal
+			txStatus      string
+			txCreatedAt   time.Time
+			txDetailID    sql.NullString
+			transactionID sql.NullString
+			productID     sql.NullString
+			productName   sql.NullString
+			quantity      sql.NullInt64
+			price         sql.NullString
+			subtotal      sql.NullString
+		)
+
+		err := rows.Scan(
+			&txID,
+			&txTotalAmount,
+			&txStatus,
+			&txCreatedAt,
+			&txDetailID,
+			&transactionID,
+			&productID,
+			&productName,
+			&quantity,
+			&price,
+			&subtotal,
+		)
+
+		if err != nil {
+			zerolog.Ctx(ctx).Error().Err(err).Msg("failed to scan transaction with details row")
+			return nil, err
+		}
+
+		// Scan transaction header only once
+		if !txScanned {
+			result.Transaction = entity.Transaction{
+				ID:          txID,
+				TotalAmount: txTotalAmount,
+				Status:      entity.TransactionStatus(txStatus),
+				CreatedAt:   txCreatedAt,
+			}
+			txScanned = true
+		}
+
+		// Add transaction detail if it exists (LEFT JOIN may return NULL for details)
+		if txDetailID.Valid && productID.Valid {
+			priceDecimal, _ := decimal.NewFromString(price.String)
+			subtotalDecimal, _ := decimal.NewFromString(subtotal.String)
+
+			detail := entity.TransactionDetail{
+				ID:            txDetailID.String,
+				TransactionID: transactionID.String,
+				ProductID:     productID.String,
+				ProductName:   productName.String,
+				Quantity:      int(quantity.Int64),
+				Price:         priceDecimal,
+				Subtotal:      subtotalDecimal,
+			}
+			result.Items = append(result.Items, detail)
+		}
+	}
+
+	if err := rows.Err(); err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Msg("error iterating transaction rows")
+		return nil, err
+	}
+
+	// Check if transaction was found
+	if !txScanned {
+		zerolog.Ctx(ctx).Warn().Str("transaction_id", id).Msg("transaction not found")
+		return nil, sql.ErrNoRows
+	}
+
+	return result, nil
+}

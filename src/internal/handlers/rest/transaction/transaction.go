@@ -24,5 +24,6 @@ func (h *transactionHandler) RegisterRoutes(r *gin.RouterGroup) {
 	transactionRoutes := r.Group("/transactions")
 	{
 		transactionRoutes.POST("/", h.Checkout)
+		transactionRoutes.GET("/:id", h.GetByID)
 	}
 }

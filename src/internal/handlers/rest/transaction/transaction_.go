@@ -8,6 +8,7 @@ import (
 	"ne-project/src/internal/preference"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 )
 
@@ -44,4 +45,36 @@ func (h *transactionHandler) Checkout(c *gin.Context) {
 
 	helpers.ResponseSuccess(c.Writer, http.StatusOK, "Checkout successfully", result)
 
+}
+
+// GetTransactionByID godoc
+// @Summary      Get Transaction
+// @Description  Get transaction by their id
+// @Tags         transactions
+// @Accept       json
+// @Produce      json
+// @Param 		 id   path 	string true "Category ID (UUID)" format(uuid)
+// @Success      200  {object}  dto.APIResponse
+// @Failure      400  {object} 	dto.APIResponse
+// @Failure      404  {object}  dto.APIResponse
+// @Router       /transactions/{id} [get]
+func (h *transactionHandler) GetByID(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	id, err := uuid.Parse(c.Param("id"))
+
+	if err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Msg(preference.ErrInvalidTranscationID)
+		helpers.ResponseError(c.Writer, &dto.Error{
+			Code:    http.StatusBadRequest,
+			Message: preference.ErrInvalidTranscationID,
+		})
+		return
+	}
+	transaction, err := h.transactionService.GetTransactionByID(ctx, id.String())
+	if err != nil {
+		helpers.ResponseError(c.Writer, err)
+		return
+	}
+	helpers.ResponseSuccess(c.Writer, http.StatusOK, "Success", transaction)
 }

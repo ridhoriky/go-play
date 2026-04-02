@@ -40,3 +40,12 @@ func buildTransactionDetailResponse(result *entity.TransactionWithDetails) *dto.
 		Items:       items,
 	}
 }
+
+func (s *transactionService) GetTransactionByID(ctx context.Context, id string) (*dto.TransactionDetailResponse, error) {
+	result, err := s.transactionRepository.GetTransactionByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return buildTransactionDetailResponse(result), nil
+}

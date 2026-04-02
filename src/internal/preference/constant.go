@@ -37,6 +37,9 @@ const (
 	ErrCategoryNotFound      = "Category not found"
 	ErrCategoryNameRequied   = "Category name is required"
 
+	// Error message transaction
+	ErrInvalidTranscationID = "Invalid transaction ID"
+
 	// Batch size
 	MaxBatchSizeProduct = 500
 )

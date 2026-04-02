@@ -10,6 +10,7 @@ import (
 
 type TransactionRepositoryItf interface {
 	Checkout(ctx context.Context, req *dto.CreateTransactionRequest) (*entity.TransactionWithDetails, error)
+	GetTransactionByID(ctx context.Context, id string) (*entity.TransactionWithDetails, error)
 }
 type TransactionRepository struct {
 	db *sqlx.DB

@@ -9,6 +9,7 @@ import (
 
 type TransactionServiceItf interface {
 	Checkout(ctx context.Context, req *dto.CreateTransactionRequest) (*dto.TransactionDetailResponse, error)
+	GetTransactionByID(ctx context.Context, id string) (*dto.TransactionDetailResponse, error)
 }
 
 type transactionService struct {

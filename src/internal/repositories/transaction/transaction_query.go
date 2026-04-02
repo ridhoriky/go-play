@@ -24,4 +24,24 @@ const (
 	getProductForCheckoutQuery = `
         SELECT id, name, price, stock FROM products
         WHERE id = $1 AND deleted_at IS NULL`
+
+	getTransactionByIDQuery = `
+        SELECT 
+            t.id, 
+            t.total_amount, 
+            t.status,
+            t.created_at,
+            td.id,
+            td.transaction_id,
+            td.product_id,
+            td.product_name, 
+            td.quantity,
+            td.price, 
+            td.subtotal 
+        FROM 
+            transactions t 
+        LEFT JOIN transaction_details td ON t.id = td.transaction_id
+        WHERE 
+            t.id = $1
+        `
 )
