@@ -78,3 +78,46 @@ func (h *transactionHandler) GetByID(c *gin.Context) {
 	}
 	helpers.ResponseSuccess(c.Writer, http.StatusOK, "Success", transaction)
 }
+
+// UpdateTransactionStatus godoc
+// @Summary      Update Transaction Status
+// @Description  Update transaction Status by their id
+// @Tags         transactions
+// @Accept       json
+// @Produce      json
+// @Param 		 id   path 	string true "Transaction ID (UUID)" format(uuid)
+// @Success      200  {object}  dto.APIResponse
+// @Failure      400  {object} 	dto.APIResponse
+// @Failure      404  {object}  dto.APIResponse
+// @Router       /transactions/{id}/status [patch]
+func (h *transactionHandler) UpdateTransactionStatus(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	id, err := uuid.Parse(c.Param("id"))
+
+	if err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Msg(preference.ErrInvalidTranscationID)
+		helpers.ResponseError(c.Writer, &dto.Error{
+			Code:    http.StatusBadRequest,
+			Message: preference.ErrInvalidTranscationID,
+		})
+		return
+	}
+
+	var status *dto.UpdateTransactionStatusRequest
+	if err := c.ShouldBindJSON(&status); err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Msg(preference.ErrInvalidReqBody)
+		helpers.ResponseError(c.Writer, &dto.Error{
+			Code:    http.StatusBadRequest,
+			Message: preference.ErrInvalidReqBody,
+		})
+		return
+	}
+
+	transaction, err := h.transactionService.UpdateStatus(ctx, id.String(), status)
+	if err != nil {
+		helpers.ResponseError(c.Writer, err)
+		return
+	}
+	helpers.ResponseSuccess(c.Writer, http.StatusOK, "Success", transaction)
+}

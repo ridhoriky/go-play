@@ -44,4 +44,17 @@ const (
         WHERE 
             t.id = $1
         `
+
+	updateTransactionStatusQuery = `
+        UPDATE transactions
+        SET status = $1
+        WHERE id = $2 AND deleted_at IS NULL
+        RETURNING id, total_amount, status, created_at
+        `
+
+	addStockQuery = `
+	UPDATE products
+	SET stock = stock + $1, updated_at = NOW()
+	WHERE id = $2 AND deleted_at IS NULL
+	`
 )

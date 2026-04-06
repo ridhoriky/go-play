@@ -27,7 +27,7 @@ func (r *TransactionRepository) Checkout(
 
 	tx, err := r.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelRepeatableRead})
 	if err != nil {
-		zerolog.Ctx(ctx).Error().Err(err).Msg("err tx create users")
+		zerolog.Ctx(ctx).Error().Err(err).Msg("err tx checkout")
 		return nil, err
 	}
 	defer tx.Rollback()
@@ -303,4 +303,45 @@ func (repo *TransactionRepository) GetTransactionByID(ctx context.Context, id st
 	}
 
 	return result, nil
+}
+
+func (r *TransactionRepository) UpdateStatus(
+	ctx context.Context,
+	id string,
+	newStatus entity.TransactionStatus,
+	items []entity.TransactionDetail,
+) error {
+	tx, err := r.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
+	if err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Str("transaction_id", id).Msg("err tx update status transaction")
+		return err
+	}
+	defer tx.Rollback()
+
+	// update status
+	result, err := tx.ExecContext(ctx, updateTransactionStatusQuery, newStatus, id)
+	if err != nil {
+		zerolog.Ctx(ctx).Warn().Str("transaction_id", id).Msg("err update transaction status")
+		return err
+	}
+	rows, _ := result.RowsAffected()
+	if rows == 0 {
+		zerolog.Ctx(ctx).Warn().Str("transaction_id", id).Msg("transaction not found")
+		return &dto.Error{
+			Code:    http.StatusNotFound,
+			Message: preference.ErrProductNotFound,
+		}
+	}
+
+	// restore stok jika cancelled
+	if newStatus == entity.TransactionStatusCancelled {
+		for _, item := range items {
+			zerolog.Ctx(ctx).Warn().Str("transaction_id", id).Msg("err restore stock")
+			if _, err = tx.ExecContext(ctx, addStockQuery, item.Quantity, item.ProductID); err != nil {
+				return err
+			}
+		}
+	}
+
+	return tx.Commit()
 }

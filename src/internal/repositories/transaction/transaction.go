@@ -11,6 +11,7 @@ import (
 type TransactionRepositoryItf interface {
 	Checkout(ctx context.Context, req *dto.CreateTransactionRequest) (*entity.TransactionWithDetails, error)
 	GetTransactionByID(ctx context.Context, id string) (*entity.TransactionWithDetails, error)
+	UpdateStatus(ctx context.Context, id string, status entity.TransactionStatus, items []entity.TransactionDetail) error
 }
 type TransactionRepository struct {
 	db *sqlx.DB
