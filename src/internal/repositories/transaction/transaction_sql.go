@@ -18,7 +18,7 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-func (r *TransactionRepository) Checkout(
+func (r *transactionRepository) Checkout(
 	ctx context.Context, req *dto.CreateTransactionRequest,
 ) (*entity.TransactionWithDetails, error) {
 
@@ -54,7 +54,7 @@ func (r *TransactionRepository) Checkout(
 }
 
 // processItem
-func (r *TransactionRepository) processItems(
+func (r *transactionRepository) processItems(
 	ctx context.Context, tx *sql.Tx, items []dto.CheckoutItem,
 ) ([]entity.TransactionDetail, decimal.Decimal, error) {
 	totalAmount := decimal.NewFromInt(0)
@@ -73,7 +73,7 @@ func (r *TransactionRepository) processItems(
 }
 
 // processSingleItem
-func (r *TransactionRepository) processSingleItem(
+func (r *transactionRepository) processSingleItem(
 	ctx context.Context, tx *sql.Tx, item dto.CheckoutItem,
 ) (entity.TransactionDetail, error) {
 	product, err := r.fetchProduct(ctx, tx, item.ProductID)
@@ -102,7 +102,7 @@ func (r *TransactionRepository) processSingleItem(
 }
 
 // fetchProduct
-func (r *TransactionRepository) fetchProduct(
+func (r *transactionRepository) fetchProduct(
 	ctx context.Context, tx *sql.Tx, productID string,
 ) (*dto.ProductSnapshot, error) {
 	p := &dto.ProductSnapshot{}
@@ -123,7 +123,7 @@ func (r *TransactionRepository) fetchProduct(
 }
 
 // lockAndValidateStock
-func (r *TransactionRepository) lockAndValidateStock(
+func (r *transactionRepository) lockAndValidateStock(
 	ctx context.Context, tx *sql.Tx, productName string, item dto.CheckoutItem,
 ) error {
 	var lockedStock int
@@ -146,7 +146,7 @@ func (r *TransactionRepository) lockAndValidateStock(
 }
 
 // insertTransaction
-func (r *TransactionRepository) insertTransaction(
+func (r *transactionRepository) insertTransaction(
 	ctx context.Context, tx *sql.Tx, totalAmount decimal.Decimal,
 ) (entity.Transaction, error) {
 	trx := entity.Transaction{}
@@ -161,7 +161,7 @@ func (r *TransactionRepository) insertTransaction(
 }
 
 // insertTransactionDetails
-func (r *TransactionRepository) insertTransactionDetails(
+func (r *transactionRepository) insertTransactionDetails(
 	ctx context.Context, tx *sql.Tx, transactionID string, details []entity.TransactionDetail,
 ) error {
 
@@ -210,7 +210,7 @@ func buildTransactionDetail(p *dto.ProductSnapshot, item dto.CheckoutItem) entit
 	}
 }
 
-func (repo *TransactionRepository) GetTransactionByID(ctx context.Context, id string) (*entity.TransactionWithDetails, error) {
+func (repo *transactionRepository) GetTransactionByID(ctx context.Context, id string) (*entity.TransactionWithDetails, error) {
 	query := getTransactionByIDQuery
 
 	rows, err := repo.db.QueryContext(ctx, query, id)
@@ -305,7 +305,7 @@ func (repo *TransactionRepository) GetTransactionByID(ctx context.Context, id st
 	return result, nil
 }
 
-func (r *TransactionRepository) UpdateStatus(
+func (r *transactionRepository) UpdateStatus(
 	ctx context.Context,
 	id string,
 	newStatus entity.TransactionStatus,

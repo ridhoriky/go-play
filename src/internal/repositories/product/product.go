@@ -18,12 +18,12 @@ type ProductRepositoryItf interface {
 	Delete(ctx context.Context, id string) error
 }
 
-type ProductRepository struct {
+type productRepository struct {
 	db *sqlx.DB
 }
 
 func NewProductRepository(db *sqlx.DB) ProductRepositoryItf {
-	return &ProductRepository{
+	return &productRepository{
 		db: db,
 	}
 }

@@ -13,12 +13,12 @@ type TransactionRepositoryItf interface {
 	GetTransactionByID(ctx context.Context, id string) (*entity.TransactionWithDetails, error)
 	UpdateStatus(ctx context.Context, id string, status entity.TransactionStatus, items []entity.TransactionDetail) error
 }
-type TransactionRepository struct {
+type transactionRepository struct {
 	db *sqlx.DB
 }
 
 func NewTransactionRepository(db *sqlx.DB) TransactionRepositoryItf {
-	return &TransactionRepository{
+	return &transactionRepository{
 		db: db,
 	}
 }

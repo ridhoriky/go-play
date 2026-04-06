@@ -17,7 +17,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-func (repo *ProductRepository) GetAll(ctx context.Context, filter *dto.GetProductsQuery) ([]entity.ProductWithCategory, int, error) {
+func (repo *productRepository) GetAll(ctx context.Context, filter *dto.GetProductsQuery) ([]entity.ProductWithCategory, int, error) {
 	filterQuery, args := buildProductFilters(filter)
 
 	dataQuery := getAllProductsQuery + filterQuery
@@ -139,7 +139,7 @@ func buildProductFilters(filter *dto.GetProductsQuery) (string, []interface{}) {
 	return query, args
 }
 
-func (repo *ProductRepository) Create(ctx context.Context, product *entity.Product) error {
+func (repo *productRepository) Create(ctx context.Context, product *entity.Product) error {
 	query := insertProductQuery
 	err := repo.db.QueryRowContext(ctx, query, product.Name, product.Price, product.Stock, product.CategoryID).Scan(&product.ID)
 	if err != nil {
@@ -149,7 +149,7 @@ func (repo *ProductRepository) Create(ctx context.Context, product *entity.Produ
 	return nil
 }
 
-func (repo *ProductRepository) Update(ctx context.Context, id string, product *entity.Product) error {
+func (repo *productRepository) Update(ctx context.Context, id string, product *entity.Product) error {
 	query := updateProductQuery
 	result, err := repo.db.ExecContext(ctx, query, product.Name, product.Price, product.Stock, product.CategoryID, id)
 	if err != nil {
@@ -174,7 +174,7 @@ func (repo *ProductRepository) Update(ctx context.Context, id string, product *e
 	return nil
 }
 
-func (repo *ProductRepository) Delete(ctx context.Context, id string) error {
+func (repo *productRepository) Delete(ctx context.Context, id string) error {
 	query := deleteProductQuery
 	result, err := repo.db.ExecContext(ctx, query, id)
 	if err != nil {
@@ -198,7 +198,7 @@ func (repo *ProductRepository) Delete(ctx context.Context, id string) error {
 	return err
 }
 
-func (repo *ProductRepository) GetByID(ctx context.Context, id string) (*entity.Product, string, error) {
+func (repo *productRepository) GetByID(ctx context.Context, id string) (*entity.Product, string, error) {
 	query := getProductByIDQuery
 
 	var p entity.Product
@@ -230,7 +230,7 @@ func (repo *ProductRepository) GetByID(ctx context.Context, id string) (*entity.
 	return &p, categoryName, nil
 }
 
-func (repo *ProductRepository) CreateMultiple(
+func (repo *productRepository) CreateMultiple(
 	ctx context.Context,
 	products []entity.Product,
 ) ([]entity.Product, error) {

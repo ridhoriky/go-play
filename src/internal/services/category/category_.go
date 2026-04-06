@@ -8,14 +8,14 @@ import (
 	"ne-project/src/internal/models/dto"
 	"ne-project/src/internal/models/entity"
 	"ne-project/src/internal/preference"
-	"ne-project/src/internal/util"
+	"ne-project/src/internal/utils/validation"
 
 	"github.com/rs/zerolog"
 )
 
 func (s *categoryService) GetAllCategories(ctx context.Context, req *dto.GetCategoriesQuery) (*dto.CategoryListResponse, error) {
-	req.Page = util.ValidatePage(req.Page)
-	req.Limit = util.ValidatePageSize(req.Limit)
+	req.Page = validation.ValidatePage(req.Page)
+	req.Limit = validation.ValidatePageSize(req.Limit)
 
 	categories, total, err := s.categoryRepository.GetAll(ctx, req)
 	if err != nil {

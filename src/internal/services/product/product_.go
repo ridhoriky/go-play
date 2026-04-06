@@ -8,15 +8,15 @@ import (
 	"ne-project/src/internal/models/dto"
 	"ne-project/src/internal/models/entity"
 	"ne-project/src/internal/preference"
-	"ne-project/src/internal/util"
+	"ne-project/src/internal/utils/validation"
 
 	"github.com/rs/zerolog"
 	"github.com/shopspring/decimal"
 )
 
 func (s *productService) GetAllProducts(ctx context.Context, req *dto.GetProductsQuery) (*dto.ProductListResponse, error) {
-	req.Page = util.ValidatePage(req.Page)
-	req.Limit = util.ValidatePageSize(req.Limit)
+	req.Page = validation.ValidatePage(req.Page)
+	req.Limit = validation.ValidatePageSize(req.Limit)
 
 	products, total, err := s.productRepository.GetAll(ctx, req)
 

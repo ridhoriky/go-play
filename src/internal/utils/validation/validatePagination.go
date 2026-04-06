@@ -1,4 +1,4 @@
-package util
+package validation
 
 const maxLimit, defaultLimit = 100, 10
 

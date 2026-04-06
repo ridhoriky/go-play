@@ -17,12 +17,12 @@ type CategoryRepositoryItf interface {
 	Delete(ctx context.Context, id string) error
 }
 
-type CategoryRepository struct {
+type categoryRepository struct {
 	db *sqlx.DB
 }
 
 func NewCategoryRepository(db *sqlx.DB) CategoryRepositoryItf {
-	return &CategoryRepository{
+	return &categoryRepository{
 		db: db,
 	}
 }

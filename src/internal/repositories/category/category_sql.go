@@ -14,7 +14,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-func (repo *CategoryRepository) GetAll(ctx context.Context, filter *dto.GetCategoriesQuery) ([]entity.Category, int, error) {
+func (repo *categoryRepository) GetAll(ctx context.Context, filter *dto.GetCategoriesQuery) ([]entity.Category, int, error) {
 	filterQuery, args := buildCategoryFilters(filter)
 	dataQuery := getAllCategoriesQuery + filterQuery
 
@@ -108,7 +108,7 @@ func buildCategoryFilters(filter *dto.GetCategoriesQuery) (string, []interface{}
 	return query, args
 }
 
-func (repo *CategoryRepository) Create(ctx context.Context, category *entity.Category) error {
+func (repo *categoryRepository) Create(ctx context.Context, category *entity.Category) error {
 	err := repo.db.QueryRowContext(ctx, createCategoryQuery, category.Name, category.Description).Scan(&category.ID)
 	if err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Msg("err to create category")
@@ -117,7 +117,7 @@ func (repo *CategoryRepository) Create(ctx context.Context, category *entity.Cat
 	return nil
 }
 
-func (repo *CategoryRepository) GetByID(ctx context.Context, id string) (*entity.Category, error) {
+func (repo *categoryRepository) GetByID(ctx context.Context, id string) (*entity.Category, error) {
 	var c entity.Category
 	err := repo.db.QueryRowContext(ctx, getCategoryByIDQuery, id).Scan(&c.ID, &c.Name, &c.Description)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -136,7 +136,7 @@ func (repo *CategoryRepository) GetByID(ctx context.Context, id string) (*entity
 	return &c, nil
 }
 
-func (repo *CategoryRepository) Update(ctx context.Context, id string, category *entity.Category) error {
+func (repo *categoryRepository) Update(ctx context.Context, id string, category *entity.Category) error {
 	result, err := repo.db.ExecContext(ctx, updateCategoryQuery, category.Name, category.Description, id)
 	if err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg("err update category")
@@ -157,7 +157,7 @@ func (repo *CategoryRepository) Update(ctx context.Context, id string, category 
 	return nil
 }
 
-func (repo *CategoryRepository) Delete(ctx context.Context, id string) error {
+func (repo *categoryRepository) Delete(ctx context.Context, id string) error {
 	result, err := repo.db.ExecContext(ctx, deleteCategoryQuery, id)
 	if err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg("err delete category")
