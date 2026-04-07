@@ -14,7 +14,7 @@ type reportHandler struct {
 	reportService report.ReportServiceItf
 }
 
-func NewTransactionHandler(reportService report.ReportServiceItf) ReportHandlerItf {
+func NewReportHandler(reportService report.ReportServiceItf) ReportHandlerItf {
 	return &reportHandler{
 		reportService: reportService,
 	}
