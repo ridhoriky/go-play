@@ -57,10 +57,10 @@ func (repo *productRepository) GetAll(ctx context.Context, filter *dto.GetProduc
 
 	products := []entity.ProductWithCategory{}
 
+	var total int
 	for rows.Next() {
 
 		var p entity.ProductWithCategory
-		var categoryName string
 
 		err := rows.Scan(
 			&p.ID,
@@ -68,7 +68,8 @@ func (repo *productRepository) GetAll(ctx context.Context, filter *dto.GetProduc
 			&p.Price,
 			&p.Stock,
 			&p.CategoryID,
-			&categoryName,
+			&p.CategoryName,
+			&total,
 		)
 
 		if err != nil {
@@ -81,16 +82,6 @@ func (repo *productRepository) GetAll(ctx context.Context, filter *dto.GetProduc
 
 	if err = rows.Err(); err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Msg("err iterating product row")
-		return nil, 0, err
-	}
-
-	countQuery := countProductsQuery + filterQuery
-
-	var total int
-
-	err = repo.db.QueryRowContext(ctx, countQuery, args...).Scan(&total)
-	if err != nil {
-		zerolog.Ctx(ctx).Error().Err(err).Msg("err count product with query")
 		return nil, 0, err
 	}
 

@@ -8,15 +8,20 @@ const (
 		p.price, 
 		p.stock,
 		p.category_id,
-		COALESCE(c.name, '')
-	FROM products p
-	LEFT JOIN categories c ON c.id = p.category_id
-	WHERE p.deleted_at IS NULL`
+		coalesce(c.name, '') as category_name,
+		COUNT(*) over() as total_count
+	FROM
+		products p
+	LEFT JOIN categories c ON
+		c.id = p.category_id
+	WHERE 
+		p.deleted_at is null
+	`
 
-	countProductsQuery = `
-	SELECT COUNT(*)
-	FROM products p
-	WHERE 1=1`
+	// countProductsQuery = `
+	// SELECT COUNT(*)
+	// FROM products p
+	// WHERE 1=1`
 
 	insertProductQuery = `
 	INSERT INTO products (name, price, stock, category_id) 
