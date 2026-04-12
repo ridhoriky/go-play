@@ -24,5 +24,6 @@ func (h *reportHandler) RegisterRoutes(r *gin.RouterGroup) {
 	reportRoutes := r.Group("/reports")
 	{
 		reportRoutes.GET("/summary", h.GetReports)
+		reportRoutes.GET("/top-products", h.GetTopProducts)
 	}
 }

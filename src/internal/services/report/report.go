@@ -9,6 +9,7 @@ import (
 
 type ReportServiceItf interface {
 	GetSummary(ctx context.Context, req *dto.GetReportQuery) (*dto.SummaryResponse, error)
+	GetTopProducts(ctx context.Context, req *dto.GetTopProductsQuery) (*dto.TopProductsResponse, error)
 }
 
 type reportService struct {

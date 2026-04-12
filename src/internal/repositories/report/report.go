@@ -10,6 +10,7 @@ import (
 
 type ReportRepositoryItf interface {
 	GetSummary(ctx context.Context, dr validation.DateRange) (dto.SummaryResponse, error)
+	GetTopProducts(ctx context.Context, dr validation.DateRange, limit int) (dto.TopProductsResponse, error)
 }
 type reportRepository struct {
 	db *sqlx.DB
