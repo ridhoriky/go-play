@@ -72,7 +72,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                                    "$ref": "#/definitions/dto.APIResponse"
                                 },
                                 {
                                     "type": "object",
@@ -80,7 +80,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/ne-project_src_internal_models_entity.Category"
+                                                "$ref": "#/definitions/entity.Category"
                                             }
                                         }
                                     }
@@ -91,13 +91,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                            "$ref": "#/definitions/dto.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                            "$ref": "#/definitions/dto.APIResponse"
                         }
                     }
                 }
@@ -121,7 +121,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.CreateCategoryRequest"
+                            "$ref": "#/definitions/dto.CreateCategoryRequest"
                         }
                     }
                 ],
@@ -131,13 +131,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                                    "$ref": "#/definitions/dto.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/ne-project_src_internal_models_entity.Category"
+                                            "$ref": "#/definitions/entity.Category"
                                         }
                                     }
                                 }
@@ -147,13 +147,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                            "$ref": "#/definitions/dto.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                            "$ref": "#/definitions/dto.APIResponse"
                         }
                     }
                 }
@@ -185,13 +185,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                                    "$ref": "#/definitions/dto.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/ne-project_src_internal_models_entity.Category"
+                                            "$ref": "#/definitions/entity.Category"
                                         }
                                     }
                                 }
@@ -201,13 +201,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                            "$ref": "#/definitions/dto.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                            "$ref": "#/definitions/dto.APIResponse"
                         }
                     }
                 }
@@ -239,7 +239,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.UpdateCategoryRequest"
+                            "$ref": "#/definitions/dto.UpdateCategoryRequest"
                         }
                     }
                 ],
@@ -249,13 +249,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                                    "$ref": "#/definitions/dto.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/ne-project_src_internal_models_entity.Category"
+                                            "$ref": "#/definitions/entity.Category"
                                         }
                                     }
                                 }
@@ -265,13 +265,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                            "$ref": "#/definitions/dto.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                            "$ref": "#/definitions/dto.APIResponse"
                         }
                     }
                 }
@@ -302,19 +302,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                            "$ref": "#/definitions/dto.APIResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                            "$ref": "#/definitions/dto.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                            "$ref": "#/definitions/dto.APIResponse"
                         }
                     }
                 }
@@ -398,7 +398,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                                    "$ref": "#/definitions/dto.APIResponse"
                                 },
                                 {
                                     "type": "object",
@@ -406,7 +406,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/ne-project_src_internal_models_entity.ProductWithCategory"
+                                                "$ref": "#/definitions/entity.ProductWithCategory"
                                             }
                                         }
                                     }
@@ -417,13 +417,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                            "$ref": "#/definitions/dto.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                            "$ref": "#/definitions/dto.APIResponse"
                         }
                     }
                 }
@@ -447,7 +447,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.CreateProductRequest"
+                            "$ref": "#/definitions/dto.CreateProductRequest"
                         }
                     }
                 ],
@@ -457,13 +457,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                                    "$ref": "#/definitions/dto.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/ne-project_src_internal_models_entity.Product"
+                                            "$ref": "#/definitions/entity.Product"
                                         }
                                     }
                                 }
@@ -473,13 +473,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                            "$ref": "#/definitions/dto.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                            "$ref": "#/definitions/dto.APIResponse"
                         }
                     }
                 }
@@ -505,7 +505,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.CreateMultipleProducts"
+                            "$ref": "#/definitions/dto.CreateMultipleProducts"
                         }
                     }
                 ],
@@ -515,7 +515,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                                    "$ref": "#/definitions/dto.APIResponse"
                                 },
                                 {
                                     "type": "object",
@@ -523,7 +523,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/ne-project_src_internal_models_entity.Product"
+                                                "$ref": "#/definitions/entity.Product"
                                             }
                                         }
                                     }
@@ -534,13 +534,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                            "$ref": "#/definitions/dto.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                            "$ref": "#/definitions/dto.APIResponse"
                         }
                     }
                 }
@@ -572,13 +572,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                                    "$ref": "#/definitions/dto.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/ne-project_src_internal_models_entity.Product"
+                                            "$ref": "#/definitions/entity.Product"
                                         }
                                     }
                                 }
@@ -588,13 +588,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                            "$ref": "#/definitions/dto.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                            "$ref": "#/definitions/dto.APIResponse"
                         }
                     }
                 }
@@ -626,7 +626,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.UpdateProductRequest"
+                            "$ref": "#/definitions/dto.UpdateProductRequest"
                         }
                     }
                 ],
@@ -636,13 +636,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                                    "$ref": "#/definitions/dto.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/ne-project_src_internal_models_entity.Product"
+                                            "$ref": "#/definitions/entity.Product"
                                         }
                                     }
                                 }
@@ -652,13 +652,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                            "$ref": "#/definitions/dto.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                            "$ref": "#/definitions/dto.APIResponse"
                         }
                     }
                 }
@@ -689,19 +689,168 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                            "$ref": "#/definitions/dto.APIResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                            "$ref": "#/definitions/dto.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                            "$ref": "#/definitions/dto.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/reports": {
+            "get": {
+                "description": "Get list of reports",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reports"
+                ],
+                "summary": "List Report",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "today",
+                        "description": "Period",
+                        "name": "period",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Date from",
+                        "name": "date_from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Date to",
+                        "name": "date_to",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.SummaryResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.APIResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/reports/top-products": {
+            "get": {
+                "description": "Get list of top products",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reports"
+                ],
+                "summary": "List Top Products",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "today",
+                        "description": "Period",
+                        "name": "period",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Date from",
+                        "name": "date_from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Date to",
+                        "name": "date_to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Limit",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.TopProductsResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.APIResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.APIResponse"
                         }
                     }
                 }
@@ -727,7 +876,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.CreateTransactionRequest"
+                            "$ref": "#/definitions/dto.CreateTransactionRequest"
                         }
                     }
                 ],
@@ -737,13 +886,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                                    "$ref": "#/definitions/dto.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/ne-project_src_internal_models_dto.TransactionDetailResponse"
+                                            "$ref": "#/definitions/dto.TransactionDetailResponse"
                                         }
                                     }
                                 }
@@ -753,13 +902,103 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                            "$ref": "#/definitions/dto.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                            "$ref": "#/definitions/dto.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/transactions/{id}": {
+            "get": {
+                "description": "Get transaction by their id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "transactions"
+                ],
+                "summary": "Get Transaction",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Category ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.APIResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/transactions/{id}/status": {
+            "patch": {
+                "description": "Update transaction Status by their id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "transactions"
+                ],
+                "summary": "Update Transaction Status",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Transaction ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.APIResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.APIResponse"
                         }
                     }
                 }
@@ -767,7 +1006,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "ne-project_src_internal_models_dto.APIResponse": {
+        "dto.APIResponse": {
             "type": "object",
             "properties": {
                 "data": {},
@@ -778,14 +1017,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "meta": {
-                    "$ref": "#/definitions/ne-project_src_internal_models_dto.PaginationMeta"
+                    "$ref": "#/definitions/dto.PaginationMeta"
                 },
                 "status": {
                     "type": "integer"
                 }
             }
         },
-        "ne-project_src_internal_models_dto.CheckoutItem": {
+        "dto.CheckoutItem": {
             "type": "object",
             "required": [
                 "product_id",
@@ -801,7 +1040,7 @@ const docTemplate = `{
                 }
             }
         },
-        "ne-project_src_internal_models_dto.CreateCategoryRequest": {
+        "dto.CreateCategoryRequest": {
             "type": "object",
             "required": [
                 "name"
@@ -818,7 +1057,7 @@ const docTemplate = `{
                 }
             }
         },
-        "ne-project_src_internal_models_dto.CreateMultipleProducts": {
+        "dto.CreateMultipleProducts": {
             "type": "object",
             "required": [
                 "data"
@@ -828,12 +1067,12 @@ const docTemplate = `{
                     "type": "array",
                     "minItems": 1,
                     "items": {
-                        "$ref": "#/definitions/ne-project_src_internal_models_dto.CreateProductRequest"
+                        "$ref": "#/definitions/dto.CreateProductRequest"
                     }
                 }
             }
         },
-        "ne-project_src_internal_models_dto.CreateProductRequest": {
+        "dto.CreateProductRequest": {
             "type": "object",
             "required": [
                 "category_id",
@@ -860,7 +1099,7 @@ const docTemplate = `{
                 }
             }
         },
-        "ne-project_src_internal_models_dto.CreateTransactionRequest": {
+        "dto.CreateTransactionRequest": {
             "type": "object",
             "required": [
                 "items"
@@ -870,12 +1109,12 @@ const docTemplate = `{
                     "type": "array",
                     "minItems": 1,
                     "items": {
-                        "$ref": "#/definitions/ne-project_src_internal_models_dto.CheckoutItem"
+                        "$ref": "#/definitions/dto.CheckoutItem"
                     }
                 }
             }
         },
-        "ne-project_src_internal_models_dto.PaginationMeta": {
+        "dto.PaginationMeta": {
             "type": "object",
             "properties": {
                 "limit": {
@@ -892,7 +1131,52 @@ const docTemplate = `{
                 }
             }
         },
-        "ne-project_src_internal_models_dto.TransactionDetailResponse": {
+        "dto.SummaryResponse": {
+            "type": "object",
+            "properties": {
+                "average_transaction": {
+                    "type": "number"
+                },
+                "total_items_sold": {
+                    "type": "integer"
+                },
+                "total_revenue": {
+                    "type": "number"
+                },
+                "total_transactions": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.TopProductItem": {
+            "type": "object",
+            "properties": {
+                "product_id": {
+                    "type": "string"
+                },
+                "product_name": {
+                    "type": "string"
+                },
+                "total_quantity": {
+                    "type": "integer"
+                },
+                "total_revenue": {
+                    "type": "number"
+                }
+            }
+        },
+        "dto.TopProductsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.TopProductItem"
+                    }
+                }
+            }
+        },
+        "dto.TransactionDetailResponse": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -906,7 +1190,7 @@ const docTemplate = `{
                 "items": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/ne-project_src_internal_models_dto.TransactionItemResponse"
+                        "$ref": "#/definitions/dto.TransactionItemResponse"
                     }
                 },
                 "status": {
@@ -919,7 +1203,7 @@ const docTemplate = `{
                 }
             }
         },
-        "ne-project_src_internal_models_dto.TransactionItemResponse": {
+        "dto.TransactionItemResponse": {
             "type": "object",
             "properties": {
                 "id": {
@@ -942,7 +1226,7 @@ const docTemplate = `{
                 }
             }
         },
-        "ne-project_src_internal_models_dto.UpdateCategoryRequest": {
+        "dto.UpdateCategoryRequest": {
             "type": "object",
             "required": [
                 "name"
@@ -959,7 +1243,7 @@ const docTemplate = `{
                 }
             }
         },
-        "ne-project_src_internal_models_dto.UpdateProductRequest": {
+        "dto.UpdateProductRequest": {
             "type": "object",
             "required": [
                 "category_id",
@@ -986,7 +1270,7 @@ const docTemplate = `{
                 }
             }
         },
-        "ne-project_src_internal_models_entity.Category": {
+        "entity.Category": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -1009,7 +1293,7 @@ const docTemplate = `{
                 }
             }
         },
-        "ne-project_src_internal_models_entity.Product": {
+        "entity.Product": {
             "type": "object",
             "properties": {
                 "category_id": {
@@ -1038,7 +1322,7 @@ const docTemplate = `{
                 }
             }
         },
-        "ne-project_src_internal_models_entity.ProductWithCategory": {
+        "entity.ProductWithCategory": {
             "type": "object",
             "properties": {
                 "category_id": {
