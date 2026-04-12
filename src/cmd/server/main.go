@@ -7,6 +7,7 @@ import (
 	"ne-project/src/internal/config/database"
 	"ne-project/src/internal/config/logger"
 	"ne-project/src/internal/handlers/rest"
+	"ne-project/src/internal/handlers/rest/system"
 	"ne-project/src/internal/repositories"
 	"ne-project/src/internal/services"
 
@@ -47,6 +48,9 @@ func main() {
 	//Base Path Global
 	v1 := r.Group("/api/v1")
 	handlers.RegisterRoutes(v1)
+
+	// System Routes
+	system.NewSystemHandler(db).RegisterRoutes(r)
 
 	// Server config
 	port := cfg.App.Port

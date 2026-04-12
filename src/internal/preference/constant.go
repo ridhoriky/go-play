@@ -42,6 +42,9 @@ const (
 
 	// Batch size
 	MaxBatchSizeProduct = 500
+
+	// Error message system
+	ErrDatabaseConnection = "Database connection error"
 )
 
 var ErrorCodeByHTTPStatus = map[int]string{
