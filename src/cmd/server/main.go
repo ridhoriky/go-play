@@ -6,6 +6,7 @@ import (
 	_ "ne-project/docs"
 	"ne-project/src/internal/config/database"
 	"ne-project/src/internal/config/logger"
+	"ne-project/src/internal/config/middleware"
 	"ne-project/src/internal/handlers/rest"
 	"ne-project/src/internal/handlers/rest/system"
 	"ne-project/src/internal/repositories"
@@ -37,12 +38,16 @@ func main() {
 
 	defer db.Close()
 
+	// Middleware Initialization
+	mw := middleware.InitMiddleware(log)
+
 	repo := repositories.NewRepository(db)
 	service := services.NewServices(repo)
 	handlers := rest.NewHandlers(service)
 
 	// Routing
-	r := gin.Default()
+	r := gin.New()
+	r.Use(mw.Logger(), mw.CORS(), gin.Recovery())
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	//Base Path Global

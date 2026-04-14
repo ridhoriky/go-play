@@ -4,6 +4,7 @@ import (
 	"io"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -36,17 +37,11 @@ func InitLogger(opt LoggerOptions) zerolog.Logger {
 		zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
 		zerolog.TimeFieldFormat = time.RFC3339
 
-		logLevel, err := strconv.Atoi(os.Getenv("LOG_LEVEL"))
-		if err != nil {
-			logLevel = int(zerolog.DebugLevel)
-		}
+		logLevel := parseLogLevel(opt.Level)
+		writer := baseWriter(opt.Output)
+		writer = formatWriter(opt.Format, writer)
 
-		var output io.Writer = zerolog.ConsoleWriter{
-			Out:        os.Stdout,
-			TimeFormat: time.RFC3339,
-		}
-
-		if opt.Enabled {
+		if opt.Enabled && opt.Path != "" {
 			fileLogger := &lumberjack.Logger{
 				Filename:   opt.Path,
 				MaxSize:    opt.MaxSize,
@@ -54,12 +49,11 @@ func InitLogger(opt LoggerOptions) zerolog.Logger {
 				MaxAge:     opt.MaxAge,
 				Compress:   opt.Compress,
 			}
-
-			output = zerolog.MultiLevelWriter(os.Stderr, fileLogger)
+			writer = zerolog.MultiLevelWriter(writer, fileLogger)
 		}
 
-		logInst = zerolog.New(output).
-			Level(zerolog.Level(logLevel)).
+		logInst = zerolog.New(writer).
+			Level(logLevel).
 			With().
 			Timestamp().
 			Caller().
@@ -67,4 +61,44 @@ func InitLogger(opt LoggerOptions) zerolog.Logger {
 	})
 
 	return logInst
+}
+
+func parseLogLevel(defaultLevel string) zerolog.Level {
+	levelValue := strings.TrimSpace(os.Getenv("LOG_LEVEL"))
+	if levelValue == "" {
+		levelValue = strings.TrimSpace(defaultLevel)
+	}
+
+	if lvl, err := zerolog.ParseLevel(strings.ToLower(levelValue)); err == nil {
+		return lvl
+	}
+
+	if intVal, err := strconv.Atoi(levelValue); err == nil {
+		if intVal >= int(zerolog.NoLevel) && intVal <= int(zerolog.FatalLevel) {
+			return zerolog.Level(intVal)
+		}
+	}
+
+	return zerolog.InfoLevel
+}
+
+func baseWriter(output string) io.Writer {
+	switch strings.ToLower(strings.TrimSpace(output)) {
+	case "stderr":
+		return os.Stderr
+	default:
+		return os.Stdout
+	}
+}
+
+func formatWriter(format string, writer io.Writer) io.Writer {
+	switch strings.ToLower(strings.TrimSpace(format)) {
+	case "console":
+		return zerolog.ConsoleWriter{
+			Out:        writer,
+			TimeFormat: time.RFC3339,
+		}
+	default:
+		return writer
+	}
 }
