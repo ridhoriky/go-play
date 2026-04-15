@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"ne-project/src/internal/handlers/helpers"
+	"ne-project/src/internal/models/dto"
 	"net/http"
 	"os"
 	"strings"
@@ -56,17 +58,25 @@ func (m *middleware) CORS() gin.HandlerFunc {
 
 	return func(c *gin.Context) {
 		origin := strings.TrimSpace(c.GetHeader("Origin"))
-		if origin == "" || !isOriginAllowed(origin, allowedOrigins) {
-			c.Next()
+
+		if origin != "" && !isOriginAllowed(origin, allowedOrigins) {
+			err := &dto.Error{
+				Code:    http.StatusForbidden,
+				Message: "Origin not allowed",
+			}
+			helpers.ResponseError(c.Writer, err)
+			c.Abort()
 			return
 		}
 
-		c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
-		c.Writer.Header().Set("Vary", "Origin")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", allowedHeaders(c.Request.Header.Get("Access-Control-Request-Headers")))
-		c.Writer.Header().Set("Access-Control-Max-Age", "86400")
-		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		if origin != "" {
+			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
+			c.Writer.Header().Set("Vary", "Origin")
+			c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
+			c.Writer.Header().Set("Access-Control-Allow-Headers", allowedHeaders(c.Request.Header.Get("Access-Control-Request-Headers")))
+			c.Writer.Header().Set("Access-Control-Max-Age", "86400")
+			c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		}
 
 		if c.Request.Method == http.MethodOptions {
 			c.AbortWithStatus(http.StatusNoContent)
