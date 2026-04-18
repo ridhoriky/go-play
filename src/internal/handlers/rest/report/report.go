@@ -7,7 +7,8 @@ import (
 )
 
 type ReportHandlerItf interface {
-	RegisterRoutes(r *gin.RouterGroup)
+	GetReports(c *gin.Context)
+	GetTopProducts(c *gin.Context)
 }
 
 type reportHandler struct {
@@ -17,13 +18,5 @@ type reportHandler struct {
 func NewReportHandler(reportService report.ReportServiceItf) ReportHandlerItf {
 	return &reportHandler{
 		reportService: reportService,
-	}
-}
-
-func (h *reportHandler) RegisterRoutes(r *gin.RouterGroup) {
-	reportRoutes := r.Group("/reports")
-	{
-		reportRoutes.GET("/summary", h.GetReports)
-		reportRoutes.GET("/top-products", h.GetTopProducts)
 	}
 }

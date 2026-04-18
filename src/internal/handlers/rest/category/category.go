@@ -7,7 +7,11 @@ import (
 )
 
 type CategoryHandlerItf interface {
-	RegisterRoutes(r *gin.RouterGroup)
+	GetAll(c *gin.Context)
+	Create(c *gin.Context)
+	GetByID(c *gin.Context)
+	Update(c *gin.Context)
+	Delete(c *gin.Context)
 }
 
 type categoryHandler struct {
@@ -17,16 +21,5 @@ type categoryHandler struct {
 func NewCategoryHandler(categoryService category.CategoryServiceItf) CategoryHandlerItf {
 	return &categoryHandler{
 		categoryService: categoryService,
-	}
-}
-
-func (h *categoryHandler) RegisterRoutes(r *gin.RouterGroup) {
-	categoryRoutes := r.Group("/categories")
-	{
-		categoryRoutes.GET("", h.GetAll)
-		categoryRoutes.POST("", h.Create)
-		categoryRoutes.GET("/:id", h.GetByID)
-		categoryRoutes.PUT("/:id", h.Update)
-		categoryRoutes.DELETE("/:id", h.Delete)
 	}
 }

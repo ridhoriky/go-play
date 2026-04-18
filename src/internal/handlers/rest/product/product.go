@@ -7,7 +7,12 @@ import (
 )
 
 type ProductHandlerItf interface {
-	RegisterRoutes(r *gin.RouterGroup)
+	GetAll(c *gin.Context)
+	Create(c *gin.Context)
+	GetByID(c *gin.Context)
+	Update(c *gin.Context)
+	Delete(c *gin.Context)
+	CreateMultiple(c *gin.Context)
 }
 
 type productHandler struct {
@@ -17,17 +22,5 @@ type productHandler struct {
 func NewProductHandler(productService product.ProductServiceItf) ProductHandlerItf {
 	return &productHandler{
 		productService: productService,
-	}
-}
-
-func (h *productHandler) RegisterRoutes(r *gin.RouterGroup) {
-	productRoutes := r.Group("/products")
-	{
-		productRoutes.GET("", h.GetAll)
-		productRoutes.POST("", h.Create)
-		productRoutes.GET("/:id", h.GetByID)
-		productRoutes.PUT("/:id", h.Update)
-		productRoutes.DELETE("/:id", h.Delete)
-		productRoutes.POST("/bulk", h.CreateMultiple)
 	}
 }

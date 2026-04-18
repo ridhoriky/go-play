@@ -6,8 +6,6 @@ import (
 	"ne-project/src/internal/handlers/rest/report"
 	"ne-project/src/internal/handlers/rest/transaction"
 	"ne-project/src/internal/services"
-
-	"github.com/gin-gonic/gin"
 )
 
 type Handlers struct {
@@ -24,11 +22,4 @@ func NewHandlers(services *services.Services) *Handlers {
 		Transaction: transaction.NewTransactionHandler(services.Transaction),
 		Report:      report.NewReportHandler(services.Report),
 	}
-}
-
-func (h *Handlers) RegisterRoutes(r *gin.RouterGroup) {
-	h.Category.RegisterRoutes(r)
-	h.Product.RegisterRoutes(r)
-	h.Transaction.RegisterRoutes(r)
-	h.Report.RegisterRoutes(r)
 }

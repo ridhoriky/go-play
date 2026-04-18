@@ -55,7 +55,7 @@ func main() {
 	handlers.RegisterRoutes(v1)
 
 	// System Routes
-	system.NewSystemHandler(db).RegisterRoutes(r)
+	system.NewSystemHandler(db).RegisterRoutes(v1)
 
 	// Server config
 	port := cfg.App.Port

@@ -6,7 +6,7 @@ import (
 )
 
 type SystemHandlerItf interface {
-	RegisterRoutes(r *gin.Engine)
+	HealthCheck(c *gin.Context)
 }
 
 type systemHandler struct {
@@ -17,10 +17,7 @@ func NewSystemHandler(db *sqlx.DB) *systemHandler {
 	return &systemHandler{db: db}
 }
 
-func (h *systemHandler) RegisterRoutes(r *gin.Engine) {
-	systemRoutes := r.Group("/api/v1")
-	{
-		systemRoutes.GET("/health", h.HealthCheck)
-		systemRoutes.GET("/ready", h.ReadyCheck)
-	}
+func (h *systemHandler) RegisterRoutes(r *gin.RouterGroup) {
+	r.GET("/health", h.HealthCheck)
+	r.GET("/ready", h.ReadyCheck)
 }

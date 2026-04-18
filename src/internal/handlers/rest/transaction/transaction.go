@@ -7,7 +7,9 @@ import (
 )
 
 type TransactionHandlerItf interface {
-	RegisterRoutes(r *gin.RouterGroup)
+	Checkout(c *gin.Context)
+	GetByID(c *gin.Context)
+	UpdateTransactionStatus(c *gin.Context)
 }
 
 type transactionHandler struct {
@@ -17,14 +19,5 @@ type transactionHandler struct {
 func NewTransactionHandler(transactionService transaction.TransactionServiceItf) TransactionHandlerItf {
 	return &transactionHandler{
 		transactionService: transactionService,
-	}
-}
-
-func (h *transactionHandler) RegisterRoutes(r *gin.RouterGroup) {
-	transactionRoutes := r.Group("/transactions")
-	{
-		transactionRoutes.POST("/", h.Checkout)
-		transactionRoutes.GET("/:id", h.GetByID)
-		transactionRoutes.PATCH("/:id", h.UpdateTransactionStatus)
 	}
 }
