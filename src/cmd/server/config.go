@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"ne-project/src/internal/config/database"
 	"ne-project/src/internal/config/logger"
+	"ne-project/src/internal/config/token"
 	"os"
 
 	"github.com/goccy/go-yaml"
@@ -13,6 +14,7 @@ type Config struct {
 	App      AppConfig               `yaml:"app"`
 	Database database.DatabaseConfig `yaml:"database"`
 	Logger   logger.LoggerOptions    `yaml:"logger"`
+	Token    token.TokenOptions      `yaml:"logger"`
 }
 
 type AppConfig struct {
@@ -59,8 +61,12 @@ func overrideWithEnv(cfg *Config) {
 		cfg.Database.Name = val
 	}
 
-	if val := os.Getenv("PORT"); val != "" {
-		cfg.App.Port = parseInt(val, cfg.App.Port)
+	if val := os.Getenv("SECRET_ACCESS_TOKEN"); val != "" {
+		cfg.Token.SecretAccessToken = []byte(val)
+	}
+
+	if val := os.Getenv("SECRET_REFRESH_TOKEN"); val != "" {
+		cfg.Token.SecretRefreshToken = []byte(val)
 	}
 
 }

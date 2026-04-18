@@ -17,17 +17,9 @@ type Services struct {
 
 func NewServices(repositories *repositories.Repositories) *Services {
 	return &Services{
-		Category: category.NewCategoryService(
-			repositories.Category,
-		),
-		Product: product.NewProductService(
-			repositories.Product,
-		),
-		Transaction: transaction.NewTransactionService(
-			repositories.Transaction,
-		),
-		Report: report.NewReportService(
-			repositories.Report,
-		),
+		Category:    category.NewCategoryService(repositories.Category),
+		Product:     product.NewProductService(repositories.Product),
+		Transaction: transaction.NewTransactionService(repositories.Transaction),
+		Report:      report.NewReportService(repositories.Report),
 	}
 }

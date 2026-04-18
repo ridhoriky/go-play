@@ -26,3 +26,9 @@ logger:
   max_backups: 7
   max_age: 30 # days
   compress: true # disabled by default
+
+token:
+  secret_token: ${SECRET_ACCESS_TOKEN}
+  secret_refresh_token: ${SECRET_REFRESH_TOKEN}
+  expired_token: 5m
+  expired_refresh_token: 15m
