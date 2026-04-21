@@ -151,7 +151,7 @@ func (r *transactionRepository) insertTransaction(
 ) (entity.Transaction, error) {
 	trx := entity.Transaction{}
 	err := tx.QueryRowContext(ctx, insertTransactionQuery,
-		uuid.New().String(), totalAmount, entity.TransactionStatusPaid,
+		uuid.New().String(), totalAmount, entity.TransactionStatusPending,
 	).Scan(&trx.ID, &trx.TotalAmount, &trx.Status, &trx.CreatedAt)
 	if err != nil {
 		zerolog.Ctx(ctx).Error().Msg("err insert transaction")

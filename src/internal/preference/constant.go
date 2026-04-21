@@ -37,6 +37,25 @@ const (
 	ErrCategoryNotFound      = "Category not found"
 	ErrCategoryNameRequied   = "Category name is required"
 
+	// Error message User
+	ErrInvalidUserID     = "Invalid user ID"
+	ErrUserAlreadyExists = "User email already exists"
+	ErrUserNotFound      = "User not found"
+	ErrUserEmailRequired = "User email is required"
+	ErrUserNameRequired  = "User name is required"
+	ErrUserRoleRequired  = "User role is required"
+
+	// Auth errors
+	ErrInvalidCredentials     = "Invalid email or password"
+	ErrInvalidPassword        = "Password must be at least 6 characters"
+	ErrEmailAlreadyRegistered = "Email already registered"
+	ErrInvalidToken           = "Invalid or expired token"
+	ErrTokenExpired           = "Token has expired"
+	ErrMissingAuthHeader      = "Missing authorization header"
+	ErrInvalidAuthFormat      = "Invalid authorization header format"
+	ErrInvalidRefreshToken    = "Invalid refresh token"
+	ErrRefreshTokenExpired    = "Refresh token has expired"
+
 	// Error message transaction
 	ErrInvalidTranscationID = "Invalid transaction ID"
 

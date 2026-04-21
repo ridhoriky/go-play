@@ -1,36 +1,35 @@
 package auth
 
-// import (
-// 	"context"
-// 	"ne-project/src/internal/models/dto"
-// 	"time"
+import (
+	"context"
 
-// 	"github.com/rs/zerolog"
-// )
+	"ne-project/src/internal/config/token"
+	"ne-project/src/internal/models/dto"
+	"ne-project/src/internal/repositories/auth"
+	"ne-project/src/internal/repositories/user"
 
-// type AuthServiceItf interface {
-// 	RequestChallenge(ctx context.Context, req *dto.RequestChallengeRequest) (*dto.ChallengeResponse, error)
-// 	VerifyChallenge(ctx context.Context, req *dto.VerifyChallengeRequest) (*dto.ChallengeResponse, error)
-// 	Register(ctx context.Context, req *dto.RegisterRequest) (*dto.RegisterResponse, error)
-// 	Login(ctx context.Context, req *dto.LoginRequest) (*dto.LoginResponse, error)
-// 	Logout(ctx context.Context, req *dto.LogoutRequest) (*dto.LogoutResponse, error)
-// 	RefreshToken(ctx context.Context, req *dto.RefreshTokenRequest) (*dto.RefreshTokenResponse, error)
-// }
+	"github.com/jmoiron/sqlx"
+)
 
-// type auth struct {
-// 	log            zerolog.Logger
-// 	opt            MiddlewareOptions
-// 	limit          int
-// 	period         time.Duration
-// 	userRepository UserRepositoryItf
-// }
+type AuthServiceItf interface {
+	Login(ctx context.Context, email string, password string, userAgent string, ipAddr string) (*dto.LoginResponse, error)
+	Register(ctx context.Context, req *dto.RegisterRequest) (*dto.RegisterResponse, error)
+	RefreshToken(ctx context.Context, refreshToken string, userAgent string, ipAddr string) (*dto.AuthTokenResponse, error)
+	Logout(ctx context.Context, userID string, refreshToken string) error
+}
 
-// func NewAuthService(log zerolog.Logger, opt MiddlewareOptions, limit int, period time.Duration, userRepository UserRepositoryItf) AuthServiceItf {
-// 	return &auth{
-// 		log:            log,
-// 		opt:            opt,
-// 		limit:          limit,
-// 		period:         period,
-// 		userRepository: userRepository,
-// 	}
-// }
+type authService struct {
+	userRepository user.UserRepositoryItf
+	authRepository auth.AuthRepositoryItf
+	tokenService   token.Token
+	db             *sqlx.DB
+}
+
+func NewAuthService(userRepository user.UserRepositoryItf, authRepository auth.AuthRepositoryItf, tokenService token.Token, db *sqlx.DB) AuthServiceItf {
+	return &authService{
+		userRepository: userRepository,
+		authRepository: authRepository,
+		tokenService:   tokenService,
+		db:             db,
+	}
+}

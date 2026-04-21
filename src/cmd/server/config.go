@@ -14,7 +14,7 @@ type Config struct {
 	App      AppConfig               `yaml:"app"`
 	Database database.DatabaseConfig `yaml:"database"`
 	Logger   logger.LoggerOptions    `yaml:"logger"`
-	Token    token.TokenOptions      `yaml:"logger"`
+	Token    token.TokenOptions      `yaml:"token"`
 }
 
 type AppConfig struct {
@@ -62,11 +62,11 @@ func overrideWithEnv(cfg *Config) {
 	}
 
 	if val := os.Getenv("SECRET_ACCESS_TOKEN"); val != "" {
-		cfg.Token.SecretAccessToken = []byte(val)
+		cfg.Token.SecretAccessToken = (val)
 	}
 
 	if val := os.Getenv("SECRET_REFRESH_TOKEN"); val != "" {
-		cfg.Token.SecretRefreshToken = []byte(val)
+		cfg.Token.SecretRefreshToken = (val)
 	}
 
 }

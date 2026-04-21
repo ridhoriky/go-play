@@ -76,7 +76,6 @@ func (s *transactionService) UpdateStatus(ctx context.Context, id string, req *d
 	return trx.Transaction, nil
 }
 
-// validateStatusTransition memastikan perubahan status mengikuti aturan bisnis
 func validateStatusTransition(current, new entity.TransactionStatus) error {
 	allowed := map[entity.TransactionStatus][]entity.TransactionStatus{
 		entity.TransactionStatusPending: {
@@ -86,7 +85,7 @@ func validateStatusTransition(current, new entity.TransactionStatus) error {
 		entity.TransactionStatusPaid: {
 			entity.TransactionStatusCancelled,
 		},
-		entity.TransactionStatusCancelled: {}, // tidak ada transisi yang diizinkan
+		entity.TransactionStatusCancelled: {},
 	}
 
 	for _, allowedStatus := range allowed[current] {

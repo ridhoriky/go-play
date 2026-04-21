@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"ne-project/src/internal/config/token"
 	"ne-project/src/internal/handlers/helpers"
 	"ne-project/src/internal/models/dto"
 	"net/http"
@@ -23,6 +24,8 @@ type Middleware interface {
 	Handler() gin.HandlerFunc
 	CORS() gin.HandlerFunc
 	Logger() gin.HandlerFunc
+	JWTAuth(tokenSvc token.Token) gin.HandlerFunc
+	RateLimiter(limit int, window time.Duration) gin.HandlerFunc
 }
 
 type middleware struct {
@@ -78,6 +81,13 @@ func (m *middleware) CORS() gin.HandlerFunc {
 			c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 		}
 
+		// Security headers
+		c.Writer.Header().Set("X-Frame-Options", "DENY")
+		c.Writer.Header().Set("X-Content-Type-Options", "nosniff")
+		c.Writer.Header().Set("X-XSS-Protection", "1; mode=block")
+		c.Writer.Header().Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+		c.Writer.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self';")
+
 		if c.Request.Method == http.MethodOptions {
 			c.AbortWithStatus(http.StatusNoContent)
 			return
@@ -90,6 +100,8 @@ func (m *middleware) CORS() gin.HandlerFunc {
 func (m *middleware) Logger() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
+		ctx := m.log.WithContext(c.Request.Context())
+		c.Request = c.Request.WithContext(ctx)
 		c.Next()
 
 		duration := time.Since(start)
@@ -156,4 +168,14 @@ func getAllowedOrigins() []string {
 	}
 
 	return origins
+}
+
+// JWTAuth returns the JWT authentication middleware
+func (m *middleware) JWTAuth(tokenSvc token.Token) gin.HandlerFunc {
+	return JWTAuthMiddleware(tokenSvc)
+}
+
+// RateLimiter returns the rate limiting middleware
+func (m *middleware) RateLimiter(limit int, window time.Duration) gin.HandlerFunc {
+	return RateLimiter(limit, window)
 }

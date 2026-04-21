@@ -1,53 +1,43 @@
 package dto
 
-// type RequestChallengeRequest struct {
-// 	Email     string `json:"email" binding:"required"`
-// 	PublicKey string `json:"public_key" binding:"required"`
-// }
+// ─── Requests ──────────────────────────────────────────────────────────
 
-// type ChallengeResponse struct {
-// 	Code string `json:"code" binding:"required"`
-// }
+type LoginRequest struct {
+	Email    string `json:"email"    binding:"required,email"`
+	Password string `json:"password" binding:"required,min=6"`
+}
 
-// type VerifyChallengeRequest struct {
-// 	Email string `json:"email" binding:"required"`
-// 	Code  string `json:"code" binding:"required"`
-// }
+type RegisterRequest struct {
+	Name     string `json:"name"     binding:"required,min=1,max=100"`
+	Email    string `json:"email"    binding:"required,email"`
+	Password string `json:"password" binding:"required,min=6"`
+	Role     string `json:"role"     binding:"omitempty,oneof=admin user"`
+}
 
-// type RegisterRequest struct {
-// 	Email    string `json:"email" binding:"required"`
-// 	Code     string `json:"code" binding:"required"`
-// 	Password string `json:"password" binding:"required"`
-// }
+type RefreshTokenRequest struct {
+	RefreshToken string `json:"refreshToken" binding:"required"`
+}
 
-// type RegisterResponse struct {
-// 	AccessToken  string `json:"access_token"`
-// 	RefreshToken string `json:"refresh_token"`
-// }
+type LogoutRequest struct {
+	RefreshToken string `json:"refreshToken" binding:"required"`
+}
 
-// type LoginRequest struct {
-// 	Email    string `json:"email" binding:"required"`
-// 	Password string `json:"password" binding:"required"`
-// }
+// ─── Responses ────────────────────────────────────────────────────────
 
-// type LoginResponse struct {
-// 	AccessToken  string `json:"access_token"`
-// 	RefreshToken string `json:"refresh_token"`
-// }
+type AuthTokenResponse struct {
+	AccessToken  string        `json:"accessToken"`
+	RefreshToken string        `json:"refreshToken"`
+	ExpiresAt    int64         `json:"expiresAt"`
+	ExpiresRt    int64         `json:"expiresRt"`
+	User         *UserResponse `json:"user"`
+}
 
-// type LogoutRequest struct {
-// 	RefreshToken string `json:"refresh_token" binding:"required"`
-// }
+type LoginResponse struct {
+	AuthTokenResponse
+	Message string `json:"message"`
+}
 
-// type LogoutResponse struct {
-// 	Message string `json:"message"`
-// }
-
-// type RefreshTokenRequest struct {
-// 	RefreshToken string `json:"refresh_token" binding:"required"`
-// }
-
-// type RefreshTokenResponse struct {
-// 	AccessToken  string `json:"access_token"`
-// 	RefreshToken string `json:"refresh_token"`
-// }
+type RegisterResponse struct {
+	User    *UserResponse `json:"user"`
+	Message string        `json:"message"`
+}
