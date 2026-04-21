@@ -11,6 +11,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type RateLimiterOptions struct {
+	Limit  int           `yaml:"limit"`
+	Window time.Duration `yaml:"window"`
+}
 type rateLimitEntry struct {
 	mu          sync.Mutex
 	count       int
@@ -19,7 +23,7 @@ type rateLimitEntry struct {
 
 var rateLimits sync.Map
 
-func RateLimiter(limit int, window time.Duration) gin.HandlerFunc {
+func (m *middleware) RateLimiter(limit int, window time.Duration) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if limit <= 0 || window <= 0 {
 			c.Next()

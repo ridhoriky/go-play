@@ -39,11 +39,11 @@ func main() {
 
 	defer db.Close()
 
-	// Middleware Initialization
-	mw := middleware.InitMiddleware(log)
-
 	// Token Service Initialization
 	tokenSvc := token.InitToken(log, cfg.Token)
+
+	// Middleware Initialization
+	mw := middleware.InitMiddleware(log, tokenSvc, cfg.RateLimit.Limit, cfg.RateLimit.Window)
 
 	repo := repositories.NewRepository(db)
 	service := services.NewServices(repo, tokenSvc, db)

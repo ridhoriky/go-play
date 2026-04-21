@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"ne-project/src/internal/config/database"
 	"ne-project/src/internal/config/logger"
+	"ne-project/src/internal/config/middleware"
 	"ne-project/src/internal/config/token"
 	"os"
 
@@ -11,10 +12,11 @@ import (
 )
 
 type Config struct {
-	App      AppConfig               `yaml:"app"`
-	Database database.DatabaseConfig `yaml:"database"`
-	Logger   logger.LoggerOptions    `yaml:"logger"`
-	Token    token.TokenOptions      `yaml:"token"`
+	App       AppConfig                     `yaml:"app"`
+	Database  database.DatabaseConfig       `yaml:"database"`
+	Logger    logger.LoggerOptions          `yaml:"logger"`
+	Token     token.TokenOptions            `yaml:"token"`
+	RateLimit middleware.RateLimiterOptions `yaml:"rate_limit"`
 }
 
 type AppConfig struct {

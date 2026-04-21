@@ -22,7 +22,7 @@ func (h *Handlers) RegisterRoutes(r *gin.RouterGroup, tokenSvc token.Token, mw m
 
 	// ─── PROTECTED ROUTES  ────────────────────
 	protected := r.Group("")
-	protected.Use(mw.JWTAuth(tokenSvc))
+	protected.Use(mw.JWTAuth(tokenSvc), mw.RateLimiter(100, time.Minute))
 	{
 		// category
 		routerCategories := protected.Group("/categories")
