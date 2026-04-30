@@ -22,7 +22,7 @@ type Services struct {
 	User        user.UserServiceItf
 }
 
-func NewServices(repositories *repositories.Repositories, tokenSvc token.Token, db *sqlx.DB) *Services {
+func NewServices(repositories *repositories.Repositories, tokenSvc *token.Token, db *sqlx.DB) *Services {
 	return &Services{
 		Auth:        auth.NewAuthService(repositories.User, repositories.Auth, tokenSvc, db),
 		Category:    category.NewCategoryService(repositories.Category),

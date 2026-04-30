@@ -12,9 +12,10 @@ import (
 )
 
 type RateLimiterOptions struct {
-	Limit  int           `yaml:"limit"`
-	Window time.Duration `yaml:"window"`
+	Limit  int           `yaml:"limit" env:"RATE_LIMIT" env-default:"100"`
+	Window time.Duration `yaml:"window" env:"RATE_LIMIT_WINDOW" env-default:"1m"`
 }
+
 type rateLimitEntry struct {
 	mu          sync.Mutex
 	count       int
@@ -23,7 +24,7 @@ type rateLimitEntry struct {
 
 var rateLimits sync.Map
 
-func (m *middleware) RateLimiter(limit int, window time.Duration) gin.HandlerFunc {
+func (m *Middleware) RateLimiter(limit int, window time.Duration) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if limit <= 0 || window <= 0 {
 			c.Next()

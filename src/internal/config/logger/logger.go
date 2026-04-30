@@ -5,7 +5,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/rs/zerolog"
@@ -15,52 +14,45 @@ import (
 
 // LoggerOptions holds logger configuration
 type LoggerOptions struct {
-	Enabled    bool   `yaml:"enabled"`
-	Level      string `yaml:"level"`
-	Format     string `yaml:"format"`
-	Output     string `yaml:"output"`
-	Path       string `yaml:"path"`
-	MaxSize    int    `yaml:"max_size"`
-	MaxBackups int    `yaml:"max_backups"`
-	MaxAge     int    `yaml:"max_age"`
-	Compress   bool   `yaml:"compress"`
+	Enabled    bool   `yaml:"enabled" env:"LOGGER_ENABLED" env-default:"true"`
+	Level      string `yaml:"level" env:"LOGGER_LEVEL" env-default:"info"`
+	Format     string `yaml:"format" env:"LOGGER_FORMAT" env-default:"json"`
+	Output     string `yaml:"output" env:"LOGGER_OUTPUT" env-default:"stdout"`
+	Path       string `yaml:"path" env:"LOGGER_PATH" env-default:"./logs/app.log"`
+	MaxSize    int    `yaml:"max_size" env:"LOGGER_MAX_SIZE" env-default:"100"`
+	MaxBackups int    `yaml:"max_backups" env:"LOGGER_MAX_BACKUPS" env-default:"7"`
+	MaxAge     int    `yaml:"max_age" env:"LOGGER_MAX_AGE" env-default:"30"`
+	Compress   bool   `yaml:"compress" env:"LOGGER_COMPRESS" env-default:"false"`
 }
 
-var (
-	onceLogger = sync.Once{}
-	logInst    zerolog.Logger
-)
-
 // InitLogger initializes the logger
-func InitLogger(opt LoggerOptions) zerolog.Logger {
-	onceLogger.Do(func() {
-		zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
-		zerolog.TimeFieldFormat = time.RFC3339
+func InitLogger(opt LoggerOptions) *zerolog.Logger {
+	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
+	zerolog.TimeFieldFormat = time.RFC3339
 
-		logLevel := parseLogLevel(opt.Level)
-		writer := baseWriter(opt.Output)
-		writer = formatWriter(opt.Format, writer)
+	logLevel := parseLogLevel(opt.Level)
+	writer := baseWriter(opt.Output)
+	writer = formatWriter(opt.Format, writer)
 
-		if opt.Enabled && opt.Path != "" {
-			fileLogger := &lumberjack.Logger{
-				Filename:   opt.Path,
-				MaxSize:    opt.MaxSize,
-				MaxBackups: opt.MaxBackups,
-				MaxAge:     opt.MaxAge,
-				Compress:   opt.Compress,
-			}
-			writer = zerolog.MultiLevelWriter(writer, fileLogger)
+	if opt.Enabled && opt.Path != "" {
+		fileLogger := &lumberjack.Logger{
+			Filename:   opt.Path,
+			MaxSize:    opt.MaxSize,
+			MaxBackups: opt.MaxBackups,
+			MaxAge:     opt.MaxAge,
+			Compress:   opt.Compress,
 		}
+		writer = zerolog.MultiLevelWriter(writer, fileLogger)
+	}
 
-		logInst = zerolog.New(writer).
-			Level(logLevel).
-			With().
-			Timestamp().
-			Caller().
-			Logger()
-	})
+	logInst := zerolog.New(writer).
+		Level(logLevel).
+		With().
+		Timestamp().
+		Caller().
+		Logger()
 
-	return logInst
+	return &logInst
 }
 
 func parseLogLevel(defaultLevel string) zerolog.Level {

@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (m *middleware) CORS() gin.HandlerFunc {
+func (m *Middleware) CORS() gin.HandlerFunc {
 	allowedOrigins := getAllowedOrigins()
 
 	return func(c *gin.Context) {

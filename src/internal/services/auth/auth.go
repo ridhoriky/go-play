@@ -21,11 +21,11 @@ type AuthServiceItf interface {
 type authService struct {
 	userRepository user.UserRepositoryItf
 	authRepository auth.AuthRepositoryItf
-	tokenService   token.Token
+	tokenService   *token.Token
 	db             *sqlx.DB
 }
 
-func NewAuthService(userRepository user.UserRepositoryItf, authRepository auth.AuthRepositoryItf, tokenService token.Token, db *sqlx.DB) AuthServiceItf {
+func NewAuthService(userRepository user.UserRepositoryItf, authRepository auth.AuthRepositoryItf, tokenService *token.Token, db *sqlx.DB) AuthServiceItf {
 	return &authService{
 		userRepository: userRepository,
 		authRepository: authRepository,

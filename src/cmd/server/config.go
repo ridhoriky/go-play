@@ -1,14 +1,14 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"ne-project/src/internal/config/database"
 	"ne-project/src/internal/config/logger"
 	"ne-project/src/internal/config/middleware"
 	"ne-project/src/internal/config/token"
-	"os"
+	"time"
 
-	"github.com/goccy/go-yaml"
+	"github.com/ilyakaznacheev/cleanenv"
 )
 
 type Config struct {
@@ -20,64 +20,22 @@ type Config struct {
 }
 
 type AppConfig struct {
-	Port int `yaml:"port"`
+	AppName         string        `yaml:"name" env:"APP_NAME" env-default:"myapp"`
+	Version         string        `yaml:"version" env:"APP_VERSION" env-default:"1.0.0"`
+	Port            int           `yaml:"port" env:"APP_PORT" env-default:"8080"`
+	Environment     string        `yaml:"environment" env:"APP_ENVIRONMENT" env-default:"development"`
+	ShutdownTimeout time.Duration `yaml:"shutdown_timeout" env:"APP_SHUTDOWN_TIMEOUT" env-default:"30s"`
 }
 
 func LoadConfig() (*Config, error) {
 
-	configPath := "config.yaml"
-
-	data, err := os.ReadFile(configPath)
-	if err != nil {
-		return nil, err
-	}
-
 	var cfg Config
-	if err := yaml.Unmarshal(data, &cfg); err != nil {
-		return nil, err
+	err := cleanenv.ReadConfig("config.yaml", &cfg)
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	overrideWithEnv(&cfg)
+	log.Printf("Config loaded: %+v\n", cfg)
 
 	return &cfg, nil
-}
-
-func overrideWithEnv(cfg *Config) {
-	if val := os.Getenv("DB_HOST"); val != "" {
-		cfg.Database.Host = val
-	}
-
-	if val := os.Getenv("DB_PORT"); val != "" {
-		cfg.Database.Port = parseInt(val, cfg.Database.Port)
-	}
-
-	if val := os.Getenv("DB_USER"); val != "" {
-		cfg.Database.User = val
-	}
-
-	if val := os.Getenv("DB_PASSWORD"); val != "" {
-		cfg.Database.Password = val
-	}
-
-	if val := os.Getenv("DB_NAME"); val != "" {
-		cfg.Database.Name = val
-	}
-
-	if val := os.Getenv("SECRET_ACCESS_TOKEN"); val != "" {
-		cfg.Token.SecretAccessToken = (val)
-	}
-
-	if val := os.Getenv("SECRET_REFRESH_TOKEN"); val != "" {
-		cfg.Token.SecretRefreshToken = (val)
-	}
-
-}
-
-func parseInt(s string, defaultVal int) int {
-	var val int
-	if _, err := fmt.Sscanf(s, "%d", &val); err == nil {
-		return val
-	}
-
-	return defaultVal
 }

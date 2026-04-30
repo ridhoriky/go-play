@@ -12,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (m *middleware) JWTAuth(tokenSvc token.Token) gin.HandlerFunc {
+func (m *Middleware) JWTAuth(tokenSvc *token.Token) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if strings.TrimSpace(authHeader) == "" {

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"sync"
 	"time"
 
 	"ne-project/src/internal/models/entity"
@@ -16,23 +15,11 @@ import (
 	"github.com/rs/zerolog"
 )
 
-type Token interface {
-	CreateTokens(user *entity.User) (*TokenDetails, error)
-	ValidateAccessToken(tokenString string) (*AccessTokenClaims, error)
-	ValidateRefreshToken(tokenString string) (*RefreshTokenClaims, error)
-	HashToken(token string) string
-}
-
-var (
-	onceToken = &sync.Once{}
-	tokenInst *token
-)
-
 type TokenOptions struct {
-	SecretAccessToken   string        `yaml:"secret_token"`
-	SecretRefreshToken  string        `yaml:"secret_refresh_token"`
-	ExpiredToken        time.Duration `yaml:"expired_token"`
-	ExpiredRefreshToken time.Duration `yaml:"expired_refresh_token"`
+	SecretAccessToken   string        `yaml:"secret_token" env:"JWT_SECRET_ACCESS_TOKEN" env-default:"secret_access_token"`
+	SecretRefreshToken  string        `yaml:"secret_refresh_token" env:"JWT_SECRET_REFRESH_TOKEN" env-default:"secret_refresh_token"`
+	ExpiredToken        time.Duration `yaml:"expired_token" env:"JWT_EXPIRED_ACCESS_TOKEN" env-default:"15m"`
+	ExpiredRefreshToken time.Duration `yaml:"expired_refresh_token" env:"JWT_EXPIRED_REFRESH_TOKEN" env-default:"168h"`
 }
 
 type TokenDetails struct {
@@ -58,7 +45,7 @@ type RefreshTokenClaims struct {
 	jwt.RegisteredClaims
 }
 
-type token struct {
+type Token struct {
 	log                 zerolog.Logger
 	secretAccessToken   []byte
 	secretRefreshToken  []byte
@@ -66,24 +53,21 @@ type token struct {
 	expiredRefreshToken time.Duration
 }
 
-func InitToken(log zerolog.Logger, opt TokenOptions) *token {
-	onceToken.Do(func() {
-		if len(strings.TrimSpace(opt.SecretAccessToken)) == 0 || len(strings.TrimSpace(opt.SecretRefreshToken)) == 0 {
-			log.Panic().Msgf("Environment variable jwt access or refresh key is not set")
-		}
-		tokenInst = &token{
-			log:                 log,
-			secretAccessToken:   []byte(strings.TrimSpace(opt.SecretAccessToken)),
-			secretRefreshToken:  []byte(strings.TrimSpace(opt.SecretRefreshToken)),
-			expiredToken:        opt.ExpiredToken,
-			expiredRefreshToken: opt.ExpiredRefreshToken,
-		}
-	})
+func InitToken(log zerolog.Logger, opt TokenOptions) *Token {
+	if len(strings.TrimSpace(opt.SecretAccessToken)) == 0 || len(strings.TrimSpace(opt.SecretRefreshToken)) == 0 {
+		log.Panic().Msgf("Environment variable jwt access or refresh key is not set")
+	}
+	return &Token{
+		log:                 log,
+		secretAccessToken:   []byte(strings.TrimSpace(opt.SecretAccessToken)),
+		secretRefreshToken:  []byte(strings.TrimSpace(opt.SecretRefreshToken)),
+		expiredToken:        opt.ExpiredToken,
+		expiredRefreshToken: opt.ExpiredRefreshToken,
+	}
 
-	return tokenInst
 }
 
-func (a *token) CreateTokens(user *entity.User) (*TokenDetails, error) {
+func (a *Token) CreateTokens(user *entity.User) (*TokenDetails, error) {
 	now := time.Now()
 	td := &TokenDetails{
 		ExpiresAt: time.Now().Add(a.expiredToken).Unix(),
@@ -135,7 +119,7 @@ func (a *token) CreateTokens(user *entity.User) (*TokenDetails, error) {
 	return td, nil
 }
 
-func (a *token) ValidateAccessToken(tokenString string) (*AccessTokenClaims, error) {
+func (a *Token) ValidateAccessToken(tokenString string) (*AccessTokenClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &AccessTokenClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return a.secretAccessToken, nil
 	})
@@ -151,7 +135,7 @@ func (a *token) ValidateAccessToken(tokenString string) (*AccessTokenClaims, err
 	return claims, nil
 }
 
-func (a *token) ValidateRefreshToken(tokenString string) (*RefreshTokenClaims, error) {
+func (a *Token) ValidateRefreshToken(tokenString string) (*RefreshTokenClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &RefreshTokenClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return a.secretRefreshToken, nil
 	})
@@ -171,12 +155,12 @@ func (a *token) ValidateRefreshToken(tokenString string) (*RefreshTokenClaims, e
 	return claims, nil
 }
 
-func (a *token) HashToken(token string) string {
+func (a *Token) HashToken(token string) string {
 	h := sha256.Sum256([]byte(token))
 	return hex.EncodeToString(h[:])
 }
 
-func (a *token) ExtractTokenFromHeader(r *http.Request) (string, error) {
+func (a *Token) ExtractTokenFromHeader(r *http.Request) (string, error) {
 	authHeader := r.Header.Get("Authorization")
 	if strings.TrimSpace(authHeader) == "" {
 		return "", fmt.Errorf("authorization header missing")
@@ -190,7 +174,7 @@ func (a *token) ExtractTokenFromHeader(r *http.Request) (string, error) {
 	return strings.TrimSpace(parts[1]), nil
 }
 
-func (a *token) ValidateToken(r *http.Request) error {
+func (a *Token) ValidateToken(r *http.Request) error {
 	tokenString, err := a.ExtractTokenFromHeader(r)
 	if err != nil {
 		return err
@@ -200,7 +184,7 @@ func (a *token) ValidateToken(r *http.Request) error {
 	return err
 }
 
-func (a *token) ValidateRefreshTokenFromRequest(r *http.Request, token string) error {
+func (a *Token) ValidateRefreshTokenFromRequest(r *http.Request, token string) error {
 	if token == "" {
 		return fmt.Errorf("refresh token is required")
 	}
