@@ -28,10 +28,17 @@ import (
 func Run(cfg *appconfig.Config) {
 	log := logger.InitLogger(cfg.Logger)
 
-	db := initDatabase(log, &cfg.Database)
+	db, err := database.InitDB(*log, &cfg.Database)
+	if err != nil {
+		log.Fatal().Err(err).Msg("app - Run - failed to initialize database")
+	}
 	defer closeDatabase(log, db)
 
-	tokenSvc := initTokenService(log, cfg.Token)
+	tokenSvc, err := token.InitToken(*log, cfg.Token)
+	if err != nil {
+		log.Err(err).Msg("app - Run - failed to initialize token service")
+		return
+	}
 
 	router := setupRouter(log, cfg, db, tokenSvc)
 
@@ -39,27 +46,14 @@ func Run(cfg *appconfig.Config) {
 	waitForShutdown(log, srv, cfg.App)
 }
 
-func initDatabase(log *zerolog.Logger, cfg *database.DatabaseConfig) *sqlx.DB {
-	db, err := database.InitDB(*log, cfg)
-	if err != nil {
-		log.Fatal().Err(err).Msg("app - initDatabase - database.InitDB")
-	}
-	return db
-}
-
 func closeDatabase(log *zerolog.Logger, db *sqlx.DB) {
+	if db == nil {
+		return
+	}
 	log.Info().Str("component", "database").Msg("closing database connection")
 	if err := db.Close(); err != nil {
 		log.Error().Err(err).Str("component", "database").Msg("failed to close database connection")
 	}
-}
-
-func initTokenService(log *zerolog.Logger, cfg token.TokenOptions) *token.Token {
-	tokenSvc, err := token.InitToken(*log, cfg)
-	if err != nil {
-		log.Fatal().Err(err).Msg("app - initTokenService - token.InitToken")
-	}
-	return tokenSvc
 }
 
 func setupRouter(log *zerolog.Logger, cfg *appconfig.Config, db *sqlx.DB, tokenSvc *token.Token) *gin.Engine {
