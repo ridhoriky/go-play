@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"os/signal"
 	"syscall"
-	"time"
 
 	_ "ne-project/docs"
 	"ne-project/src/internal/config/database"
@@ -40,7 +39,7 @@ func main() {
 	// Init DB
 	db, err := database.InitDB(*log, &cfg.Database)
 	if err != nil {
-		log.Fatal().Msg(fmt.Sprintf("Failed to initialize database: %s", err))
+		log.Fatal().Err(err).Msg("Failed to connect to database")
 	}
 
 	defer db.Close()
@@ -65,31 +64,26 @@ func main() {
 	// System Routes
 	system.NewSystemHandler(db).RegisterRoutes(v1)
 
-	// Server config
-	port := cfg.App.Port
-
-	log.Info().Msg(fmt.Sprintf("Server running on port: %d", port))
-
-	if err := serve(r, port, log); err != nil {
+	if err := serve(r, log, &cfg.App); err != nil {
 		log.Fatal().Err(err).Msg("Server error")
 	}
 }
 
-// serve menjalankan HTTP server dengan Gin dan menangani graceful shutdown.
-func serve(handler http.Handler, port int, log *zerolog.Logger) error {
+// serve starts the HTTP server and handles graceful shutdown on interrupt signals.
+func serve(handler http.Handler, log *zerolog.Logger, appConfig *AppConfig) error {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
 	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%d", port),
+		Addr:         fmt.Sprintf(":%d", appConfig.Port),
 		Handler:      handler,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 15 * time.Second,
-		IdleTimeout:  60 * time.Second,
+		ReadTimeout:  appConfig.ReadTimeout,
+		WriteTimeout: appConfig.WriteTimeout,
+		IdleTimeout:  appConfig.IdleTimeout,
 	}
 
 	go func() {
-		log.Info().Int("port", port).Msg("server starting")
+		log.Info().Int("port", appConfig.Port).Msg("server starting " + appConfig.AppName + " version " + appConfig.Version + " in " + appConfig.Environment + " environment")
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatal().Err(err).Msg("unexpected server error")
 		}
@@ -98,7 +92,7 @@ func serve(handler http.Handler, port int, log *zerolog.Logger) error {
 	<-ctx.Done()
 	log.Info().Msg("shutdown signal received, gracefully stopping...")
 
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), appConfig.ShutdownTimeout)
 	defer cancel()
 
 	if err := srv.Shutdown(shutdownCtx); err != nil {

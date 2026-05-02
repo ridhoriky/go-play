@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (h *Handlers) RegisterRoutes(r *gin.RouterGroup, tokenSvc token.Token, mw middleware.Middleware) {
+func (h *Handlers) RegisterRoutes(r *gin.RouterGroup, tokenSvc *token.Token, mw middleware.Middleware) {
 
 	// ─── PUBLIC AUTH ROUTES  ────────────────────
 	authGroup := r.Group("/auth")

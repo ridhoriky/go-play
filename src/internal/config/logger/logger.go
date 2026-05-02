@@ -30,10 +30,16 @@ func InitLogger(opt LoggerOptions) *zerolog.Logger {
 	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
 	zerolog.TimeFieldFormat = time.RFC3339
 
+	// Add caller info to all log levels
 	logLevel := parseLogLevel(opt.Level)
+
+	// Base writer setup
 	writer := baseWriter(opt.Output)
+
+	// Apply format to the base writer
 	writer = formatWriter(opt.Format, writer)
 
+	// Add file writer if enabled and path is provided
 	if opt.Enabled && opt.Path != "" {
 		fileLogger := &lumberjack.Logger{
 			Filename:   opt.Path,
@@ -56,16 +62,11 @@ func InitLogger(opt LoggerOptions) *zerolog.Logger {
 }
 
 func parseLogLevel(defaultLevel string) zerolog.Level {
-	levelValue := strings.TrimSpace(os.Getenv("LOG_LEVEL"))
-	if levelValue == "" {
-		levelValue = strings.TrimSpace(defaultLevel)
-	}
-
-	if lvl, err := zerolog.ParseLevel(strings.ToLower(levelValue)); err == nil {
+	if lvl, err := zerolog.ParseLevel(strings.ToLower(defaultLevel)); err == nil {
 		return lvl
 	}
 
-	if intVal, err := strconv.Atoi(levelValue); err == nil {
+	if intVal, err := strconv.Atoi(defaultLevel); err == nil {
 		if intVal >= int(zerolog.NoLevel) && intVal <= int(zerolog.FatalLevel) {
 			return zerolog.Level(intVal)
 		}
