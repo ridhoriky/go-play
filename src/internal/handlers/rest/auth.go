@@ -1,15 +1,26 @@
-package auth
+package rest
 
 import (
 	"log"
 	"ne-project/src/internal/handlers/helpers"
 	"ne-project/src/internal/models/dto"
 	"ne-project/src/internal/preference"
+	"ne-project/src/internal/services/auth"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 )
+
+type AuthHandler struct {
+	authService auth.AuthServiceItf
+}
+
+func NewAuthHandler(authService auth.AuthServiceItf) *AuthHandler {
+	return &AuthHandler{
+		authService: authService,
+	}
+}
 
 // Login godoc
 // @Summary      User login
@@ -23,7 +34,7 @@ import (
 // @Failure      401 {object} dto.Error
 // @Failure      500 {object} dto.Error
 // @Router       /auth/login [post]
-func (h *authHandler) Login(c *gin.Context) {
+func (h *AuthHandler) Login(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	var req dto.LoginRequest
@@ -57,7 +68,7 @@ func (h *authHandler) Login(c *gin.Context) {
 // @Failure      409 {object} dto.Error
 // @Failure      500 {object} dto.Error
 // @Router       /auth/register [post]
-func (h *authHandler) Register(c *gin.Context) {
+func (h *AuthHandler) Register(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	var req dto.RegisterRequest
@@ -92,7 +103,7 @@ func (h *authHandler) Register(c *gin.Context) {
 // @Failure      401 {object} dto.Error
 // @Failure      500 {object} dto.Error
 // @Router       /auth/refresh [post]
-func (h *authHandler) RefreshToken(c *gin.Context) {
+func (h *AuthHandler) RefreshToken(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	var req dto.RefreshTokenRequest
@@ -126,7 +137,7 @@ func (h *authHandler) RefreshToken(c *gin.Context) {
 // @Failure      401 {object} dto.Error
 // @Failure      500 {object} dto.Error
 // @Router       /auth/logout [post]
-func (h *authHandler) Logout(c *gin.Context) {
+func (h *AuthHandler) Logout(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	var req dto.LogoutRequest

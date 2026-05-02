@@ -1,15 +1,26 @@
-package user
+package rest
 
 import (
 	"ne-project/src/internal/handlers/helpers"
 	"ne-project/src/internal/models/dto"
 	"ne-project/src/internal/preference"
+	"ne-project/src/internal/services/user"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 )
+
+type UserHandler struct {
+	userService user.UserServiceItf
+}
+
+func NewUserHandler(userService user.UserServiceItf) *UserHandler {
+	return &UserHandler{
+		userService: userService,
+	}
+}
 
 // GetAllUser godoc
 // @Summary Get all users
@@ -23,7 +34,7 @@ import (
 // @Failure 400 {object} dto.Error
 // @Failure 500 {object} dto.Error
 // @Router /users [get]
-func (h *userHandler) GetAllUser(c *gin.Context) {
+func (h *UserHandler) GetAllUser(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	var req dto.GetUsersQuery
@@ -56,7 +67,7 @@ func (h *userHandler) GetAllUser(c *gin.Context) {
 // @Failure 404 {object} dto.Error
 // @Failure 500 {object} dto.Error
 // @Router /users/{id} [get]
-func (h *userHandler) GetUserByID(c *gin.Context) {
+func (h *UserHandler) GetUserByID(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	id, err := uuid.Parse(c.Param("id"))
@@ -88,7 +99,7 @@ func (h *userHandler) GetUserByID(c *gin.Context) {
 // @Failure 400 {object} dto.Error
 // @Failure 500 {object} dto.Error
 // @Router /users [post]
-func (h *userHandler) CreateUser(c *gin.Context) {
+func (h *UserHandler) CreateUser(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	var user dto.CreateUserRequest
@@ -123,7 +134,7 @@ func (h *userHandler) CreateUser(c *gin.Context) {
 // @Failure 404 {object} dto.Error
 // @Failure 500 {object} dto.Error
 // @Router /users/{id} [put]
-func (h *userHandler) UpdateUser(c *gin.Context) {
+func (h *UserHandler) UpdateUser(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	id, err := uuid.Parse(c.Param("id"))
@@ -167,7 +178,7 @@ func (h *userHandler) UpdateUser(c *gin.Context) {
 // @Failure 404 {object} dto.Error
 // @Failure 500 {object} dto.Error
 // @Router /users/{id} [delete]
-func (h *userHandler) DeleteUser(c *gin.Context) {
+func (h *UserHandler) DeleteUser(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	id, err := uuid.Parse(c.Param("id"))

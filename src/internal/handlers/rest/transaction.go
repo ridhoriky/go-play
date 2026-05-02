@@ -1,16 +1,26 @@
-package transaction
+package rest
 
 import (
-	"net/http"
-
 	"ne-project/src/internal/handlers/helpers"
 	"ne-project/src/internal/models/dto"
 	"ne-project/src/internal/preference"
+	"ne-project/src/internal/services/transaction"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 )
+
+type TransactionHandler struct {
+	transactionService transaction.TransactionServiceItf
+}
+
+func NewTransactionHandler(transactionService transaction.TransactionServiceItf) *TransactionHandler {
+	return &TransactionHandler{
+		transactionService: transactionService,
+	}
+}
 
 // CreateTransaction godoc
 // @Summary      Create Transaction
@@ -23,7 +33,7 @@ import (
 // @Failure      400  		{object} 	dto.APIResponse
 // @Failure      404  		{object}  	dto.APIResponse
 // @Router       /transactions [post]
-func (h *transactionHandler) Checkout(c *gin.Context) {
+func (h *TransactionHandler) Checkout(c *gin.Context) {
 
 	ctx := c.Request.Context()
 
@@ -58,7 +68,7 @@ func (h *transactionHandler) Checkout(c *gin.Context) {
 // @Failure      400  {object} 	dto.APIResponse
 // @Failure      404  {object}  dto.APIResponse
 // @Router       /transactions/{id} [get]
-func (h *transactionHandler) GetByID(c *gin.Context) {
+func (h *TransactionHandler) GetByID(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	id, err := uuid.Parse(c.Param("id"))
@@ -90,7 +100,7 @@ func (h *transactionHandler) GetByID(c *gin.Context) {
 // @Failure      400  {object} 	dto.APIResponse
 // @Failure      404  {object}  dto.APIResponse
 // @Router       /transactions/{id}/status [patch]
-func (h *transactionHandler) UpdateTransactionStatus(c *gin.Context) {
+func (h *TransactionHandler) UpdateTransactionStatus(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	id, err := uuid.Parse(c.Param("id"))

@@ -1,15 +1,25 @@
-package report
+package rest
 
 import (
-	"net/http"
-
 	"ne-project/src/internal/handlers/helpers"
 	"ne-project/src/internal/models/dto"
 	"ne-project/src/internal/preference"
+	"ne-project/src/internal/services/report"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 )
+
+type ReportHandler struct {
+	reportService report.ReportServiceItf
+}
+
+func NewReportHandler(reportService report.ReportServiceItf) *ReportHandler {
+	return &ReportHandler{
+		reportService: reportService,
+	}
+}
 
 // GetReports godoc
 // @Summary      List Report
@@ -24,7 +34,7 @@ import (
 // @Failure      400  {object} 		dto.APIResponse
 // @Failure      404  {object}  	dto.APIResponse
 // @Router       /reports [get]
-func (h *reportHandler) GetReports(c *gin.Context) {
+func (h *ReportHandler) GetReports(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	var req dto.GetReportQuery
@@ -58,7 +68,7 @@ func (h *reportHandler) GetReports(c *gin.Context) {
 // @Failure      400  {object} 		dto.APIResponse
 // @Failure      404  {object}  	dto.APIResponse
 // @Router       /reports/top-products [get]
-func (h *reportHandler) GetTopProducts(c *gin.Context) {
+func (h *ReportHandler) GetTopProducts(c *gin.Context) {
 	ctx := c.Request.Context()
 	var req dto.GetTopProductsQuery
 	if err := c.ShouldBindQuery(&req); err != nil {

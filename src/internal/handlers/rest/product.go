@@ -1,18 +1,28 @@
-package product
+package rest
 
 import (
-	"net/http"
-
 	"ne-project/src/internal/handlers/helpers"
 	"ne-project/src/internal/models/dto"
 	"ne-project/src/internal/models/entity"
 	"ne-project/src/internal/preference"
+	"ne-project/src/internal/services/product"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"github.com/shopspring/decimal"
 )
+
+type ProductHandler struct {
+	productService product.ProductServiceItf
+}
+
+func NewProductHandler(productService product.ProductServiceItf) *ProductHandler {
+	return &ProductHandler{
+		productService: productService,
+	}
+}
 
 // GetProducts godoc
 // @Summary      List Product
@@ -33,7 +43,7 @@ import (
 // @Failure      400  {object} 		dto.APIResponse
 // @Failure      404  {object}  	dto.APIResponse
 // @Router       /products [get]
-func (h *productHandler) GetAll(c *gin.Context) {
+func (h *ProductHandler) GetAll(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	var req dto.GetProductsQuery
@@ -64,7 +74,7 @@ func (h *productHandler) GetAll(c *gin.Context) {
 // @Failure      400  		{object} 	dto.APIResponse
 // @Failure      404  		{object}  	dto.APIResponse
 // @Router       /products [post]
-func (h *productHandler) Create(c *gin.Context) {
+func (h *ProductHandler) Create(c *gin.Context) {
 	ctx := c.Request.Context()
 	var p dto.CreateProductRequest
 
@@ -95,7 +105,7 @@ func (h *productHandler) Create(c *gin.Context) {
 // @Failure      400  {object} 	dto.APIResponse
 // @Failure      404  {object}  dto.APIResponse
 // @Router       /products/{id} [get]
-func (h *productHandler) GetByID(c *gin.Context) {
+func (h *ProductHandler) GetByID(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	id, err := uuid.Parse(c.Param("id"))
@@ -128,7 +138,7 @@ func (h *productHandler) GetByID(c *gin.Context) {
 // @Failure      400  {object} 	dto.APIResponse
 // @Failure      404  {object}  dto.APIResponse
 // @Router       /products/{id} [put]
-func (h *productHandler) Update(c *gin.Context) {
+func (h *ProductHandler) Update(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	id, err := uuid.Parse(c.Param("id"))
@@ -170,7 +180,7 @@ func (h *productHandler) Update(c *gin.Context) {
 // @Failure      400  {object} 	dto.APIResponse
 // @Failure      404  {object}  dto.APIResponse
 // @Router       /products/{id} [delete]
-func (h *productHandler) Delete(c *gin.Context) {
+func (h *ProductHandler) Delete(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	id, err := uuid.Parse(c.Param("id"))
@@ -201,7 +211,7 @@ func (h *productHandler) Delete(c *gin.Context) {
 // @Failure      400  		{object} 	dto.APIResponse
 // @Failure      404  		{object}  	dto.APIResponse
 // @Router       /products/bulk [post]
-func (h *productHandler) CreateMultiple(c *gin.Context) {
+func (h *ProductHandler) CreateMultiple(c *gin.Context) {
 	ctx := c.Request.Context()
 	var req dto.CreateMultipleProducts
 	if err := c.ShouldBindJSON(&req); err != nil {

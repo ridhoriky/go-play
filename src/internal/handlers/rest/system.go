@@ -1,4 +1,4 @@
-package system
+package rest
 
 import (
 	"ne-project/src/internal/models/dto"
@@ -6,8 +6,22 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog"
 )
+
+type SystemHandler struct {
+	db *sqlx.DB
+}
+
+func NewSystemHandler(db *sqlx.DB) *SystemHandler {
+	return &SystemHandler{db: db}
+}
+
+func (h *SystemHandler) RegisterRoutes(r *gin.RouterGroup) {
+	r.GET("/health", h.HealthCheck)
+	r.GET("/ready", h.ReadyCheck)
+}
 
 // HealthCheck godoc
 // @Summary      Liveness Probe
@@ -17,7 +31,7 @@ import (
 // @Produce      json
 // @Success      200  {object}  dto.HealthCheckResponse
 // @Router       /health [get]
-func (h *systemHandler) HealthCheck(c *gin.Context) {
+func (h *SystemHandler) HealthCheck(c *gin.Context) {
 	// Liveness: hanya cek proses masih jalan
 	// Jangan cek DB atau dependency lain di sini!
 	// Biarkan tetap return 200 meskipun DB mati (biar K8s tidak restart pod)
@@ -41,7 +55,7 @@ func (h *systemHandler) HealthCheck(c *gin.Context) {
 // @Success      200  {object}  dto.ReadyCheckResponse
 // @Failure      503  {object}  dto.ErrorResponse  // 503 Service Unavailable
 // @Router       /ready [get]   // ← ganti dari /config ke /ready
-func (h *systemHandler) ReadyCheck(c *gin.Context) {
+func (h *SystemHandler) ReadyCheck(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	status := "ready"

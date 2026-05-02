@@ -1,13 +1,39 @@
-package rest
+package routes
 
 import (
 	"time"
 
 	"ne-project/src/internal/config/middleware"
 	"ne-project/src/internal/config/token"
+	"ne-project/src/internal/handlers/rest"
+
+	"ne-project/src/internal/services"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
 )
+
+type Handlers struct {
+	Auth        rest.AuthHandler
+	Category    rest.CategoryHandler
+	Product     rest.ProductHandler
+	Transaction rest.TransactionHandler
+	Report      rest.ReportHandler
+	User        rest.UserHandler
+	System      rest.SystemHandler
+}
+
+func NewHandlers(db *sqlx.DB, services *services.Services) *Handlers {
+	return &Handlers{
+		Auth:        *rest.NewAuthHandler(services.Auth),
+		Category:    *rest.NewCategoryHandler(services.Category),
+		Product:     *rest.NewProductHandler(services.Product),
+		Transaction: *rest.NewTransactionHandler(services.Transaction),
+		Report:      *rest.NewReportHandler(services.Report),
+		User:        *rest.NewUserHandler(services.User),
+		System:      *rest.NewSystemHandler(db),
+	}
+}
 
 func (h *Handlers) RegisterRoutes(r *gin.RouterGroup, tokenSvc *token.Token, mw middleware.Middleware) {
 

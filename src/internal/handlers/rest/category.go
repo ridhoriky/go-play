@@ -1,17 +1,26 @@
-package category
+package rest
 
 import (
-	"net/http"
-
 	"ne-project/src/internal/handlers/helpers"
 	"ne-project/src/internal/models/dto"
-	_ "ne-project/src/internal/models/entity"
 	"ne-project/src/internal/preference"
+	"ne-project/src/internal/services/category"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 )
+
+type CategoryHandler struct {
+	categoryService category.CategoryServiceItf
+}
+
+func NewCategoryHandler(categoryService category.CategoryServiceItf) *CategoryHandler {
+	return &CategoryHandler{
+		categoryService: categoryService,
+	}
+}
 
 // GetCategories godoc
 // @Summary      List Category
@@ -28,7 +37,7 @@ import (
 // @Failure      400  {object} 		dto.APIResponse
 // @Failure      404  {object}  	dto.APIResponse
 // @Router       /categories [get]
-func (h *categoryHandler) GetAll(c *gin.Context) {
+func (h *CategoryHandler) GetAll(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	var req dto.GetCategoriesQuery
@@ -60,7 +69,7 @@ func (h *categoryHandler) GetAll(c *gin.Context) {
 // @Failure      400  		{object} 	dto.APIResponse
 // @Failure      404  		{object}  	dto.APIResponse
 // @Router       /categories [post]
-func (h *categoryHandler) Create(c *gin.Context) {
+func (h *CategoryHandler) Create(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	var cat dto.CreateCategoryRequest
@@ -92,7 +101,7 @@ func (h *categoryHandler) Create(c *gin.Context) {
 // @Failure      400  {object} 	dto.APIResponse
 // @Failure      404  {object}  dto.APIResponse
 // @Router       /categories/{id} [get]
-func (h *categoryHandler) GetByID(c *gin.Context) {
+func (h *CategoryHandler) GetByID(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	id, err := uuid.Parse(c.Param("id"))
@@ -125,7 +134,7 @@ func (h *categoryHandler) GetByID(c *gin.Context) {
 // @Failure      400  {object} 	dto.APIResponse
 // @Failure      404  {object}  dto.APIResponse
 // @Router       /categories/{id} [put]
-func (h *categoryHandler) Update(c *gin.Context) {
+func (h *CategoryHandler) Update(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	id, err := uuid.Parse(c.Param("id"))
@@ -168,7 +177,7 @@ func (h *categoryHandler) Update(c *gin.Context) {
 // @Failure      400  {object} 	dto.APIResponse
 // @Failure      404  {object}  dto.APIResponse
 // @Router       /categories/{id} [delete]
-func (h *categoryHandler) Delete(c *gin.Context) {
+func (h *CategoryHandler) Delete(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	id, err := uuid.Parse(c.Param("id"))

@@ -13,8 +13,7 @@ import (
 	"ne-project/src/internal/config/logger"
 	"ne-project/src/internal/config/middleware"
 	"ne-project/src/internal/config/token"
-	"ne-project/src/internal/handlers/rest"
-	"ne-project/src/internal/handlers/rest/system"
+	"ne-project/src/internal/handlers/rest/routes"
 	"ne-project/src/internal/repositories"
 	"ne-project/src/internal/services"
 
@@ -60,7 +59,7 @@ func setupRouter(log *zerolog.Logger, cfg *appconfig.Config, db *sqlx.DB, tokenS
 	mw := middleware.InitMiddleware(*log, tokenSvc, cfg.RateLimit.Limit, cfg.RateLimit.Window)
 	repo := repositories.NewRepository(db)
 	service := services.NewServices(repo, tokenSvc, db)
-	handlers := rest.NewHandlers(service)
+	handlers := routes.NewHandlers(db, service)
 
 	r := gin.New()
 	r.Use(mw.Logger(), mw.CORS(), gin.Recovery())
@@ -68,7 +67,6 @@ func setupRouter(log *zerolog.Logger, cfg *appconfig.Config, db *sqlx.DB, tokenS
 
 	v1 := r.Group("/api/v1")
 	handlers.RegisterRoutes(v1, tokenSvc, *mw)
-	system.NewSystemHandler(db).RegisterRoutes(v1)
 
 	return r
 }
