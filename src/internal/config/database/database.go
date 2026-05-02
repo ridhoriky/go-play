@@ -2,7 +2,6 @@ package database
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -41,7 +40,7 @@ func InitDB(log zerolog.Logger, cfgDb *DatabaseConfig) (*sqlx.DB, error) {
 
 	db, err := sqlx.Connect(cfgDb.Driver, GetConnectionString(cfgDb))
 	if err != nil {
-		log.Panic().Err(err).Msg(fmt.Sprintf("DB %s connection: FAILED", strings.ToUpper(cfgDb.Driver)))
+		log.Error().Err(err).Msgf("Failed to connect to database: %s", err.Error())
 		return nil, err
 	}
 
@@ -50,7 +49,7 @@ func InitDB(log zerolog.Logger, cfgDb *DatabaseConfig) (*sqlx.DB, error) {
 	db.SetConnMaxLifetime(cfgDb.ConnMaxLifetime)
 	db.SetConnMaxIdleTime(cfgDb.ConnMaxIdleTime)
 
-	log.Debug().Msg(fmt.Sprintf("DB %s connection: SUCCESS", strings.ToUpper(cfgDb.Driver)))
+	log.Info().Msg("Database connection established successfully")
 
 	return db, nil
 }

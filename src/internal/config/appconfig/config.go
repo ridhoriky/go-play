@@ -1,4 +1,4 @@
-package main
+package appconfig
 
 import (
 	"log"
@@ -31,14 +31,12 @@ type AppConfig struct {
 }
 
 func LoadConfig() (*Config, error) {
-
 	var cfg Config
 	err := cleanenv.ReadConfig("config.yaml", &cfg)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	log.Printf("Config loaded: %+v\n", cfg)
-
+	log.Printf("Config loaded successfully")
 	return &cfg, nil
 }

@@ -53,9 +53,9 @@ type Token struct {
 	expiredRefreshToken time.Duration
 }
 
-func InitToken(log zerolog.Logger, opt TokenOptions) *Token {
+func InitToken(log zerolog.Logger, opt TokenOptions) (*Token, error) {
 	if len(strings.TrimSpace(opt.SecretAccessToken)) == 0 || len(strings.TrimSpace(opt.SecretRefreshToken)) == 0 {
-		log.Panic().Msgf("Environment variable jwt access or refresh key is not set")
+		return nil, fmt.Errorf("JWT secrets must be provided and cannot be empty")
 	}
 	return &Token{
 		log:                 log,
@@ -63,7 +63,7 @@ func InitToken(log zerolog.Logger, opt TokenOptions) *Token {
 		secretRefreshToken:  []byte(strings.TrimSpace(opt.SecretRefreshToken)),
 		expiredToken:        opt.ExpiredToken,
 		expiredRefreshToken: opt.ExpiredRefreshToken,
-	}
+	}, nil
 
 }
 
