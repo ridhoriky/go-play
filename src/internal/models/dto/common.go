@@ -56,6 +56,13 @@ const (
 
 // ─── Helper Constructor ──────────────────────────────────────────────────────
 
+func NewError(code int, message string) *Error {
+	return &Error{
+		Code:    code,
+		Message: message,
+	}
+}
+
 func NewSuccessResponse(data interface{}) SuccessResponse {
 	return SuccessResponse{Success: true, Data: data}
 }

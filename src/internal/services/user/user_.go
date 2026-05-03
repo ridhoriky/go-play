@@ -63,36 +63,24 @@ func (s *userService) CreateUser(ctx context.Context, req *dto.CreateUserRequest
 
 	if req.Name == "" {
 		zerolog.Ctx(ctx).Error().Msg(preference.ErrUserNameRequired)
-		return nil, &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: preference.ErrUserNameRequired,
-		}
+		return nil, dto.NewError(http.StatusBadRequest, preference.ErrUserNameRequired)
 	}
 
 	if req.Email == "" {
 		zerolog.Ctx(ctx).Error().Msg(preference.ErrUserEmailRequired)
-		return nil, &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: preference.ErrUserEmailRequired,
-		}
+		return nil, dto.NewError(http.StatusBadRequest, preference.ErrUserEmailRequired)
 	}
 
 	if req.Role == "" {
 		zerolog.Ctx(ctx).Error().Msg(preference.ErrUserRoleRequired)
-		return nil, &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: preference.ErrUserRoleRequired,
-		}
+		return nil, dto.NewError(http.StatusBadRequest, preference.ErrUserRoleRequired)
 	}
 
 	// Hash user password before persist
 	hashedPassword, err := hash.HashPassword(req.Password)
 	if err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to hash password")
-		return nil, &dto.Error{
-			Code:    http.StatusInternalServerError,
-			Message: preference.ErrInternalServer,
-		}
+		return nil, dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
 	}
 
 	u := &entity.User{
@@ -119,26 +107,17 @@ func (s *userService) UpdateUser(ctx context.Context, id string, user *dto.Updat
 
 	if user.Name != nil && *user.Name == "" {
 		zerolog.Ctx(ctx).Error().Msg(preference.ErrUserNameRequired)
-		return nil, &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: preference.ErrUserNameRequired,
-		}
+		return nil, dto.NewError(http.StatusBadRequest, preference.ErrUserNameRequired)
 	}
 
 	if user.Email != nil && *user.Email == "" {
 		zerolog.Ctx(ctx).Error().Msg(preference.ErrUserEmailRequired)
-		return nil, &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: preference.ErrUserEmailRequired,
-		}
+		return nil, dto.NewError(http.StatusBadRequest, preference.ErrUserEmailRequired)
 	}
 
 	if user.Role != nil && *user.Role == "" {
 		zerolog.Ctx(ctx).Error().Msg(preference.ErrUserRoleRequired)
-		return nil, &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: preference.ErrUserRoleRequired,
-		}
+		return nil, dto.NewError(http.StatusBadRequest, preference.ErrUserRoleRequired)
 	}
 
 	if user.Name != nil {

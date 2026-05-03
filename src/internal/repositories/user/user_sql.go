@@ -119,10 +119,7 @@ func (repo *userRepository) GetByID(ctx context.Context, id string) (*entity.Use
 	err := repo.db.QueryRowContext(ctx, getUserByIDQuery, id).Scan(&u.ID, &u.Name, &u.Email, &u.Password, &u.Role, &u.IsActive, &u.CreatedAt, &u.UpdatedAt)
 	if errors.Is(err, sql.ErrNoRows) {
 		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg("err user id not found")
-		return nil, &dto.Error{
-			Code:    http.StatusNotFound,
-			Message: preference.ErrUserNotFound,
-		}
+		return nil, dto.NewError(http.StatusNotFound, preference.ErrUserNotFound)
 	}
 
 	if err != nil {
@@ -161,10 +158,7 @@ func (repo *userRepository) Update(ctx context.Context, id string, user *entity.
 	}
 	if rows == 0 {
 		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg("err not found update user")
-		return &dto.Error{
-			Code:    http.StatusNotFound,
-			Message: preference.ErrUserNotFound,
-		}
+		return dto.NewError(http.StatusNotFound, preference.ErrUserNotFound)
 	}
 	return nil
 }
@@ -183,10 +177,7 @@ func (repo *userRepository) Delete(ctx context.Context, id string) error {
 
 	if rows == 0 {
 		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg("err not found delete user")
-		return &dto.Error{
-			Code:    http.StatusNotFound,
-			Message: preference.ErrUserNotFound,
-		}
+		return dto.NewError(http.StatusNotFound, preference.ErrUserNotFound)
 	}
 
 	return err

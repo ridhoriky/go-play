@@ -122,10 +122,7 @@ func (repo *categoryRepository) GetByID(ctx context.Context, id string) (*entity
 	err := repo.db.QueryRowContext(ctx, getCategoryByIDQuery, id).Scan(&c.ID, &c.Name, &c.Description)
 	if errors.Is(err, sql.ErrNoRows) {
 		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg("err category id not found")
-		return nil, &dto.Error{
-			Code:    http.StatusNotFound,
-			Message: preference.ErrCategoryNotFound,
-		}
+		return nil, dto.NewError(http.StatusNotFound, preference.ErrCategoryNotFound)
 	}
 
 	if err != nil {
@@ -149,10 +146,7 @@ func (repo *categoryRepository) Update(ctx context.Context, id string, category 
 	}
 	if rows == 0 {
 		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg("err not found update category")
-		return &dto.Error{
-			Code:    http.StatusNotFound,
-			Message: preference.ErrCategoryNotFound,
-		}
+		return dto.NewError(http.StatusNotFound, preference.ErrCategoryNotFound)
 	}
 	return nil
 }
@@ -171,10 +165,7 @@ func (repo *categoryRepository) Delete(ctx context.Context, id string) error {
 
 	if rows == 0 {
 		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg("err not found delete category")
-		return &dto.Error{
-			Code:    http.StatusNotFound,
-			Message: preference.ErrCategoryNotFound,
-		}
+		return dto.NewError(http.StatusNotFound, preference.ErrCategoryNotFound)
 	}
 
 	return err

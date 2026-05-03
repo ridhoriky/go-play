@@ -61,26 +61,17 @@ func (s *productService) CreateProduct(ctx context.Context, product *dto.CreateP
 
 	if product.Price < 0 {
 		zerolog.Ctx(ctx).Error().Msg(preference.ErrProductPriceNegative)
-		return nil, &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: preference.ErrProductPriceNegative,
-		}
+		return nil, dto.NewError(http.StatusBadRequest, preference.ErrProductPriceNegative)
 	}
 
 	if product.Stock < 0 {
 		zerolog.Ctx(ctx).Error().Msg(preference.ErrProductStockNegative)
-		return nil, &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: preference.ErrProductStockNegative,
-		}
+		return nil, dto.NewError(http.StatusBadRequest, preference.ErrProductStockNegative)
 	}
 
 	if product.Name == "" {
 		zerolog.Ctx(ctx).Error().Msg(preference.ErrProductNameRequied)
-		return nil, &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: preference.ErrProductNameRequied,
-		}
+		return nil, dto.NewError(http.StatusBadRequest, preference.ErrProductNameRequied)
 	}
 
 	p := entity.Product{
@@ -122,26 +113,17 @@ func (s *productService) UpdateProduct(ctx context.Context, id string, req *dto.
 
 	if req.Price < 0 {
 		zerolog.Ctx(ctx).Error().Msg(preference.ErrProductPriceNegative)
-		return nil, &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: preference.ErrProductPriceNegative,
-		}
+		return nil, dto.NewError(http.StatusBadRequest, preference.ErrProductPriceNegative)
 	}
 
 	if req.Stock < 0 {
 		zerolog.Ctx(ctx).Error().Msg(preference.ErrProductStockNegative)
-		return nil, &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: preference.ErrProductStockNegative,
-		}
+		return nil, dto.NewError(http.StatusBadRequest, preference.ErrProductStockNegative)
 	}
 
 	if req.Name == "" {
 		zerolog.Ctx(ctx).Error().Msg(preference.ErrProductNameRequied)
-		return nil, &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: preference.ErrProductNameRequied,
-		}
+		return nil, dto.NewError(http.StatusBadRequest, preference.ErrProductNameRequied)
 	}
 
 	existingProduct.Name = req.Name

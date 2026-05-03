@@ -53,12 +53,12 @@ type Token struct {
 	expiredRefreshToken time.Duration
 }
 
-func InitToken(log zerolog.Logger, opt TokenOptions) (*Token, error) {
+func InitToken(log *zerolog.Logger, opt TokenOptions) (*Token, error) {
 	if len(strings.TrimSpace(opt.SecretAccessToken)) == 0 || len(strings.TrimSpace(opt.SecretRefreshToken)) == 0 {
 		return nil, fmt.Errorf("JWT secrets must be provided and cannot be empty")
 	}
 	return &Token{
-		log:                 log,
+		log:                 *log,
 		secretAccessToken:   []byte(strings.TrimSpace(opt.SecretAccessToken)),
 		secretRefreshToken:  []byte(strings.TrimSpace(opt.SecretRefreshToken)),
 		expiredToken:        opt.ExpiredToken,

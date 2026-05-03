@@ -55,10 +55,7 @@ func (s *categoryService) CreateCategory(ctx context.Context, req *dto.CreateCat
 
 	if req.Name == "" {
 		zerolog.Ctx(ctx).Error().Msg(preference.ErrCategoryNameRequied)
-		return nil, &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: preference.ErrCategoryNameRequied,
-		}
+		return nil, dto.NewError(http.StatusBadRequest, preference.ErrCategoryNameRequied)
 	}
 
 	c := &entity.Category{
@@ -85,10 +82,7 @@ func (s *categoryService) UpdateCategory(ctx context.Context, id string, req *dt
 
 	if req.Name == "" {
 		zerolog.Ctx(ctx).Error().Msg(preference.ErrCategoryNameRequied)
-		return nil, &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: preference.ErrCategoryNameRequied,
-		}
+		return nil, dto.NewError(http.StatusBadRequest, preference.ErrCategoryNameRequied)
 	}
 
 	existingCategory.Name = req.Name

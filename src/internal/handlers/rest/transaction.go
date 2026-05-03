@@ -9,7 +9,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/rs/zerolog"
 )
 
 type TransactionHandler struct {
@@ -39,21 +38,17 @@ func (h *TransactionHandler) Checkout(c *gin.Context) {
 
 	var req dto.CreateTransactionRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		zerolog.Ctx(ctx).Error().Err(err).Msg(preference.ErrInvalidReqBody)
-		helpers.ResponseError(c.Writer, &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: preference.ErrInvalidReqBody,
-		})
+		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
 		return
 	}
 
 	result, err := h.transactionService.Checkout(ctx, &req)
 	if err != nil {
-		helpers.ResponseError(c.Writer, err)
+		c.Error(err)
 		return
 	}
 
-	helpers.ResponseSuccess(c.Writer, http.StatusOK, "Checkout successfully", result)
+	helpers.ResponseSuccess(c, http.StatusOK, "Checkout successfully", result)
 
 }
 
@@ -74,19 +69,15 @@ func (h *TransactionHandler) GetByID(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 
 	if err != nil {
-		zerolog.Ctx(ctx).Error().Err(err).Msg(preference.ErrInvalidTranscationID)
-		helpers.ResponseError(c.Writer, &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: preference.ErrInvalidTranscationID,
-		})
+		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidTranscationID))
 		return
 	}
 	transaction, err := h.transactionService.GetTransactionByID(ctx, id.String())
 	if err != nil {
-		helpers.ResponseError(c.Writer, err)
+		c.Error(err)
 		return
 	}
-	helpers.ResponseSuccess(c.Writer, http.StatusOK, "Success", transaction)
+	helpers.ResponseSuccess(c, http.StatusOK, "Success", transaction)
 }
 
 // UpdateTransactionStatus godoc
@@ -106,28 +97,20 @@ func (h *TransactionHandler) UpdateTransactionStatus(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 
 	if err != nil {
-		zerolog.Ctx(ctx).Error().Err(err).Msg(preference.ErrInvalidTranscationID)
-		helpers.ResponseError(c.Writer, &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: preference.ErrInvalidTranscationID,
-		})
+		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidTranscationID))
 		return
 	}
 
 	var status *dto.UpdateTransactionStatusRequest
 	if err := c.ShouldBindJSON(&status); err != nil {
-		zerolog.Ctx(ctx).Error().Err(err).Msg(preference.ErrInvalidReqBody)
-		helpers.ResponseError(c.Writer, &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: preference.ErrInvalidReqBody,
-		})
+		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
 		return
 	}
 
 	transaction, err := h.transactionService.UpdateStatus(ctx, id.String(), status)
 	if err != nil {
-		helpers.ResponseError(c.Writer, err)
+		c.Error(err)
 		return
 	}
-	helpers.ResponseSuccess(c.Writer, http.StatusOK, "Success", transaction)
+	helpers.ResponseSuccess(c, http.StatusOK, "Success", transaction)
 }

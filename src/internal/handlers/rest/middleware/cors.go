@@ -17,11 +17,8 @@ func (m *Middleware) CORS() gin.HandlerFunc {
 		origin := strings.TrimSpace(c.GetHeader("Origin"))
 
 		if origin != "" && !isOriginAllowed(origin, allowedOrigins) {
-			err := &dto.Error{
-				Code:    http.StatusForbidden,
-				Message: "Origin not allowed",
-			}
-			helpers.ResponseError(c.Writer, err)
+			err := dto.NewError(http.StatusForbidden, "CORS origin not allowed")
+			helpers.ResponseError(c, err)
 			c.Abort()
 			return
 		}

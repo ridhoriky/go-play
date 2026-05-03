@@ -3,6 +3,7 @@ package logger
 import (
 	"io"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -14,7 +15,7 @@ import (
 
 // LoggerOptions holds logger configuration
 type LoggerOptions struct {
-	Enabled    bool   `yaml:"enabled" env:"LOGGER_ENABLED" env-default:"true"`
+	Enabled    bool   `yaml:"enabled" env:"LOGGER_ENABLED"`
 	Level      string `yaml:"level" env:"LOGGER_LEVEL" env-default:"info"`
 	Format     string `yaml:"format" env:"LOGGER_FORMAT" env-default:"json"`
 	Output     string `yaml:"output" env:"LOGGER_OUTPUT" env-default:"stdout"`
@@ -30,25 +31,37 @@ func InitLogger(opt LoggerOptions) *zerolog.Logger {
 	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
 	zerolog.TimeFieldFormat = time.RFC3339
 
-	// Add caller info to all log levels
 	logLevel := parseLogLevel(opt.Level)
 
-	// Base writer setup
-	writer := baseWriter(opt.Output)
+	var writers []io.Writer
+	if !opt.Enabled {
+		writers = append(writers, io.Discard)
+	} else {
+		consoleWriter := formatWriter(opt.Format, baseWriter(opt.Output))
+		writers = append(writers, consoleWriter)
 
-	// Apply format to the base writer
-	writer = formatWriter(opt.Format, writer)
+		if opt.Path != "" {
+			dir := filepath.Dir(opt.Path)
+			if dir != "." && dir != "" {
+				_ = os.MkdirAll(dir, 0o755)
+			}
 
-	// Add file writer if enabled and path is provided
-	if opt.Enabled && opt.Path != "" {
-		fileLogger := &lumberjack.Logger{
-			Filename:   opt.Path,
-			MaxSize:    opt.MaxSize,
-			MaxBackups: opt.MaxBackups,
-			MaxAge:     opt.MaxAge,
-			Compress:   opt.Compress,
+			fileLogger := &lumberjack.Logger{
+				Filename:   opt.Path,
+				MaxSize:    opt.MaxSize,
+				MaxBackups: opt.MaxBackups,
+				MaxAge:     opt.MaxAge,
+				Compress:   opt.Compress,
+			}
+			writers = append(writers, fileLogger)
 		}
-		writer = zerolog.MultiLevelWriter(writer, fileLogger)
+	}
+
+	writer := io.Discard
+	if len(writers) == 1 {
+		writer = writers[0]
+	} else if len(writers) > 1 {
+		writer = zerolog.MultiLevelWriter(writers...)
 	}
 
 	logInst := zerolog.New(writer).

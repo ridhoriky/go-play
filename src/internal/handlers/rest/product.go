@@ -10,20 +10,18 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/rs/zerolog"
 	"github.com/shopspring/decimal"
 )
 
 type ProductHandler struct {
-	productService product.ProductServiceItf
+        productService product.ProductServiceItf
 }
 
 func NewProductHandler(productService product.ProductServiceItf) *ProductHandler {
-	return &ProductHandler{
-		productService: productService,
-	}
+        return &ProductHandler{
+                productService: productService,
+        }
 }
-
 // GetProducts godoc
 // @Summary      List Product
 // @Description  Get list of products
@@ -48,19 +46,15 @@ func (h *ProductHandler) GetAll(c *gin.Context) {
 
 	var req dto.GetProductsQuery
 	if err := c.ShouldBindQuery(&req); err != nil {
-		zerolog.Ctx(ctx).Error().Err(err).Msg(preference.ErrInvalidQueryParams)
-		helpers.ResponseError(c.Writer, &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: preference.ErrInvalidQueryParams,
-		})
+		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidQueryParams))
 		return
 	}
 	products, err := h.productService.GetAllProducts(ctx, &req)
 	if err != nil {
-		helpers.ResponseError(c.Writer, err)
+		c.Error(err)
 		return
 	}
-	helpers.ResponseSuccess(c.Writer, http.StatusOK, "Success", products)
+	helpers.ResponseSuccess(c, http.StatusOK, "Success", products)
 }
 
 // CreateProduct godoc
@@ -79,20 +73,16 @@ func (h *ProductHandler) Create(c *gin.Context) {
 	var p dto.CreateProductRequest
 
 	if err := c.ShouldBindJSON(&p); err != nil {
-		zerolog.Ctx(ctx).Error().Err(err).Msg(preference.ErrInvalidReqBody)
-		helpers.ResponseError(c.Writer, &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: preference.ErrInvalidReqBody,
-		})
+		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
 		return
 	}
 
 	createdProduct, err := h.productService.CreateProduct(ctx, &p)
 	if err != nil {
-		helpers.ResponseError(c.Writer, err)
+		c.Error(err)
 		return
 	}
-	helpers.ResponseSuccess(c.Writer, http.StatusCreated, "Product created successfully", createdProduct)
+	helpers.ResponseSuccess(c, http.StatusCreated, "Product created successfully", createdProduct)
 }
 
 // GetProductByID godoc
@@ -111,19 +101,15 @@ func (h *ProductHandler) GetByID(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 
 	if err != nil {
-		zerolog.Ctx(ctx).Error().Err(err).Msg(preference.ErrInvalidProductID)
-		helpers.ResponseError(c.Writer, &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: preference.ErrInvalidProductID,
-		})
+		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidProductID))
 		return
 	}
 	product, err := h.productService.GetProductByID(ctx, id.String())
 	if err != nil {
-		helpers.ResponseError(c.Writer, err)
+		c.Error(err)
 		return
 	}
-	helpers.ResponseSuccess(c.Writer, http.StatusOK, "Success", product)
+	helpers.ResponseSuccess(c, http.StatusOK, "Success", product)
 }
 
 // UpdateProduct godoc
@@ -144,29 +130,22 @@ func (h *ProductHandler) Update(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 
 	if err != nil {
-		zerolog.Ctx(ctx).Error().Err(err).Msg(preference.ErrInvalidProductID)
-		helpers.ResponseError(c.Writer, &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: preference.ErrInvalidProductID,
-		})
+		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidProductID))
 		return
 	}
 	var p dto.UpdateProductRequest
 
 	if err := c.ShouldBindJSON(&p); err != nil {
-		helpers.ResponseError(c.Writer, &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: preference.ErrInvalidReqBody,
-		})
+		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
 		return
 	}
 
 	updatedProduct, err := h.productService.UpdateProduct(ctx, id.String(), &p)
 	if err != nil {
-		helpers.ResponseError(c.Writer, err)
+		c.Error(err)
 		return
 	}
-	helpers.ResponseSuccess(c.Writer, http.StatusOK, "Product updated successfully", updatedProduct)
+	helpers.ResponseSuccess(c, http.StatusOK, "Product updated successfully", updatedProduct)
 }
 
 // DeleteProduct godoc
@@ -186,18 +165,14 @@ func (h *ProductHandler) Delete(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 
 	if err != nil {
-		zerolog.Ctx(ctx).Error().Err(err).Msg(preference.ErrInvalidProductID)
-		helpers.ResponseError(c.Writer, &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: preference.ErrInvalidProductID,
-		})
+		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidProductID))
 		return
 	}
 	if err := h.productService.DeleteProduct(ctx, id.String()); err != nil {
-		helpers.ResponseError(c.Writer, err)
+		c.Error(err)
 		return
 	}
-	helpers.ResponseSuccess(c.Writer, http.StatusOK, "Product deleted successfully", nil)
+	helpers.ResponseSuccess(c, http.StatusOK, "Product deleted successfully", nil)
 }
 
 // CreateProduct godoc
@@ -215,11 +190,7 @@ func (h *ProductHandler) CreateMultiple(c *gin.Context) {
 	ctx := c.Request.Context()
 	var req dto.CreateMultipleProducts
 	if err := c.ShouldBindJSON(&req); err != nil {
-		zerolog.Ctx(ctx).Error().Err(err).Msg(preference.ErrInvalidReqBody)
-		helpers.ResponseError(c.Writer, &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: preference.ErrInvalidReqBody,
-		})
+		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
 		return
 	}
 
@@ -234,8 +205,8 @@ func (h *ProductHandler) CreateMultiple(c *gin.Context) {
 
 	responses, err := h.productService.CreateMultipleProducts(ctx, products)
 	if err != nil {
-		helpers.ResponseError(c.Writer, err)
+		c.Error(err)
 		return
 	}
-	helpers.ResponseSuccess(c.Writer, http.StatusCreated, "Products created successfully", responses)
+	helpers.ResponseSuccess(c, http.StatusCreated, "Products created successfully", responses)
 }

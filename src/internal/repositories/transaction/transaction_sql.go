@@ -87,10 +87,7 @@ func (r *transactionRepository) processSingleItem(
 
 	if item.Quantity <= 0 {
 		zerolog.Ctx(ctx).Error().Str("id", item.ProductID).Msg("err product out of stock")
-		return entity.TransactionDetail{}, &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: fmt.Sprintf("Quantity for product with id '%s' must be greater than zero", item.ProductID),
-		}
+		return entity.TransactionDetail{}, dto.NewError(http.StatusBadRequest, fmt.Sprintf("Quantity for product with id '%s' must be greater than zero", item.ProductID))
 	}
 
 	if _, err = tx.ExecContext(ctx, deductStockQuery, item.Quantity, item.ProductID); err != nil {
@@ -110,10 +107,7 @@ func (r *transactionRepository) fetchProduct(
 		Scan(&p.ID, &p.Name, &p.Price, &p.Stock)
 	if errors.Is(err, sql.ErrNoRows) {
 		zerolog.Ctx(ctx).Error().Err(err).Str("id", productID).Msg(preference.ErrProductNotFound)
-		return nil, &dto.Error{
-			Code:    http.StatusNotFound,
-			Message: preference.ErrProductNotFound,
-		}
+		return nil, dto.NewError(http.StatusNotFound, preference.ErrProductNotFound)
 	}
 	if err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Str("id", productID).Msg("err fetch product")
@@ -134,13 +128,10 @@ func (r *transactionRepository) lockAndValidateStock(
 
 	if lockedStock < item.Quantity {
 		zerolog.Ctx(ctx).Error().Str("id", item.ProductID).Msg("err product out of stock")
-		return &dto.Error{
-			Code: http.StatusUnprocessableEntity,
-			Message: fmt.Sprintf(
+		return dto.NewError(http.StatusUnprocessableEntity, fmt.Sprintf(
 				"Insufficient stock for product '%s' (available: %d)",
 				productName, lockedStock,
-			),
-		}
+			))
 	}
 	return nil
 }
@@ -327,10 +318,7 @@ func (r *transactionRepository) UpdateStatus(
 	rows, _ := result.RowsAffected()
 	if rows == 0 {
 		zerolog.Ctx(ctx).Warn().Str("transaction_id", id).Msg("transaction not found")
-		return &dto.Error{
-			Code:    http.StatusNotFound,
-			Message: preference.ErrProductNotFound,
-		}
+		return dto.NewError(http.StatusNotFound, preference.ErrProductNotFound)
 	}
 
 	// restore stok jika cancelled

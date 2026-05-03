@@ -1,12 +1,12 @@
 package helpers
 
 import (
-	"encoding/json"
 	"errors"
 	"ne-project/src/internal/models/dto"
 	"ne-project/src/internal/preference"
 	"net/http"
 
+	"github.com/gin-gonic/gin"
 	"github.com/lib/pq"
 )
 
@@ -14,43 +14,25 @@ func ParsePgError(err error) *dto.Error {
 	var pqErr *pq.Error
 
 	if !errors.As(err, &pqErr) {
-		return &dto.Error{
-			Code:    http.StatusInternalServerError,
-			Message: "An unexpected error occurred",
-		}
+		return dto.NewError(http.StatusInternalServerError, "An unexpected error occurred")
 	}
 
 	switch pqErr.Code {
 	case preference.PgErrUniqueViolation:
 		field := extractFieldFromConstraint(pqErr.Constraint)
-		return &dto.Error{
-			Code:    http.StatusConflict,
-			Message: field + " already exists, please use a different value",
-		}
+		return dto.NewError(http.StatusConflict, field+" already exists, please use a different value")
 
 	case preference.PgErrForeignKeyViolation:
-		return &dto.Error{
-			Code:    http.StatusUnprocessableEntity,
-			Message: "Referenced resource does not exist",
-		}
+		return dto.NewError(http.StatusUnprocessableEntity, "Referenced resource does not exist")
 
 	case preference.PgErrNotNullViolation:
-		return &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: "Field " + pqErr.Column + " must not be empty",
-		}
+		return dto.NewError(http.StatusBadRequest, "Field "+pqErr.Column+" must not be empty")
 
 	case preference.PgErrCheckViolation:
-		return &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: "Value does not satisfy the required constraint",
-		}
+		return dto.NewError(http.StatusBadRequest, "Value does not satisfy the required constraint")
 
 	default:
-		return &dto.Error{
-			Code:    http.StatusInternalServerError,
-			Message: "An unexpected error occurred",
-		}
+		return dto.NewError(http.StatusInternalServerError, "An unexpected error occurred")
 	}
 }
 
@@ -59,7 +41,6 @@ func extractFieldFromConstraint(constraint string) string {
 		"products_name_key":   "Product Name",
 		"categories_name_key": "Category Name",
 		"users_email_key":     "Email",
-		// Add other constraints according to DB schema
 	}
 
 	if name, ok := friendlyNames[constraint]; ok {
@@ -68,31 +49,22 @@ func extractFieldFromConstraint(constraint string) string {
 	return "A field"
 }
 
-func ResponseSuccess(w http.ResponseWriter, status int, message string, data interface{}) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
+func ResponseSuccess(c *gin.Context, status int, message string, data interface{}) {
 	resp := dto.APIResponse{
 		Status:  status,
 		Message: message,
 		Data:    data,
 	}
-
-	if err := json.NewEncoder(w).Encode(resp); err != nil {
-
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
+	c.JSON(status, resp)
 }
 
-func ResponseError(w http.ResponseWriter, err error) {
-	w.Header().Set("Content-Type", "application/json")
-
+func ResponseError(c *gin.Context, err error) {
 	appErr, ok := err.(*dto.Error)
 	if !ok {
 		appErr = ParsePgError(err)
 	}
 
-	w.WriteHeader(appErr.Code)
+	_ = c.Error(err)
 
 	resp := dto.APIResponse{
 		Status:  appErr.Code,
@@ -100,9 +72,5 @@ func ResponseError(w http.ResponseWriter, err error) {
 		Error:   preference.ErrorCodeByHTTPStatus[appErr.Code],
 	}
 
-	if err := json.NewEncoder(w).Encode(resp); err != nil {
-
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
+	c.JSON(appErr.Code, resp)
 }

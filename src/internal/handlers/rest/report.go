@@ -8,19 +8,17 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/rs/zerolog"
 )
 
 type ReportHandler struct {
-	reportService report.ReportServiceItf
+        reportService report.ReportServiceItf
 }
 
 func NewReportHandler(reportService report.ReportServiceItf) *ReportHandler {
-	return &ReportHandler{
-		reportService: reportService,
-	}
+        return &ReportHandler{
+                reportService: reportService,
+        }
 }
-
 // GetReports godoc
 // @Summary      List Report
 // @Description  Get list of reports
@@ -39,19 +37,15 @@ func (h *ReportHandler) GetReports(c *gin.Context) {
 
 	var req dto.GetReportQuery
 	if err := c.ShouldBindQuery(&req); err != nil {
-		zerolog.Ctx(ctx).Error().Err(err).Msg(preference.ErrInvalidQueryParams)
-		helpers.ResponseError(c.Writer, &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: preference.ErrInvalidQueryParams,
-		})
+		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidQueryParams))
 		return
 	}
 	reports, err := h.reportService.GetSummary(ctx, &req)
 	if err != nil {
-		helpers.ResponseError(c.Writer, err)
+		c.Error(err)
 		return
 	}
-	helpers.ResponseSuccess(c.Writer, http.StatusOK, "Success", reports)
+	helpers.ResponseSuccess(c, http.StatusOK, "Success", reports)
 }
 
 // GetTopProduct godoc
@@ -72,17 +66,13 @@ func (h *ReportHandler) GetTopProducts(c *gin.Context) {
 	ctx := c.Request.Context()
 	var req dto.GetTopProductsQuery
 	if err := c.ShouldBindQuery(&req); err != nil {
-		zerolog.Ctx(ctx).Error().Err(err).Msg(preference.ErrInvalidQueryParams)
-		helpers.ResponseError(c.Writer, &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: preference.ErrInvalidQueryParams,
-		})
+		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidQueryParams))
 		return
 	}
 	reports, err := h.reportService.GetTopProducts(ctx, &req)
 	if err != nil {
-		helpers.ResponseError(c.Writer, err)
+		c.Error(err)
 		return
 	}
-	helpers.ResponseSuccess(c.Writer, http.StatusOK, "Success", reports)
+	helpers.ResponseSuccess(c, http.StatusOK, "Success", reports)
 }

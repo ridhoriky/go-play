@@ -94,11 +94,8 @@ func validateStatusTransition(current, new entity.TransactionStatus) error {
 		}
 	}
 
-	return &dto.Error{
-		Code: http.StatusUnprocessableEntity,
-		Message: fmt.Sprintf(
+	return dto.NewError(http.StatusUnprocessableEntity, fmt.Sprintf(
 			"Transition from '%s' to '%s' is not allowed",
 			current, new,
-		),
-	}
+		))
 }

@@ -2,7 +2,6 @@ package report
 
 import (
 	"context"
-	"log"
 
 	"ne-project/src/internal/models/dto"
 	"ne-project/src/internal/utils/validation"
@@ -40,7 +39,6 @@ func (r *reportRepository) GetTopProducts(
 		return dto.TopProductsResponse{}, err
 	}
 	defer rows.Close()
-	log.Println(rows, "rows")
 	for rows.Next() {
 		var product dto.TopProductItem
 		if err := rows.Scan(&product.ProductID, &product.ProductName, &product.TotalQuantity, &product.TotalRevenue); err != nil {

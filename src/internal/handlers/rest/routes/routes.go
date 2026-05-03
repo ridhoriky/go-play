@@ -1,11 +1,9 @@
 package routes
 
 import (
-	"time"
-
-	"ne-project/src/internal/config/middleware"
 	"ne-project/src/internal/config/token"
 	"ne-project/src/internal/handlers/rest"
+	"ne-project/src/internal/handlers/rest/middleware"
 
 	"ne-project/src/internal/services"
 
@@ -37,9 +35,17 @@ func NewHandlers(db *sqlx.DB, services *services.Services) *Handlers {
 
 func (h *Handlers) RegisterRoutes(r *gin.RouterGroup, tokenSvc *token.Token, mw middleware.Middleware) {
 
+	// ─── SYSTEM ROUTES ──────────────────────────
+	systemGroup := r.Group("/system")
+	systemGroup.Use(mw.SetComponent("system"))
+	{
+		systemGroup.GET("/health", h.System.HealthCheck)
+		systemGroup.GET("/ready", h.System.ReadyCheck)
+	}
+
 	// ─── PUBLIC AUTH ROUTES  ────────────────────
 	authGroup := r.Group("/auth")
-	authGroup.Use(mw.RateLimiter(5, time.Minute))
+	authGroup.Use(mw.RateLimiter(), mw.SetComponent("auth"))
 	{
 		authGroup.POST("/login", h.Auth.Login)
 		authGroup.POST("/register", h.Auth.Register)
@@ -48,10 +54,11 @@ func (h *Handlers) RegisterRoutes(r *gin.RouterGroup, tokenSvc *token.Token, mw 
 
 	// ─── PROTECTED ROUTES  ────────────────────
 	protected := r.Group("")
-	protected.Use(mw.JWTAuth(tokenSvc), mw.RateLimiter(100, time.Minute))
+	protected.Use(mw.JWTAuth(tokenSvc), mw.RateLimiter())
 	{
 		// category
 		routerCategories := protected.Group("/categories")
+		routerCategories.Use(mw.SetComponent("category"))
 		{
 			routerCategories.GET("", h.Category.GetAll)
 			routerCategories.POST("", h.Category.Create)
@@ -62,6 +69,7 @@ func (h *Handlers) RegisterRoutes(r *gin.RouterGroup, tokenSvc *token.Token, mw 
 
 		// products
 		routerProducts := protected.Group("/products")
+		routerProducts.Use(mw.SetComponent("product"))
 		{
 			routerProducts.GET("", h.Product.GetAll)
 			routerProducts.POST("", h.Product.Create)
@@ -73,6 +81,7 @@ func (h *Handlers) RegisterRoutes(r *gin.RouterGroup, tokenSvc *token.Token, mw 
 
 		// transactions
 		routerTransactions := protected.Group("/transactions")
+		routerTransactions.Use(mw.SetComponent("transaction"))
 		{
 			routerTransactions.POST("", h.Transaction.Checkout)
 			routerTransactions.GET("/:id", h.Transaction.GetByID)
@@ -81,6 +90,7 @@ func (h *Handlers) RegisterRoutes(r *gin.RouterGroup, tokenSvc *token.Token, mw 
 
 		// reports
 		routerReports := protected.Group("/reports")
+		routerReports.Use(mw.SetComponent("report"))
 		{
 			routerReports.GET("/summary", h.Report.GetReports)
 			routerReports.GET("/top-products", h.Report.GetTopProducts)
@@ -88,6 +98,7 @@ func (h *Handlers) RegisterRoutes(r *gin.RouterGroup, tokenSvc *token.Token, mw 
 
 		// users
 		routerUsers := protected.Group("/users")
+		routerUsers.Use(mw.SetComponent("user"))
 		{
 			routerUsers.GET("", h.User.GetAllUser)
 			routerUsers.POST("", h.User.CreateUser)

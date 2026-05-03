@@ -1,11 +1,10 @@
 package appconfig
 
 import (
-	"log"
 	"ne-project/src/internal/config/database"
 	"ne-project/src/internal/config/logger"
-	"ne-project/src/internal/config/middleware"
 	"ne-project/src/internal/config/token"
+	"ne-project/src/internal/handlers/rest/middleware"
 	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
@@ -37,6 +36,5 @@ func LoadConfig() (*Config, error) {
 		return nil, err
 	}
 
-	log.Printf("Config loaded successfully")
 	return &cfg, nil
 }

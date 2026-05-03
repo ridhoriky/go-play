@@ -36,11 +36,11 @@ func GetConnectionString(db *DatabaseConfig) string {
 	)
 }
 
-func InitDB(log zerolog.Logger, cfgDb *DatabaseConfig) (*sqlx.DB, error) {
+func InitDB(log *zerolog.Logger, cfgDb *DatabaseConfig) (*sqlx.DB, error) {
 
 	db, err := sqlx.Connect(cfgDb.Driver, GetConnectionString(cfgDb))
 	if err != nil {
-		log.Error().Err(err).Msgf("Failed to connect to database: %s", err.Error())
+		log.Error().Err(err).Msg("Failed to connect to database")
 		return nil, err
 	}
 

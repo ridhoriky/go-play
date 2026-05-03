@@ -7,17 +7,17 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
-	"github.com/rs/zerolog"
 )
 
 type SystemHandler struct {
-	db *sqlx.DB
+        db  *sqlx.DB
 }
 
 func NewSystemHandler(db *sqlx.DB) *SystemHandler {
-	return &SystemHandler{db: db}
+        return &SystemHandler{
+                db:  db,
+        }
 }
-
 func (h *SystemHandler) RegisterRoutes(r *gin.RouterGroup) {
 	r.GET("/health", h.HealthCheck)
 	r.GET("/ready", h.ReadyCheck)
@@ -66,7 +66,6 @@ func (h *SystemHandler) ReadyCheck(c *gin.Context) {
 		status = "not_ready"
 		httpStatus = http.StatusServiceUnavailable
 		dependencies["database"] = "unavailable"
-		zerolog.Ctx(ctx).Error().Err(err).Msg("Database connection failed")
 	} else {
 		dependencies["database"] = "available"
 	}

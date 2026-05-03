@@ -5,7 +5,6 @@ import (
 	"sync"
 	"time"
 
-	"ne-project/src/internal/handlers/helpers"
 	"ne-project/src/internal/models/dto"
 
 	"github.com/gin-gonic/gin"
@@ -24,9 +23,9 @@ type rateLimitEntry struct {
 
 var rateLimits sync.Map
 
-func (m *Middleware) RateLimiter(limit int, window time.Duration) gin.HandlerFunc {
+func (m *Middleware) RateLimiter() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if limit <= 0 || window <= 0 {
+		if m.rateLimit.Limit <= 0 || m.rateLimit.Window <= 0 {
 			c.Next()
 			return
 		}
@@ -42,17 +41,14 @@ func (m *Middleware) RateLimiter(limit int, window time.Duration) gin.HandlerFun
 		defer entry.mu.Unlock()
 
 		now := time.Now()
-		if now.Sub(entry.windowStart) > window {
+		if now.Sub(entry.windowStart) > m.rateLimit.Window {
 			entry.count = 0
 			entry.windowStart = now
 		}
 
 		entry.count++
-		if entry.count > limit {
-			helpers.ResponseError(c.Writer, &dto.Error{
-				Code:    http.StatusTooManyRequests,
-				Message: "Too many requests. Please try again later.",
-			})
+		if entry.count > m.rateLimit.Limit {
+			c.Error(dto.NewError(http.StatusTooManyRequests, "Too many requests. Please try again later."))
 			c.Abort()
 			return
 		}

@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -156,10 +155,7 @@ func (repo *productRepository) Update(ctx context.Context, id string, product *e
 
 	if rows == 0 {
 		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg(preference.ErrProductNotFound)
-		return &dto.Error{
-			Code:    http.StatusNotFound,
-			Message: preference.ErrProductNotFound,
-		}
+		return dto.NewError(http.StatusNotFound, preference.ErrProductNotFound)
 	}
 
 	return nil
@@ -180,10 +176,7 @@ func (repo *productRepository) Delete(ctx context.Context, id string) error {
 
 	if rows == 0 {
 		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg(preference.ErrProductNotFound)
-		return &dto.Error{
-			Code:    http.StatusNotFound,
-			Message: preference.ErrProductNotFound,
-		}
+		return dto.NewError(http.StatusNotFound, preference.ErrProductNotFound)
 	}
 
 	return err
@@ -208,10 +201,7 @@ func (repo *productRepository) GetByID(ctx context.Context, id string) (*entity.
 
 	if errors.Is(err, sql.ErrNoRows) {
 		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg(preference.ErrProductNotFound)
-		return nil, categoryName, &dto.Error{
-			Code:    http.StatusNotFound,
-			Message: preference.ErrProductNotFound,
-		}
+		return nil, categoryName, dto.NewError(http.StatusNotFound, preference.ErrProductNotFound)
 	}
 
 	if err != nil {
@@ -228,18 +218,12 @@ func (repo *productRepository) CreateMultiple(
 
 	if len(products) == 0 {
 		zerolog.Ctx(ctx).Error().Msg(preference.ErrProductEmpty)
-		return nil, &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: preference.ErrProductEmpty,
-		}
+		return nil, dto.NewError(http.StatusBadRequest, preference.ErrProductEmpty)
 	}
 
 	if len(products) > preference.MaxBatchSizeProduct {
 		zerolog.Ctx(ctx).Error().Msg(preference.ErrProductBatchTooLarge)
-		return nil, &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: preference.ErrProductBatchTooLarge,
-		}
+		return nil, dto.NewError(http.StatusBadRequest, preference.ErrProductBatchTooLarge)
 	}
 
 	timeout := min(
@@ -265,7 +249,6 @@ func (repo *productRepository) CreateMultiple(
 	defer func() {
 		if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
 			zerolog.Ctx(ctx).Error().Err(err).Msg("err rollback create product")
-			log.Printf("rollback error: %v", err)
 		}
 	}()
 

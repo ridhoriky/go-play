@@ -18,48 +18,31 @@ func (s *authService) Login(ctx context.Context, email string, password string, 
 	user, err := s.userRepository.GetByEmail(ctx, email)
 	if err != nil || user == nil {
 		zerolog.Ctx(ctx).Warn().Str("email", email).Msg("User not found during login")
-		return nil, &dto.Error{
-			Code:    http.StatusUnauthorized,
-			Message: preference.ErrInvalidCredentials,
-		}
+		return nil, dto.NewError(http.StatusUnauthorized, preference.ErrInvalidCredentials)
 	}
 
 	if !user.IsActive {
 		zerolog.Ctx(ctx).Warn().Str("email", email).Msg("Attempt to login with disabled account")
-		return nil, &dto.Error{
-			Code:    http.StatusUnauthorized,
-			Message: preference.ErrInvalidCredentials,
-		}
+		return nil, dto.NewError(http.StatusUnauthorized, preference.ErrInvalidCredentials)
 	}
 
 	if !hash.ComparePassword(user.Password, password) {
 		zerolog.Ctx(ctx).Warn().Str("email", email).Msg("Invalid password during login")
-		return nil, &dto.Error{
-			Code:    http.StatusUnauthorized,
-			Message: preference.ErrInvalidCredentials,
-		}
+		return nil, dto.NewError(http.StatusUnauthorized, preference.ErrInvalidCredentials)
 	}
 
 	tokens, err := s.tokenService.CreateTokens(user)
 	if err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to generate tokens")
-		return nil, &dto.Error{
-			Code:    http.StatusInternalServerError,
-			Message: preference.ErrInternalServer,
-		}
+		return nil, dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
 	}
 
 	hashedToken := s.tokenService.HashToken(tokens.RefreshToken)
 	expiresAt := time.Unix(tokens.ExpiresRt, 0)
 	if err := s.authRepository.SaveRefreshToken(ctx, nil, hashedToken, user.ID, userAgent, ipAddr, expiresAt); err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to persist refresh token")
-		return nil, &dto.Error{
-			Code:    http.StatusInternalServerError,
-			Message: preference.ErrInternalServer,
-		}
+		return nil, dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
 	}
-
-	zerolog.Ctx(ctx).Info().Str("user_id", user.ID).Str("email", user.Email).Str("ip", ipAddr).Msg("User logged in successfully")
 
 	return &dto.LoginResponse{
 		AuthTokenResponse: dto.AuthTokenResponse{
@@ -83,24 +66,15 @@ func (s *authService) Login(ctx context.Context, email string, password string, 
 
 func (s *authService) Register(ctx context.Context, req *dto.RegisterRequest) (*dto.RegisterResponse, error) {
 	if req.Name == "" {
-		return nil, &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: preference.ErrUserNameRequired,
-		}
+		return nil, dto.NewError(http.StatusBadRequest, preference.ErrUserNameRequired)
 	}
 
 	if req.Email == "" {
-		return nil, &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: preference.ErrUserEmailRequired,
-		}
+		return nil, dto.NewError(http.StatusBadRequest, preference.ErrUserEmailRequired)
 	}
 
 	if len(req.Password) < 8 {
-		return nil, &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: preference.ErrInvalidPassword,
-		}
+		return nil, dto.NewError(http.StatusBadRequest, preference.ErrInvalidPassword)
 	}
 
 	// Check for at least one uppercase letter, one number, and one special character
@@ -111,19 +85,13 @@ func (s *authService) Register(ctx context.Context, req *dto.RegisterRequest) (*
 	existingUser, _ := s.userRepository.GetByEmail(ctx, req.Email)
 	if existingUser != nil {
 		zerolog.Ctx(ctx).Warn().Str("email", req.Email).Msg("Email already registered")
-		return nil, &dto.Error{
-			Code:    http.StatusConflict,
-			Message: preference.ErrEmailAlreadyRegistered,
-		}
+		return nil, dto.NewError(http.StatusConflict, preference.ErrEmailAlreadyRegistered)
 	}
 
 	hashedPassword, err := hash.HashPassword(req.Password)
 	if err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to hash password")
-		return nil, &dto.Error{
-			Code:    http.StatusInternalServerError,
-			Message: preference.ErrInternalServer,
-		}
+		return nil, dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
 	}
 
 	role := req.Role
@@ -142,10 +110,7 @@ func (s *authService) Register(ctx context.Context, req *dto.RegisterRequest) (*
 
 	if err := s.userRepository.Create(ctx, newUser); err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to create user during registration")
-		return nil, &dto.Error{
-			Code:    http.StatusInternalServerError,
-			Message: preference.ErrInternalServer,
-		}
+		return nil, dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
 	}
 
 	userResp := &dto.UserResponse{
@@ -166,35 +131,23 @@ func (s *authService) Register(ctx context.Context, req *dto.RegisterRequest) (*
 
 func (s *authService) RefreshToken(ctx context.Context, refreshToken string, userAgent string, ipAddr string) (*dto.AuthTokenResponse, error) {
 	if refreshToken == "" {
-		return nil, &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: preference.ErrInvalidRefreshToken,
-		}
+		return nil, dto.NewError(http.StatusBadRequest, preference.ErrInvalidRefreshToken)
 	}
 
 	claims, err := s.tokenService.ValidateRefreshToken(refreshToken)
 	if err != nil {
 		zerolog.Ctx(ctx).Warn().Err(err).Msg("Invalid refresh token")
-		return nil, &dto.Error{
-			Code:    http.StatusUnauthorized,
-			Message: preference.ErrInvalidRefreshToken,
-		}
+		return nil, dto.NewError(http.StatusUnauthorized, preference.ErrInvalidRefreshToken)
 	}
 
 	hashedToken := s.tokenService.HashToken(refreshToken)
 	storedToken, err := s.authRepository.GetRefreshTokenByHash(ctx, hashedToken)
 	if err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to get refresh token")
-		return nil, &dto.Error{
-			Code:    http.StatusInternalServerError,
-			Message: preference.ErrInternalServer,
-		}
+		return nil, dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
 	}
 	if storedToken == nil || storedToken.RevokedAt != nil || storedToken.ExpiresAt.Before(time.Now()) {
-		return nil, &dto.Error{
-			Code:    http.StatusUnauthorized,
-			Message: preference.ErrInvalidRefreshToken,
-		}
+		return nil, dto.NewError(http.StatusUnauthorized, preference.ErrInvalidRefreshToken)
 	}
 
 	user, err := s.userRepository.GetByID(ctx, claims.UserID)
@@ -205,45 +158,30 @@ func (s *authService) RefreshToken(ctx context.Context, refreshToken string, use
 	newTokens, err := s.tokenService.CreateTokens(user)
 	if err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to generate refreshed tokens")
-		return nil, &dto.Error{
-			Code:    http.StatusInternalServerError,
-			Message: preference.ErrInternalServer,
-		}
+		return nil, dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
 	}
 
 	tx, err := s.db.BeginTxx(ctx, nil)
 	if err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to begin transaction")
-		return nil, &dto.Error{
-			Code:    http.StatusInternalServerError,
-			Message: preference.ErrInternalServer,
-		}
+		return nil, dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
 	}
 	defer tx.Rollback()
 
 	if err := s.authRepository.RevokeRefreshToken(ctx, tx, hashedToken); err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to revoke refresh token")
-		return nil, &dto.Error{
-			Code:    http.StatusInternalServerError,
-			Message: preference.ErrInternalServer,
-		}
+		return nil, dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
 	}
 
 	newHash := s.tokenService.HashToken(newTokens.RefreshToken)
 	if err := s.authRepository.SaveRefreshToken(ctx, tx, newHash, user.ID, userAgent, ipAddr, time.Unix(newTokens.ExpiresRt, 0)); err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to store new refresh token")
-		return nil, &dto.Error{
-			Code:    http.StatusInternalServerError,
-			Message: preference.ErrInternalServer,
-		}
+		return nil, dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
 	}
 
 	if err := tx.Commit(); err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to commit transaction")
-		return nil, &dto.Error{
-			Code:    http.StatusInternalServerError,
-			Message: preference.ErrInternalServer,
-		}
+		return nil, dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
 	}
 
 	return &dto.AuthTokenResponse{
@@ -265,35 +203,24 @@ func (s *authService) RefreshToken(ctx context.Context, refreshToken string, use
 
 func (s *authService) Logout(ctx context.Context, userID string, refreshToken string) error {
 	if refreshToken == "" {
-		return &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: preference.ErrInvalidRefreshToken,
-		}
+		return dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
 	}
 
 	claims, err := s.tokenService.ValidateRefreshToken(refreshToken)
 	if err != nil {
 		zerolog.Ctx(ctx).Warn().Err(err).Msg("Invalid refresh token on logout")
-		return &dto.Error{
-			Code:    http.StatusUnauthorized,
-			Message: preference.ErrInvalidRefreshToken,
-		}
+		return dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
 	}
 
 	if claims.UserID != userID {
-		return &dto.Error{
-			Code:    http.StatusUnauthorized,
-			Message: preference.ErrInvalidCredentials,
-		}
+		return dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
 	}
 
 	hashedToken := s.tokenService.HashToken(refreshToken)
 	if err := s.authRepository.RevokeRefreshToken(ctx, nil, hashedToken); err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to revoke refresh token on logout")
-		return &dto.Error{
-			Code:    http.StatusInternalServerError,
-			Message: preference.ErrInternalServer,
-		}
+		return dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
+
 	}
 
 	zerolog.Ctx(ctx).Info().Str("user_id", userID).Msg("User logged out")
@@ -315,10 +242,7 @@ func validatePassword(password string) error {
 	}
 
 	if !hasUpper || !hasNumber || !hasSpecial {
-		return &dto.Error{
-			Code:    http.StatusBadRequest,
-			Message: "Password must contain at least one uppercase letter, one number, and one special character (!@#$%^&*)",
-		}
+		return dto.NewError(http.StatusBadRequest, "Password must contain at least one uppercase letter, one number, and one special character (!@#$%^&*)")
 	}
 	return nil
 }

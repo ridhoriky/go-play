@@ -11,8 +11,8 @@ import (
 	"ne-project/src/internal/config/appconfig"
 	"ne-project/src/internal/config/database"
 	"ne-project/src/internal/config/logger"
-	"ne-project/src/internal/config/middleware"
 	"ne-project/src/internal/config/token"
+	"ne-project/src/internal/handlers/rest/middleware"
 	"ne-project/src/internal/handlers/rest/routes"
 	"ne-project/src/internal/repositories"
 	"ne-project/src/internal/services"
@@ -26,14 +26,15 @@ import (
 
 func Run(cfg *appconfig.Config) {
 	log := logger.InitLogger(cfg.Logger)
+	zerolog.DefaultContextLogger = log
 
-	db, err := database.InitDB(*log, &cfg.Database)
+	db, err := database.InitDB(log, &cfg.Database)
 	if err != nil {
 		log.Fatal().Err(err).Msg("app - Run - failed to initialize database")
 	}
 	defer closeDatabase(log, db)
 
-	tokenSvc, err := token.InitToken(*log, cfg.Token)
+	tokenSvc, err := token.InitToken(log, cfg.Token)
 	if err != nil {
 		log.Err(err).Msg("app - Run - failed to initialize token service")
 		return
@@ -56,13 +57,13 @@ func closeDatabase(log *zerolog.Logger, db *sqlx.DB) {
 }
 
 func setupRouter(log *zerolog.Logger, cfg *appconfig.Config, db *sqlx.DB, tokenSvc *token.Token) *gin.Engine {
-	mw := middleware.InitMiddleware(*log, tokenSvc, cfg.RateLimit.Limit, cfg.RateLimit.Window)
+	mw := middleware.InitMiddleware(log, tokenSvc, &cfg.RateLimit)
 	repo := repositories.NewRepository(db)
 	service := services.NewServices(repo, tokenSvc, db)
 	handlers := routes.NewHandlers(db, service)
 
 	r := gin.New()
-	r.Use(mw.Logger(), mw.CORS(), gin.Recovery())
+	r.Use(mw.Logger(), mw.ErrorHandler(), mw.CORS(), mw.Recovery())
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	v1 := r.Group("/api/v1")
