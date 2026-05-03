@@ -1,84 +1,89 @@
 # KasirApp - Golang REST API
 
-KasirApp is a RESTful API built with Go for a simple cashier system using Gin and PostgreSQL.
+A high-performance, structured RESTful API built with Go for a cashier management system.
+
+---
+
+## 🚀 Features
+
+- **Clean Architecture**: Organized into Handlers, Services, and Repositories.
+- **Context-aware Logging**: Structured JSON/Console logging with `zerolog`, featuring unique `request_id` and `component` tracing.
+- **Centralized Error Handling**: Uniform API responses and automated error logging via custom middleware.
+- **JWT Authentication**: Secure access and refresh token management.
+- **Rate Limiting**: Integrated protection against brute-force and spam.
+- **Swagger Documentation**: Automatically generated API documentation.
+- **Graceful Shutdown**: Handles OS signals for safe database and server closure.
 
 ---
 
 ## 🛠 Tech Stack
 
-- Go
-- Gin
-- PostgreSQL
-- sqlx
-- golang-migrate
+- **Framework**: [Gin Gonic](https://gin-gonic.com/)
+- **Database**: [PostgreSQL](https://www.postgresql.org/) with [sqlx](https://github.com/jmoiron/sqlx)
+- **Logging**: [Zerolog](https://github.com/rs/zerolog)
+- **Migrations**: [golang-migrate](https://github.com/golang-migrate/migrate)
+- **Config**: [cleanenv](https://github.com/ilyakaznacheev/cleanenv)
 
 ---
 
-## 📋 Requirements
+## 📋 Prerequisites
+
+- **Go**: v1.25.6 or later
+- **PostgreSQL**: v17 or later
+- **golang-migrate**: For database migrations
+- **swag**: For generating documentation (`go install github.com/swaggo/swag/cmd/swag@latest`)
+
+---
+
+## ⚙️ Setup & Configuration
+
+1. **Clone the repository**
+2. **Configure `config.yaml`**:
+   Adjust the database and server settings to match your local environment.
+
+3. **Install Dependencies**:
 
 ```bash
-go version
-psql --version
-migrate -version
+make tidy
 ```
 
-Minimum:
-
-- Go go1.25.6
-- PostgreSQL 17
-- golang-migrate v4.19.1
-
-## ⚙️ Configuration
-
-Edit config.yaml:
-
-```yaml
-app:
-  name: KasirApp
-  port: 8080
-
-database:
-  host: localhost
-  port: 5432
-  user: postgres
-  password: postgres
-  name: kasir_db
-```
-
-### Create database
-
-```sql
-createdb kasir_db
-```
-
-### 📦 Installation
+4. **Run Migrations**:
 
 ```bash
-go mod tidy
+make migrate-up
 ```
 
-### 🗄 Database Migration
+---
 
-Set DB URL:
+## 🎮 Running the Application
 
-```bash
-export DB_URL="postgres://postgres:postgre@localhost:5432/kasir_db?sslmode=disable"
-```
+You can use the provided `Makefile` for common tasks:
 
-Run migration:
+- **Start Server**: `make run`
+- **Build Binary**: `make build`
+- **Generate Swagger**: `make swag`
+- **Run Tests**: `make test`
 
-```bash
-migrate -path ./etc/migrations -database "$DB_URL" up
-```
+The server will be available at `http://localhost:8080`.
 
-▶️ Run Application
+---
 
-```bash
-go run cmd/server/main.go
-```
+## 📂 Project Structure
 
-Server runs at:
+- `src/cmd/server`: Application entry point.
+- `src/internal/app`: Application bootstrapping and DI.
+- `src/internal/handlers/rest`: HTTP handlers and routing.
+- `src/internal/handlers/rest/middleware`: Custom Gin middlewares.
+- `src/internal/services`: Business logic layer.
+- `src/internal/repositories`: Data access layer (SQL queries).
+- `src/internal/models`: DTOs and Entities.
+- `etc/migrations`: SQL migration files.
 
-```bash
-http://localhost:8080
-```
+---
+
+## 📝 API Documentation
+
+Once the server is running, you can access the Swagger UI at:
+`http://localhost:8080/swagger/index.html`
+
+---
