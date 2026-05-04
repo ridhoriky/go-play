@@ -11,6 +11,7 @@ import (
 	"ne-project/src/internal/config/appconfig"
 	"ne-project/src/internal/config/database"
 	"ne-project/src/internal/config/logger"
+	redisconfig "ne-project/src/internal/config/redis"
 	"ne-project/src/internal/config/token"
 	"ne-project/src/internal/handlers/rest/middleware"
 	"ne-project/src/internal/handlers/rest/routes"
@@ -19,20 +20,26 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
+	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+type Resources struct {
+	DB    *sqlx.DB
+	Redis *redis.Client
+}
+
 func Run(cfg *appconfig.Config) {
 	log := logger.InitLogger(cfg.Logger)
 	zerolog.DefaultContextLogger = log
 
-	db, err := database.InitDB(log, &cfg.Database)
+	res, err := initResources(log, cfg)
 	if err != nil {
-		log.Fatal().Err(err).Msg("app - Run - failed to initialize database")
+		log.Fatal().Err(err).Msg("app - Run - failed to initialize resources")
 	}
-	defer closeDatabase(log, db)
+	defer res.Close(log)
 
 	tokenSvc, err := token.InitToken(log, cfg.Token)
 	if err != nil {
@@ -40,27 +47,52 @@ func Run(cfg *appconfig.Config) {
 		return
 	}
 
-	router := setupRouter(log, cfg, db, tokenSvc)
+	router := setupRouter(log, cfg, res, tokenSvc)
 
 	srv := initServer(cfg, router)
 	waitForShutdown(log, srv, cfg.App)
 }
 
-func closeDatabase(log *zerolog.Logger, db *sqlx.DB) {
-	if db == nil {
-		return
+func initResources(log *zerolog.Logger, cfg *appconfig.Config) (*Resources, error) {
+	res := &Resources{}
+
+	db, err := database.InitDB(log, &cfg.Database)
+	if err != nil {
+		return nil, err
 	}
-	log.Info().Str("component", "database").Msg("closing database connection")
-	if err := db.Close(); err != nil {
-		log.Error().Err(err).Str("component", "database").Msg("failed to close database connection")
+	res.DB = db
+
+	redisClient, err := redisconfig.InitRedis(log, &cfg.Redis)
+	if err != nil {
+		res.Close(log)
+		return nil, err
+	}
+	res.Redis = redisClient
+
+	return res, nil
+}
+
+func (r *Resources) Close(log *zerolog.Logger) {
+	if r.Redis != nil {
+		log.Info().Str("component", "redis").Msg("closing Redis connection")
+		if err := r.Redis.Close(); err != nil {
+			log.Error().Err(err).Str("component", "redis").Msg("failed to close Redis connection")
+		}
+	}
+
+	if r.DB != nil {
+		log.Info().Str("component", "database").Msg("closing database connection")
+		if err := r.DB.Close(); err != nil {
+			log.Error().Err(err).Str("component", "database").Msg("failed to close database connection")
+		}
 	}
 }
 
-func setupRouter(log *zerolog.Logger, cfg *appconfig.Config, db *sqlx.DB, tokenSvc *token.Token) *gin.Engine {
+func setupRouter(log *zerolog.Logger, cfg *appconfig.Config, res *Resources, tokenSvc *token.Token) *gin.Engine {
 	mw := middleware.InitMiddleware(log, tokenSvc, &cfg.RateLimit)
-	repo := repositories.NewRepository(db)
-	service := services.NewServices(repo, tokenSvc, db)
-	handlers := routes.NewHandlers(db, service)
+	repo := repositories.NewRepository(res.DB)
+	service := services.NewServices(repo, tokenSvc, res.DB)
+	handlers := routes.NewHandlers(res.DB, service)
 
 	r := gin.New()
 	r.Use(mw.Logger(), mw.ErrorHandler(), mw.CORS(), mw.Recovery())

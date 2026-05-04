@@ -25,7 +25,7 @@ logger:
   enabled: true
   level: info # debug, info, warn, error
   format: json # json, console
-  output: file # stdout, file
+  output: stdout # stdout, file
   path: ./logs/app.log
   max_size: 100 # megabytes
   max_backups: 7
@@ -39,3 +39,10 @@ token:
 rate_limit:
   limit: 100
   window: 1m
+
+redis:
+  addr: localhost:6379
+  password: ""
+  db: 0
+  pool_size: 10
+  timeout: 5s

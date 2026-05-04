@@ -3,6 +3,7 @@ package appconfig
 import (
 	"ne-project/src/internal/config/database"
 	"ne-project/src/internal/config/logger"
+	"ne-project/src/internal/config/redis"
 	"ne-project/src/internal/config/token"
 	"ne-project/src/internal/handlers/rest/middleware"
 	"time"
@@ -16,6 +17,7 @@ type Config struct {
 	Logger    logger.LoggerOptions          `yaml:"logger"`
 	Token     token.TokenOptions            `yaml:"token"`
 	RateLimit middleware.RateLimiterOptions `yaml:"rate_limit"`
+	Redis     redis.RedisOptions            `yaml:"redis"`
 }
 
 type AppConfig struct {
