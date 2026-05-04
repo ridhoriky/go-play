@@ -2,7 +2,10 @@ package user
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"math"
+	"time"
 
 	"ne-project/src/internal/models/dto"
 	"ne-project/src/internal/models/entity"
@@ -12,7 +15,13 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
+)
+
+const (
+	userCacheKey = "user:%s"
+	userCacheTTL = 1 * time.Minute
 )
 
 func (s *userService) GetAllUsers(ctx context.Context, req *dto.GetUsersQuery) (*dto.UserListResponse, error) {
@@ -56,7 +65,32 @@ func (s *userService) GetAllUsers(ctx context.Context, req *dto.GetUsersQuery) (
 }
 
 func (s *userService) GetUserByID(ctx context.Context, id string) (*entity.User, error) {
-	return s.userRepository.GetByID(ctx, id)
+	key := fmt.Sprintf(userCacheKey, id)
+
+	val, err := s.rdb.Get(ctx, key).Result()
+	if err == nil {
+		var u entity.User
+		if err := json.Unmarshal([]byte(val), &u); err == nil {
+			zerolog.Ctx(ctx).Debug().Str("id", id).Msg("user cache hit")
+			return &u, nil
+		}
+
+	} else if err != redis.Nil {
+		zerolog.Ctx(ctx).Warn().Err(err).Str("id", id).Msg("failed to get user from cache")
+	}
+
+	u, err := s.userRepository.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := json.Marshal(u)
+	if err == nil {
+		if err := s.rdb.Set(ctx, key, data, userCacheTTL).Err(); err != nil {
+			zerolog.Ctx(ctx).Warn().Err(err).Str("id", id).Msg("failed to save user to cache")
+		}
+	}
+	return u, nil
 }
 
 func (s *userService) CreateUser(ctx context.Context, req *dto.CreateUserRequest) (*entity.User, error) {

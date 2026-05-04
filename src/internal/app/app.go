@@ -91,7 +91,7 @@ func (r *Resources) Close(log *zerolog.Logger) {
 func setupRouter(log *zerolog.Logger, cfg *appconfig.Config, res *Resources, tokenSvc *token.Token) *gin.Engine {
 	mw := middleware.InitMiddleware(log, tokenSvc, &cfg.RateLimit)
 	repo := repositories.NewRepository(res.DB)
-	service := services.NewServices(repo, tokenSvc, res.DB)
+	service := services.NewServices(repo, tokenSvc, res.DB, res.Redis)
 	handlers := routes.NewHandlers(res.DB, service)
 
 	r := gin.New()

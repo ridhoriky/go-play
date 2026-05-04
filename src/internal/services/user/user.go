@@ -6,6 +6,8 @@ import (
 	"ne-project/src/internal/models/dto"
 	"ne-project/src/internal/models/entity"
 	"ne-project/src/internal/repositories/user"
+
+	"github.com/redis/go-redis/v9"
 )
 
 type UserServiceItf interface {
@@ -18,10 +20,12 @@ type UserServiceItf interface {
 
 type userService struct {
 	userRepository user.UserRepositoryItf
+	rdb            *redis.Client
 }
 
-func NewUserService(userRepository user.UserRepositoryItf) UserServiceItf {
+func NewUserService(userRepository user.UserRepositoryItf, rdb *redis.Client) UserServiceItf {
 	return &userService{
 		userRepository: userRepository,
+		rdb:            rdb,
 	}
 }

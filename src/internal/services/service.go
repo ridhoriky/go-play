@@ -11,6 +11,7 @@ import (
 	"ne-project/src/internal/services/user"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/redis/go-redis/v9"
 )
 
 type Services struct {
@@ -22,13 +23,13 @@ type Services struct {
 	User        user.UserServiceItf
 }
 
-func NewServices(repositories *repositories.Repositories, tokenSvc *token.Token, db *sqlx.DB) *Services {
+func NewServices(repositories *repositories.Repositories, tokenSvc *token.Token, db *sqlx.DB, rdb *redis.Client) *Services {
 	return &Services{
 		Auth:        auth.NewAuthService(repositories.User, repositories.Auth, tokenSvc, db),
 		Category:    category.NewCategoryService(repositories.Category),
 		Product:     product.NewProductService(repositories.Product),
 		Transaction: transaction.NewTransactionService(repositories.Transaction),
 		Report:      report.NewReportService(repositories.Report),
-		User:        user.NewUserService(repositories.User),
+		User:        user.NewUserService(repositories.User, rdb),
 	}
 }
