@@ -14,14 +14,15 @@ import (
 )
 
 type ProductHandler struct {
-        productService product.ProductServiceItf
+	productService product.ProductServiceItf
 }
 
 func NewProductHandler(productService product.ProductServiceItf) *ProductHandler {
-        return &ProductHandler{
-                productService: productService,
-        }
+	return &ProductHandler{
+		productService: productService,
+	}
 }
+
 // GetProducts godoc
 // @Summary      List Product
 // @Description  Get list of products
@@ -46,12 +47,12 @@ func (h *ProductHandler) GetAll(c *gin.Context) {
 
 	var req dto.GetProductsQuery
 	if err := c.ShouldBindQuery(&req); err != nil {
-		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidQueryParams))
+		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidQueryParams))
 		return
 	}
 	products, err := h.productService.GetAllProducts(ctx, &req)
 	if err != nil {
-		c.Error(err)
+		helpers.ResponseError(c, err)
 		return
 	}
 	helpers.ResponseSuccess(c, http.StatusOK, "Success", products)
@@ -73,13 +74,13 @@ func (h *ProductHandler) Create(c *gin.Context) {
 	var p dto.CreateProductRequest
 
 	if err := c.ShouldBindJSON(&p); err != nil {
-		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
+		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
 		return
 	}
 
 	createdProduct, err := h.productService.CreateProduct(ctx, &p)
 	if err != nil {
-		c.Error(err)
+		helpers.ResponseError(c, err)
 		return
 	}
 	helpers.ResponseSuccess(c, http.StatusCreated, "Product created successfully", createdProduct)
@@ -101,12 +102,12 @@ func (h *ProductHandler) GetByID(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 
 	if err != nil {
-		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidProductID))
+		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidProductID))
 		return
 	}
 	product, err := h.productService.GetProductByID(ctx, id.String())
 	if err != nil {
-		c.Error(err)
+		helpers.ResponseError(c, err)
 		return
 	}
 	helpers.ResponseSuccess(c, http.StatusOK, "Success", product)
@@ -130,19 +131,19 @@ func (h *ProductHandler) Update(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 
 	if err != nil {
-		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidProductID))
+		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidProductID))
 		return
 	}
 	var p dto.UpdateProductRequest
 
 	if err := c.ShouldBindJSON(&p); err != nil {
-		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
+		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
 		return
 	}
 
 	updatedProduct, err := h.productService.UpdateProduct(ctx, id.String(), &p)
 	if err != nil {
-		c.Error(err)
+		helpers.ResponseError(c, err)
 		return
 	}
 	helpers.ResponseSuccess(c, http.StatusOK, "Product updated successfully", updatedProduct)
@@ -165,11 +166,11 @@ func (h *ProductHandler) Delete(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 
 	if err != nil {
-		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidProductID))
+		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidProductID))
 		return
 	}
 	if err := h.productService.DeleteProduct(ctx, id.String()); err != nil {
-		c.Error(err)
+		helpers.ResponseError(c, err)
 		return
 	}
 	helpers.ResponseSuccess(c, http.StatusOK, "Product deleted successfully", nil)
@@ -190,7 +191,7 @@ func (h *ProductHandler) CreateMultiple(c *gin.Context) {
 	ctx := c.Request.Context()
 	var req dto.CreateMultipleProducts
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
+		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
 		return
 	}
 
@@ -205,7 +206,7 @@ func (h *ProductHandler) CreateMultiple(c *gin.Context) {
 
 	responses, err := h.productService.CreateMultipleProducts(ctx, products)
 	if err != nil {
-		c.Error(err)
+		helpers.ResponseError(c, err)
 		return
 	}
 	helpers.ResponseSuccess(c, http.StatusCreated, "Products created successfully", responses)

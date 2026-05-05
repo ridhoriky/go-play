@@ -70,8 +70,8 @@ func (s *productService) CreateProduct(ctx context.Context, product *dto.CreateP
 	}
 
 	if product.Name == "" {
-		zerolog.Ctx(ctx).Error().Msg(preference.ErrProductNameRequied)
-		return nil, dto.NewError(http.StatusBadRequest, preference.ErrProductNameRequied)
+		zerolog.Ctx(ctx).Error().Msg(preference.ErrProductNameRequired)
+		return nil, dto.NewError(http.StatusBadRequest, preference.ErrProductNameRequired)
 	}
 
 	p := entity.Product{
@@ -122,8 +122,8 @@ func (s *productService) UpdateProduct(ctx context.Context, id string, req *dto.
 	}
 
 	if req.Name == "" {
-		zerolog.Ctx(ctx).Error().Msg(preference.ErrProductNameRequied)
-		return nil, dto.NewError(http.StatusBadRequest, preference.ErrProductNameRequied)
+		zerolog.Ctx(ctx).Error().Msg(preference.ErrProductNameRequired)
+		return nil, dto.NewError(http.StatusBadRequest, preference.ErrProductNameRequired)
 	}
 
 	existingProduct.Name = req.Name

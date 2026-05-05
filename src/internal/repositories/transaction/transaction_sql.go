@@ -318,7 +318,7 @@ func (r *transactionRepository) UpdateStatus(
 	rows, _ := result.RowsAffected()
 	if rows == 0 {
 		zerolog.Ctx(ctx).Warn().Str("transaction_id", id).Msg("transaction not found")
-		return dto.NewError(http.StatusNotFound, preference.ErrProductNotFound)
+		return dto.NewError(http.StatusNotFound, preference.ErrTransactionNotFound)
 	}
 
 	// restore stok jika cancelled

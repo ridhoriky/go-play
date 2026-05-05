@@ -37,13 +37,13 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 	var req dto.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
+		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
 		return
 	}
 
 	loginResp, err := h.authService.Login(ctx, req.Email, req.Password, c.Request.UserAgent(), c.ClientIP())
 	if err != nil {
-		c.Error(err)
+		helpers.ResponseError(c, err)
 		return
 	}
 
@@ -67,13 +67,13 @@ func (h *AuthHandler) Register(c *gin.Context) {
 
 	var req dto.RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
+		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
 		return
 	}
 
 	registerResp, err := h.authService.Register(ctx, &req)
 	if err != nil {
-		c.Error(err)
+		helpers.ResponseError(c, err)
 		return
 	}
 
@@ -97,13 +97,13 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 
 	var req dto.RefreshTokenRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
+		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
 		return
 	}
 
 	tokenResp, err := h.authService.RefreshToken(ctx, req.RefreshToken, c.Request.UserAgent(), c.ClientIP())
 	if err != nil {
-		c.Error(err)
+		helpers.ResponseError(c, err)
 		return
 	}
 
@@ -127,18 +127,18 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 
 	var req dto.LogoutRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
+		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
 		return
 	}
 
 	userID, exists := c.Get("user_id")
 	if !exists {
-		c.Error(dto.NewError(http.StatusUnauthorized, preference.ErrMissingAuthHeader))
+		helpers.ResponseError(c, dto.NewError(http.StatusUnauthorized, preference.ErrMissingAuthHeader))
 		return
 	}
 
 	if err := h.authService.Logout(ctx, userID.(string), req.RefreshToken); err != nil {
-		c.Error(err)
+		helpers.ResponseError(c, err)
 		return
 	}
 

@@ -40,13 +40,13 @@ import (
 
 	var req dto.GetCategoriesQuery
 	if err := c.ShouldBindQuery(&req); err != nil {
-		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidQueryParams))
+		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidQueryParams))
 		return
 	}
 
 	categories, err := h.categoryService.GetAllCategories(ctx, &req)
 	if err != nil {
-		c.Error(err)
+		helpers.ResponseError(c, err)
 		return
 	}
 	helpers.ResponseSuccess(c, http.StatusOK, "Success", categories)
@@ -68,13 +68,13 @@ import (
 
 	var cat dto.CreateCategoryRequest
 	if err := c.ShouldBindJSON(&cat); err != nil {
-		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
+		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
 		return
 	}
 
 	createdCategory, err := h.categoryService.CreateCategory(ctx, &cat)
 	if err != nil {
-		c.Error(err)
+		helpers.ResponseError(c, err)
 		return
 	}
 
@@ -97,12 +97,12 @@ import (
 	id, err := uuid.Parse(c.Param("id"))
 
 	if err != nil {
-		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidCategoryID))
+		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidCategoryID))
 		return
 	}
 	category, err := h.categoryService.GetCategoryByID(ctx, id.String())
 	if err != nil {
-		c.Error(err)
+		helpers.ResponseError(c, err)
 		return
 	}
 	helpers.ResponseSuccess(c, http.StatusOK, "Success", category)
@@ -125,19 +125,19 @@ import (
 
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
-		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidCategoryID))
+		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidCategoryID))
 		return
 	}
 
 	var cat dto.UpdateCategoryRequest
 	if err := c.ShouldBindJSON(&cat); err != nil {
-		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
+		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
 		return
 	}
 
 	updatedCategory, err := h.categoryService.UpdateCategory(ctx, id.String(), &cat)
 	if err != nil {
-		c.Error(err)
+		helpers.ResponseError(c, err)
 		return
 	}
 
@@ -161,11 +161,11 @@ import (
 	id, err := uuid.Parse(c.Param("id"))
 
 	if err != nil {
-		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidCategoryID))
+		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidCategoryID))
 		return
 	}
 	if err := h.categoryService.DeleteCategory(ctx, id.String()); err != nil {
-		c.Error(err)
+		helpers.ResponseError(c, err)
 		return
 	}
 	helpers.ResponseSuccess(c, http.StatusOK, "Category deleted successfully", nil)

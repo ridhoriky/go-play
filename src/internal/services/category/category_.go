@@ -54,8 +54,8 @@ func (s *categoryService) GetAllCategories(ctx context.Context, req *dto.GetCate
 func (s *categoryService) CreateCategory(ctx context.Context, req *dto.CreateCategoryRequest) (*entity.Category, error) {
 
 	if req.Name == "" {
-		zerolog.Ctx(ctx).Error().Msg(preference.ErrCategoryNameRequied)
-		return nil, dto.NewError(http.StatusBadRequest, preference.ErrCategoryNameRequied)
+		zerolog.Ctx(ctx).Error().Msg(preference.ErrCategoryNameRequired)
+		return nil, dto.NewError(http.StatusBadRequest, preference.ErrCategoryNameRequired)
 	}
 
 	c := &entity.Category{
@@ -81,8 +81,8 @@ func (s *categoryService) UpdateCategory(ctx context.Context, id string, req *dt
 	}
 
 	if req.Name == "" {
-		zerolog.Ctx(ctx).Error().Msg(preference.ErrCategoryNameRequied)
-		return nil, dto.NewError(http.StatusBadRequest, preference.ErrCategoryNameRequied)
+		zerolog.Ctx(ctx).Error().Msg(preference.ErrCategoryNameRequired)
+		return nil, dto.NewError(http.StatusBadRequest, preference.ErrCategoryNameRequired)
 	}
 
 	existingCategory.Name = req.Name

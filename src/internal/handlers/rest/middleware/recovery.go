@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"ne-project/src/internal/preference"
 	"net/http"
 	"runtime/debug"
 
@@ -20,7 +21,7 @@ func (m *Middleware) Recovery() gin.HandlerFunc {
 				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 					"status":  http.StatusInternalServerError,
 					"message": "Internal Server Error",
-					"error":   "INTERNAL_SERVER_ERROR",
+					"error":   preference.ErrorCodeByHTTPStatus[http.StatusInternalServerError],
 				})
 			}
 		}()

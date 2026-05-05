@@ -38,13 +38,13 @@ func (h *UserHandler) GetAllUser(c *gin.Context) {
 
 	var req dto.GetUsersQuery
 	if err := c.ShouldBindQuery(&req); err != nil {
-		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidQueryParams))
+		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidQueryParams))
 		return
 	}
 
 	users, err := h.userService.GetAllUsers(ctx, &req)
 	if err != nil {
-		c.Error(err)
+		helpers.ResponseError(c, err)
 		return
 	}
 	helpers.ResponseSuccess(c, http.StatusOK, "Success", users)
@@ -68,12 +68,12 @@ func (h *UserHandler) GetUserByID(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 
 	if err != nil {
-		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidUserID))
+		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidUserID))
 		return
 	}
 	user, err := h.userService.GetUserByID(ctx, id.String())
 	if err != nil {
-		c.Error(err)
+		helpers.ResponseError(c, err)
 		return
 	}
 	helpers.ResponseSuccess(c, http.StatusOK, "Success", user)
@@ -95,13 +95,13 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 
 	var user dto.CreateUserRequest
 	if err := c.ShouldBindJSON(&user); err != nil {
-		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
+		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
 		return
 	}
 
 	createdUser, err := h.userService.CreateUser(ctx, &user)
 	if err != nil {
-		c.Error(err)
+		helpers.ResponseError(c, err)
 		return
 	}
 
@@ -126,19 +126,19 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
-		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidUserID))
+		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidUserID))
 		return
 	}
 
 	var user dto.UpdateUserRequest
 	if err := c.ShouldBindJSON(&user); err != nil {
-		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
+		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
 		return
 	}
 
 	updatedUser, err := h.userService.UpdateUser(ctx, id.String(), &user)
 	if err != nil {
-		c.Error(err)
+		helpers.ResponseError(c, err)
 		return
 	}
 
@@ -163,11 +163,11 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 
 	if err != nil {
-		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidUserID))
+		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidUserID))
 		return
 	}
 	if err := h.userService.DeleteUser(ctx, id.String()); err != nil {
-		c.Error(err)
+		helpers.ResponseError(c, err)
 		return
 	}
 	helpers.ResponseSuccess(c, http.StatusOK, "User deleted successfully", nil)

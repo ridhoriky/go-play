@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"ne-project/src/internal/handlers/helpers"
 	"ne-project/src/internal/models/dto"
 
 	"github.com/gin-gonic/gin"
@@ -48,7 +49,7 @@ func (m *Middleware) RateLimiter() gin.HandlerFunc {
 
 		entry.count++
 		if entry.count > m.rateLimit.Limit {
-			c.Error(dto.NewError(http.StatusTooManyRequests, "Too many requests. Please try again later."))
+			helpers.ResponseError(c, dto.NewError(http.StatusTooManyRequests, "Too many requests. Please try again later."))
 			c.Abort()
 			return
 		}

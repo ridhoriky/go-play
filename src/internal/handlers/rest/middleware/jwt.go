@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"ne-project/src/internal/config/token"
+	"ne-project/src/internal/handlers/helpers"
 	"ne-project/src/internal/models/dto"
 	"ne-project/src/internal/preference"
 
@@ -16,21 +17,21 @@ func (m *Middleware) JWTAuth(tokenSvc *token.Token) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if strings.TrimSpace(authHeader) == "" {
-			c.Error(dto.NewError(http.StatusUnauthorized, preference.ErrMissingAuthHeader))
+			helpers.ResponseError(c, dto.NewError(http.StatusUnauthorized, preference.ErrMissingAuthHeader))
 			c.Abort()
 			return
 		}
 
 		parts := strings.Fields(authHeader)
 		if len(parts) != 2 || !strings.EqualFold(parts[0], "Bearer") {
-			c.Error(dto.NewError(http.StatusUnauthorized, preference.ErrInvalidAuthFormat))
+			helpers.ResponseError(c, dto.NewError(http.StatusUnauthorized, preference.ErrInvalidAuthFormat))
 			c.Abort()
 			return
 		}
 
 		claims, err := tokenSvc.ValidateAccessToken(parts[1])
 		if err != nil {
-			c.Error(dto.NewError(http.StatusUnauthorized, preference.ErrInvalidCredentials))
+			helpers.ResponseError(c, dto.NewError(http.StatusUnauthorized, preference.ErrInvalidCredentials))
 			c.Abort()
 			return
 		}

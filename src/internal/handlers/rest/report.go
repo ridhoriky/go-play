@@ -37,12 +37,12 @@ func (h *ReportHandler) GetReports(c *gin.Context) {
 
 	var req dto.GetReportQuery
 	if err := c.ShouldBindQuery(&req); err != nil {
-		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidQueryParams))
+		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidQueryParams))
 		return
 	}
 	reports, err := h.reportService.GetSummary(ctx, &req)
 	if err != nil {
-		c.Error(err)
+		helpers.ResponseError(c, err)
 		return
 	}
 	helpers.ResponseSuccess(c, http.StatusOK, "Success", reports)
@@ -66,12 +66,12 @@ func (h *ReportHandler) GetTopProducts(c *gin.Context) {
 	ctx := c.Request.Context()
 	var req dto.GetTopProductsQuery
 	if err := c.ShouldBindQuery(&req); err != nil {
-		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidQueryParams))
+		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidQueryParams))
 		return
 	}
 	reports, err := h.reportService.GetTopProducts(ctx, &req)
 	if err != nil {
-		c.Error(err)
+		helpers.ResponseError(c, err)
 		return
 	}
 	helpers.ResponseSuccess(c, http.StatusOK, "Success", reports)

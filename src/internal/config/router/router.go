@@ -22,7 +22,7 @@ func SetupRouter(log *zerolog.Logger, cfg *appconfig.Config, res *resource.Resou
 	handlers := routes.NewHandlers(res.DB, service)
 
 	r := gin.New()
-	r.Use(mw.Logger(), mw.ErrorHandler(), mw.CORS(), mw.Recovery())
+	r.Use(mw.Logger(), mw.CORS(), mw.Recovery())
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	v1 := r.Group("/api/v1")

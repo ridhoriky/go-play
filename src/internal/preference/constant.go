@@ -28,14 +28,14 @@ const (
 	ErrProductNotFound      = "Product not found"
 	ErrProductPriceNegative = "Price cannot be negative"
 	ErrProductStockNegative = "Stock cannot be negative"
-	ErrProductNameRequied   = "Product name is required"
+	ErrProductNameRequired   = "Product name is required"
 	ErrProductBatchTooLarge = "Number of products exceeds maximum batch size (max: 500)"
 
 	// Error message category
 	ErrInvalidCategoryID     = "Invalid category ID"
 	ErrCategoryAlreadyExists = "Category name already exists"
 	ErrCategoryNotFound      = "Category not found"
-	ErrCategoryNameRequied   = "Category name is required"
+	ErrCategoryNameRequired   = "Category name is required"
 
 	// Error message User
 	ErrInvalidUserID     = "Invalid user ID"
@@ -57,7 +57,8 @@ const (
 	ErrRefreshTokenExpired    = "Refresh token has expired"
 
 	// Error message transaction
-	ErrInvalidTranscationID = "Invalid transaction ID"
+	ErrInvalidTransactionID = "Invalid transaction ID"
+	ErrTransactionNotFound  = "Transaction not found"
 
 	// Batch size
 	MaxBatchSizeProduct = 500

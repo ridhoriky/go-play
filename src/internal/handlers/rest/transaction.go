@@ -38,13 +38,13 @@ func (h *TransactionHandler) Checkout(c *gin.Context) {
 
 	var req dto.CreateTransactionRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
+		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
 		return
 	}
 
 	result, err := h.transactionService.Checkout(ctx, &req)
 	if err != nil {
-		c.Error(err)
+		helpers.ResponseError(c, err)
 		return
 	}
 
@@ -69,12 +69,12 @@ func (h *TransactionHandler) GetByID(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 
 	if err != nil {
-		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidTranscationID))
+		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidTransactionID))
 		return
 	}
 	transaction, err := h.transactionService.GetTransactionByID(ctx, id.String())
 	if err != nil {
-		c.Error(err)
+		helpers.ResponseError(c, err)
 		return
 	}
 	helpers.ResponseSuccess(c, http.StatusOK, "Success", transaction)
@@ -97,19 +97,19 @@ func (h *TransactionHandler) UpdateTransactionStatus(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 
 	if err != nil {
-		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidTranscationID))
+		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidTransactionID))
 		return
 	}
 
 	var status *dto.UpdateTransactionStatusRequest
 	if err := c.ShouldBindJSON(&status); err != nil {
-		c.Error(dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
+		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
 		return
 	}
 
 	transaction, err := h.transactionService.UpdateStatus(ctx, id.String(), status)
 	if err != nil {
-		c.Error(err)
+		helpers.ResponseError(c, err)
 		return
 	}
 	helpers.ResponseSuccess(c, http.StatusOK, "Success", transaction)
