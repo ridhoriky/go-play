@@ -1,5 +1,25 @@
 package dto
 
+// ─── Health Check ──────────────────────────────────────────────────────────────
+
+type HealthCheckResponse struct {
+	Status  string `json:"status" example:"alive"`
+	Time    string `json:"time" example:"2024-01-15T10:30:00Z"`
+	Service string `json:"service" example:"go-play"`
+	Version string `json:"version" example:"1.0.0"`
+}
+
+// ─── Ready Check ──────────────────────────────────────────────────────────────
+
+type ReadyCheckResponse struct {
+	Status       string            `json:"status" example:"ready"` // ready, not_ready
+	Time         string            `json:"time"`
+	Service      string            `json:"service"`
+	Version      string            `json:"version"`
+	Dependencies map[string]string `json:"dependencies"` // database, cache, etc
+	Message      string            `json:"message"`
+}
+
 // ─── Pagination ──────────────────────────────────────────────────────────────
 
 type PaginationMeta struct {
@@ -40,10 +60,6 @@ type Error struct {
 	Details []ErrorDetail `json:"details,omitempty"`
 }
 
-func (e *Error) Error() string {
-	return e.Message
-}
-
 // ─── Kode Error Standar ──────────────────────────────────────────────────────
 
 const (
@@ -53,6 +69,10 @@ const (
 	ErrCodeUnprocessable = "UNPROCESSABLE"
 	ErrCodeInternal      = "INTERNAL_SERVER_ERROR"
 )
+
+func (e *Error) Error() string {
+	return e.Message
+}
 
 // ─── Helper Constructor ──────────────────────────────────────────────────────
 
@@ -73,24 +93,4 @@ func NewErrorResponse(code int, message string, details ...ErrorDetail) ErrorRes
 		e.Details = details
 	}
 	return ErrorResponse{Success: false, Error: e}
-}
-
-// ─── Health Check ──────────────────────────────────────────────────────────────
-
-type HealthCheckResponse struct {
-	Status  string `json:"status" example:"alive"`
-	Time    string `json:"time" example:"2024-01-15T10:30:00Z"`
-	Service string `json:"service" example:"go-play"`
-	Version string `json:"version" example:"1.0.0"`
-}
-
-// ─── Ready Check ──────────────────────────────────────────────────────────────
-
-type ReadyCheckResponse struct {
-	Status       string            `json:"status" example:"ready"` // ready, not_ready
-	Time         string            `json:"time"`
-	Service      string            `json:"service"`
-	Version      string            `json:"version"`
-	Dependencies map[string]string `json:"dependencies"` // database, cache, etc
-	Message      string            `json:"message"`
 }

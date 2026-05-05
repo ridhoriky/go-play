@@ -10,6 +10,14 @@ type DateRange struct {
 	To   time.Time
 }
 
+type ValidationError struct {
+	Message string
+}
+
+func (e *ValidationError) Error() string {
+	return e.Message
+}
+
 func Parse(period, dateFrom, dateTo string) (DateRange, error) {
 	now := time.Now()
 
@@ -77,12 +85,4 @@ func parseCustomRange(dateFrom, dateTo string) (DateRange, error) {
 	to = time.Date(to.Year(), to.Month(), to.Day(), 23, 59, 59, 0, to.Location())
 
 	return DateRange{From: from, To: to}, nil
-}
-
-type ValidationError struct {
-	Message string
-}
-
-func (e *ValidationError) Error() string {
-	return e.Message
 }

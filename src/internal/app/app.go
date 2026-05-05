@@ -56,9 +56,6 @@ func (a *App) Close() {
 func Run(cfg *appconfig.Config) {
 	app, err := NewApp(cfg)
 	if err != nil {
-		// We don't have the logger yet if New fails early,
-		// but resource.InitResources needs it.
-		// If New fails, it's a fatal error.
 		panic(err)
 	}
 	defer app.Close()

@@ -8,12 +8,6 @@ import (
 
 type TransactionStatus string
 
-const (
-	TransactionStatusPending   TransactionStatus = "pending"
-	TransactionStatusPaid      TransactionStatus = "paid"
-	TransactionStatusCancelled TransactionStatus = "cancelled"
-)
-
 type Transaction struct {
 	ID          string            `db:"id" json:"id"`
 	TotalAmount decimal.Decimal   `db:"total_amount" json:"total_amount"`
@@ -35,3 +29,9 @@ type TransactionWithDetails struct {
 	Transaction
 	Items []TransactionDetail `json:"items"`
 }
+
+const (
+	TransactionStatusPending   TransactionStatus = "pending"
+	TransactionStatusPaid      TransactionStatus = "paid"
+	TransactionStatusCancelled TransactionStatus = "cancelled"
+)
