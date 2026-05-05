@@ -52,7 +52,11 @@ func (repo *productRepository) GetAll(ctx context.Context, filter *dto.GetProduc
 		return nil, 0, err
 	}
 
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			zerolog.Ctx(ctx).Error().Err(err).Msg("failed to close rows")
+		}
+	}()
 
 	products := []entity.ProductWithCategory{}
 
@@ -301,7 +305,11 @@ func (repo *productRepository) CreateMultiple(
 		zerolog.Ctx(ctx).Error().Err(err).Msg("err query create products")
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			zerolog.Ctx(ctx).Error().Err(err).Msg("failed to close rows")
+		}
+	}()
 
 	var responses []entity.Product
 

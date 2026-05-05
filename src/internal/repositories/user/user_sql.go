@@ -47,8 +47,11 @@ func (repo *userRepository) GetAll(ctx context.Context, filter *dto.GetUsersQuer
 		return nil, 0, err
 	}
 
-	defer rows.Close()
-
+	defer func() {
+		if err := rows.Close(); err != nil {
+			zerolog.Ctx(ctx).Error().Err(err).Msg("failed to close rows")
+		}
+	}()
 	users := []entity.User{}
 	var total int
 

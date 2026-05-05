@@ -38,7 +38,11 @@ func (r *reportRepository) GetTopProducts(
 		zerolog.Ctx(ctx).Error().Err(err).Msg("err query top products")
 		return dto.TopProductsResponse{}, err
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			zerolog.Ctx(ctx).Error().Err(err).Msg("failed to close rows")
+		}
+	}()
 	for rows.Next() {
 		var product dto.TopProductItem
 		if err := rows.Scan(&product.ProductID, &product.ProductName, &product.TotalQuantity, &product.TotalRevenue); err != nil {

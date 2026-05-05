@@ -46,8 +46,11 @@ func (repo *categoryRepository) GetAll(ctx context.Context, filter *dto.GetCateg
 		zerolog.Ctx(ctx).Error().Err(err).Msg("err find category with query")
 		return nil, 0, err
 	}
-
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			zerolog.Ctx(ctx).Error().Err(err).Msg("failed to close rows")
+		}
+	}()
 
 	categories := []entity.Category{}
 	var total int

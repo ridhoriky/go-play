@@ -30,19 +30,30 @@ func (r *transactionRepository) Checkout(
 		zerolog.Ctx(ctx).Error().Err(err).Msg("err tx checkout")
 		return nil, err
 	}
-	defer tx.Rollback()
+	defer func() {
+		if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
+			zerolog.Ctx(ctx).Error().Err(err).Msg("err rollback checkout")
+		}
+	}()
 
-	details, totalAmount, err := r.processItems(ctx, tx, req.Items)
+	var (
+		details     []entity.TransactionDetail
+		totalAmount decimal.Decimal
+		trx         entity.Transaction
+	)
+
+	details, totalAmount, err = r.processItems(ctx, tx, req.Items)
 	if err != nil {
 		return nil, err
 	}
 
-	trx, err := r.insertTransaction(ctx, tx, totalAmount)
+	trx, err = r.insertTransaction(ctx, tx, totalAmount)
 	if err != nil {
 		return nil, err
 	}
 
-	if err = r.insertTransactionDetails(ctx, tx, trx.ID, details); err != nil {
+	err = r.insertTransactionDetails(ctx, tx, trx.ID, details)
+	if err != nil {
 		return nil, err
 	}
 
@@ -110,6 +121,7 @@ func (r *transactionRepository) fetchProduct(
 		return nil, dto.NewError(http.StatusNotFound, preference.ErrProductNotFound)
 	}
 	if err != nil {
+
 		zerolog.Ctx(ctx).Error().Err(err).Str("id", productID).Msg("err fetch product")
 		return nil, err
 	}
@@ -129,9 +141,9 @@ func (r *transactionRepository) lockAndValidateStock(
 	if lockedStock < item.Quantity {
 		zerolog.Ctx(ctx).Error().Str("id", item.ProductID).Msg("err product out of stock")
 		return dto.NewError(http.StatusUnprocessableEntity, fmt.Sprintf(
-				"Insufficient stock for product '%s' (available: %d)",
-				productName, lockedStock,
-			))
+			"Insufficient stock for product '%s' (available: %d)",
+			productName, lockedStock,
+		))
 	}
 	return nil
 }
@@ -209,8 +221,11 @@ func (repo *transactionRepository) GetTransactionByID(ctx context.Context, id st
 		zerolog.Ctx(ctx).Error().Err(err).Str("transaction_id", id).Msg("failed to query transaction with details")
 		return nil, err
 	}
-	defer rows.Close()
-
+	defer func() {
+		if err := rows.Close(); err != nil {
+			zerolog.Ctx(ctx).Error().Err(err).Msg("failed to close rows")
+		}
+	}()
 	// Initialize result as pointer
 	result := &entity.TransactionWithDetails{
 		Items: make([]entity.TransactionDetail, 0),
@@ -307,7 +322,11 @@ func (r *transactionRepository) UpdateStatus(
 		zerolog.Ctx(ctx).Error().Err(err).Str("transaction_id", id).Msg("err tx update status transaction")
 		return err
 	}
-	defer tx.Rollback()
+	defer func() {
+		if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
+			zerolog.Ctx(ctx).Error().Err(err).Msg("err rollback update status")
+		}
+	}()
 
 	// update status
 	result, err := tx.ExecContext(ctx, updateTransactionStatusQuery, newStatus, id)
