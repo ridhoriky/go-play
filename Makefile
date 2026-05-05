@@ -60,3 +60,26 @@ help:
 	@echo ""
 	@echo "Targets:"
 	@sed -n 's/^##//p' Makefile | column -t -s ':' |  sed -e 's/^/ /'
+
+## lint: Run golangci-lint
+lint:
+	@echo "Running golangci-lint..."
+	@if command -v golangci-lint >/dev/null 2>&1; then \
+        golangci-lint run; \
+    else \
+        echo "golangci-lint not installed. Run: make install-tools"; \
+        exit 1; \
+    fi
+	@echo "golangci-lint finished."
+
+## install-tools: Install necessary tools (golangci-lint, swag, migrate)
+install-tools:
+	@echo "Installing golangci-lint..."
+	@curl curl -sSfL "https://golangci-lint.run/install.sh"
+	@sudo mv ./bin/golangci-lint /usr/local/bin/
+	@echo "Installing swag..."
+	@go install github.com/swaggo/swag/cmd/swag@latest
+	@echo "Installing migrate..."
+	@go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+	@echo "All tools installed."	
+	@echo "Installation completed."
