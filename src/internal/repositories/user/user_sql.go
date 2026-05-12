@@ -60,7 +60,7 @@ func (repo *userRepository) GetAll(ctx context.Context, filter *dto.GetUsersQuer
 		var u entity.User
 		var rowCount int
 
-		err := rows.Scan(
+		err = rows.Scan(
 			&u.ID,
 			&u.Name,
 			&u.Email,
@@ -72,7 +72,7 @@ func (repo *userRepository) GetAll(ctx context.Context, filter *dto.GetUsersQuer
 		)
 
 		if err != nil {
-			zerolog.Ctx(ctx).Error().Err(err).Str("userID", fmt.Sprintf("%v", u.ID)).Msg("err mapping user row")
+			zerolog.Ctx(ctx).Error().Err(err).Str("userID", u.ID).Msg("err mapping user row")
 			return nil, 0, err
 		}
 
@@ -84,7 +84,7 @@ func (repo *userRepository) GetAll(ctx context.Context, filter *dto.GetUsersQuer
 		}
 	}
 
-	if err := rows.Err(); err != nil {
+	if err = rows.Err(); err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Msg("err iterating user rows")
 		return nil, 0, err
 	}
@@ -92,10 +92,10 @@ func (repo *userRepository) GetAll(ctx context.Context, filter *dto.GetUsersQuer
 	return users, total, nil
 }
 
-func buildUserFilters(filter *dto.GetUsersQuery) (string, []interface{}) {
+func buildUserFilters(filter *dto.GetUsersQuery) (string, []any) {
 
 	query := ""
-	args := []interface{}{}
+	args := []any{}
 	argPos := 1
 
 	// search

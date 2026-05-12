@@ -26,7 +26,7 @@ func SetupRouter(log *zerolog.Logger, cfg *appconfig.Config, res *resource.Resou
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	v1 := r.Group("/api/v1")
-	handlers.RegisterRoutes(v1, tokenSvc, *mw)
+	handlers.RegisterRoutes(v1, tokenSvc, mw)
 
 	return r
 }

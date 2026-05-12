@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+
 	"ne-project/src/internal/app"
 	"ne-project/src/internal/config/appconfig"
 )

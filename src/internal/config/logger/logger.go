@@ -27,7 +27,7 @@ type LoggerOptions struct {
 }
 
 // InitLogger initializes the logger
-func InitLogger(opt LoggerOptions) *zerolog.Logger {
+func InitLogger(opt *LoggerOptions) *zerolog.Logger {
 	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
 	zerolog.TimeFieldFormat = time.RFC3339
 

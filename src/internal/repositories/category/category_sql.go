@@ -60,7 +60,7 @@ func (repo *categoryRepository) GetAll(ctx context.Context, filter *dto.GetCateg
 		var c entity.Category
 		var rowCount int
 
-		err := rows.Scan(
+		err = rows.Scan(
 			&c.ID,
 			&c.Name,
 			&c.Description,
@@ -71,7 +71,7 @@ func (repo *categoryRepository) GetAll(ctx context.Context, filter *dto.GetCateg
 		)
 
 		if err != nil {
-			zerolog.Ctx(ctx).Error().Err(err).Str("categoryID", fmt.Sprintf("%v", c.ID)).Msg("err mapping category row")
+			zerolog.Ctx(ctx).Error().Err(err).Str("categoryID", c.ID).Msg("err mapping category row")
 			return nil, 0, err
 		}
 
@@ -83,7 +83,7 @@ func (repo *categoryRepository) GetAll(ctx context.Context, filter *dto.GetCateg
 		}
 	}
 
-	if err := rows.Err(); err != nil {
+	if err = rows.Err(); err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Msg("err iterating category rows")
 		return nil, 0, err
 	}
@@ -91,10 +91,10 @@ func (repo *categoryRepository) GetAll(ctx context.Context, filter *dto.GetCateg
 	return categories, total, nil
 }
 
-func buildCategoryFilters(filter *dto.GetCategoriesQuery) (string, []interface{}) {
+func buildCategoryFilters(filter *dto.GetCategoriesQuery) (string, []any) {
 
 	query := ""
-	args := []interface{}{}
+	args := []any{}
 	argPos := 1
 
 	// search

@@ -4,13 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"net/http"
 	"time"
 
 	"ne-project/src/internal/models/dto"
 	"ne-project/src/internal/models/entity"
 	"ne-project/src/internal/preference"
 	"ne-project/src/internal/utils/hash"
-	"net/http"
 
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"

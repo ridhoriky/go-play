@@ -249,7 +249,7 @@ func (repo *transactionRepository) GetTransactionByID(ctx context.Context, id st
 			subtotal      sql.NullString
 		)
 
-		err := rows.Scan(
+		err = rows.Scan(
 			&txID,
 			&txTotalAmount,
 			&txStatus,
@@ -297,7 +297,7 @@ func (repo *transactionRepository) GetTransactionByID(ctx context.Context, id st
 		}
 	}
 
-	if err := rows.Err(); err != nil {
+	if err = rows.Err(); err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Msg("error iterating transaction rows")
 		return nil, err
 	}
@@ -340,8 +340,8 @@ func (r *transactionRepository) UpdateStatus(
 		return dto.NewError(http.StatusNotFound, preference.ErrTransactionNotFound)
 	}
 
-	// restore stok jika cancelled
-	if newStatus == entity.TransactionStatusCancelled {
+	// restore stok jika canceled
+	if newStatus == entity.TransactionStatusCanceled {
 		for _, item := range items {
 			zerolog.Ctx(ctx).Warn().Str("transaction_id", id).Msg("err restore stock")
 			if _, err = tx.ExecContext(ctx, addStockQuery, item.Quantity, item.ProductID); err != nil {

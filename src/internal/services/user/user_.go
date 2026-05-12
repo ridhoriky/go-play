@@ -3,8 +3,10 @@ package user
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
+	"net/http"
 	"time"
 
 	"ne-project/src/internal/models/dto"
@@ -12,7 +14,6 @@ import (
 	"ne-project/src/internal/preference"
 	"ne-project/src/internal/utils/hash"
 	"ne-project/src/internal/utils/validation"
-	"net/http"
 
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
@@ -75,7 +76,7 @@ func (s *userService) GetUserByID(ctx context.Context, id string) (*entity.User,
 			return &u, nil
 		}
 
-	} else if err != redis.Nil {
+	} else if !errors.Is(err, redis.Nil) {
 		zerolog.Ctx(ctx).Warn().Err(err).Str("id", id).Msg("failed to get user from cache")
 	}
 

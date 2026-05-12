@@ -1,24 +1,26 @@
 package rest
 
 import (
+	"net/http"
+
 	"ne-project/src/internal/handlers/helpers"
 	"ne-project/src/internal/models/dto"
 	"ne-project/src/internal/preference"
 	"ne-project/src/internal/services/report"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 type ReportHandler struct {
-        reportService report.ReportServiceItf
+	reportService report.ReportServiceItf
 }
 
 func NewReportHandler(reportService report.ReportServiceItf) *ReportHandler {
-        return &ReportHandler{
-                reportService: reportService,
-        }
+	return &ReportHandler{
+		reportService: reportService,
+	}
 }
+
 // GetReports godoc
 // @Summary      List Report
 // @Description  Get list of reports

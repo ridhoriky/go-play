@@ -18,14 +18,14 @@ type CreateTransactionRequest struct {
 }
 
 type UpdateTransactionStatusRequest struct {
-	// oneof memastikan hanya nilai "paid" atau "cancelled" yang diterima
-	Status string `json:"status" binding:"required,oneof=paid cancelled"`
+	// oneof memastikan hanya nilai "paid" atau "canceled" yang diterima
+	Status string `json:"status" binding:"required,oneof=paid canceled"`
 }
 
 type GetTransactionsQuery struct {
 	Page     int    `form:"page"      binding:"omitempty,min=1"`
 	Limit    int    `form:"limit"     binding:"omitempty,min=1,max=100"`
-	Status   string `form:"status"    binding:"omitempty,oneof=pending paid cancelled"`
+	Status   string `form:"status"    binding:"omitempty,oneof=pending paid canceled"`
 	DateFrom string `form:"date_from" binding:"omitempty"`
 	DateTo   string `form:"date_to"   binding:"omitempty"`
 	SortBy   string `form:"sort_by"   binding:"omitempty,oneof=created_at total_amount"`

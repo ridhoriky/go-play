@@ -2,6 +2,7 @@ version: "2"
 
 run:
   timeout: 5m
+  go: "1.25"
 
 linters:
   enable:
@@ -224,13 +225,16 @@ formatters:
   # Groups imports into sections: standard, local, third‑party.
 
   settings:
+    goimports:
+      local-prefixes: ["ne-project"]
+
     gci:
       sections:
         - standard
         # Standard library imports (e.g., "fmt", "os").
 
-        - prefix(go-far)
-        # Your project's local packages (change to your module name).
+        - prefix(ne-project)
+        # Your project's local packages.
 
         - default
       # All other third‑party imports.

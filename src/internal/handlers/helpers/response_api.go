@@ -2,9 +2,10 @@ package helpers
 
 import (
 	"errors"
+	"net/http"
+
 	"ne-project/src/internal/models/dto"
 	"ne-project/src/internal/preference"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/lib/pq"
@@ -49,7 +50,7 @@ func extractFieldFromConstraint(constraint string) string {
 	return "A field"
 }
 
-func ResponseSuccess(c *gin.Context, status int, message string, data interface{}) {
+func ResponseSuccess(c *gin.Context, status int, message string, data any) {
 	resp := dto.APIResponse{
 		Status:  status,
 		Message: message,
@@ -59,7 +60,8 @@ func ResponseSuccess(c *gin.Context, status int, message string, data interface{
 }
 
 func ResponseError(c *gin.Context, err error) {
-	appErr, ok := err.(*dto.Error)
+	appErr := &dto.Error{}
+	ok := errors.As(err, &appErr)
 	if !ok {
 		appErr = ParsePgError(err)
 	}

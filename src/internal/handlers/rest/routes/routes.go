@@ -4,7 +4,6 @@ import (
 	"ne-project/src/internal/config/token"
 	"ne-project/src/internal/handlers/rest"
 	"ne-project/src/internal/handlers/rest/middleware"
-
 	"ne-project/src/internal/services"
 
 	"github.com/gin-gonic/gin"
@@ -33,7 +32,7 @@ func NewHandlers(db *sqlx.DB, services *services.Services) *Handlers {
 	}
 }
 
-func (h *Handlers) RegisterRoutes(r *gin.RouterGroup, tokenSvc *token.Token, mw middleware.Middleware) {
+func (h *Handlers) RegisterRoutes(r *gin.RouterGroup, tokenSvc *token.Token, mw *middleware.Middleware) {
 
 	// ─── SYSTEM ROUTES ──────────────────────────
 	systemGroup := r.Group("/system")

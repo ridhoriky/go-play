@@ -1,11 +1,12 @@
 package rest
 
 import (
+	"net/http"
+
 	"ne-project/src/internal/handlers/helpers"
 	"ne-project/src/internal/models/dto"
 	"ne-project/src/internal/preference"
 	"ne-project/src/internal/services/transaction"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"

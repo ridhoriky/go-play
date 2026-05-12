@@ -65,7 +65,7 @@ func (repo *productRepository) GetAll(ctx context.Context, filter *dto.GetProduc
 
 		var p entity.ProductWithCategory
 
-		err := rows.Scan(
+		err = rows.Scan(
 			&p.ID,
 			&p.Name,
 			&p.Price,
@@ -76,7 +76,7 @@ func (repo *productRepository) GetAll(ctx context.Context, filter *dto.GetProduc
 		)
 
 		if err != nil {
-			zerolog.Ctx(ctx).Error().Err(err).Str("productID", fmt.Sprintf("%v", p.ID)).Msg("err mapping product row")
+			zerolog.Ctx(ctx).Error().Err(err).Str("productID", p.ID).Msg("err mapping product row")
 			return nil, 0, err
 		}
 
@@ -91,10 +91,10 @@ func (repo *productRepository) GetAll(ctx context.Context, filter *dto.GetProduc
 	return products, total, nil
 }
 
-func buildProductFilters(filter *dto.GetProductsQuery) (string, []interface{}) {
+func buildProductFilters(filter *dto.GetProductsQuery) (string, []any) {
 
 	query := ""
-	args := []interface{}{}
+	args := []any{}
 	argPos := 1
 
 	// search

@@ -31,7 +31,7 @@ type TransactionWithDetails struct {
 }
 
 const (
-	TransactionStatusPending   TransactionStatus = "pending"
-	TransactionStatusPaid      TransactionStatus = "paid"
-	TransactionStatusCancelled TransactionStatus = "cancelled"
+	TransactionStatusPending  TransactionStatus = "pending"
+	TransactionStatusPaid     TransactionStatus = "paid"
+	TransactionStatusCanceled TransactionStatus = "canceled"
 )

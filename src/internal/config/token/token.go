@@ -3,7 +3,7 @@ package token
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
+	"errors"
 	"net/http"
 	"strings"
 	"time"
@@ -55,7 +55,7 @@ type Token struct {
 
 func InitToken(log *zerolog.Logger, opt TokenOptions) (*Token, error) {
 	if len(strings.TrimSpace(opt.SecretAccessToken)) == 0 || len(strings.TrimSpace(opt.SecretRefreshToken)) == 0 {
-		return nil, fmt.Errorf("JWT secrets must be provided and cannot be empty")
+		return nil, errors.New("JWT secrets must be provided and cannot be empty")
 	}
 	return &Token{
 		log:                 *log,
@@ -120,7 +120,7 @@ func (a *Token) CreateTokens(user *entity.User) (*TokenDetails, error) {
 }
 
 func (a *Token) ValidateAccessToken(tokenString string) (*AccessTokenClaims, error) {
-	token, err := jwt.ParseWithClaims(tokenString, &AccessTokenClaims{}, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &AccessTokenClaims{}, func(token *jwt.Token) (any, error) {
 		return a.secretAccessToken, nil
 	})
 	if err != nil {
@@ -129,14 +129,14 @@ func (a *Token) ValidateAccessToken(tokenString string) (*AccessTokenClaims, err
 
 	claims, ok := token.Claims.(*AccessTokenClaims)
 	if !ok || !token.Valid {
-		return nil, fmt.Errorf("invalid access token")
+		return nil, errors.New("invalid access token")
 	}
 
 	return claims, nil
 }
 
 func (a *Token) ValidateRefreshToken(tokenString string) (*RefreshTokenClaims, error) {
-	token, err := jwt.ParseWithClaims(tokenString, &RefreshTokenClaims{}, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &RefreshTokenClaims{}, func(token *jwt.Token) (any, error) {
 		return a.secretRefreshToken, nil
 	})
 	if err != nil {
@@ -145,11 +145,11 @@ func (a *Token) ValidateRefreshToken(tokenString string) (*RefreshTokenClaims, e
 
 	claims, ok := token.Claims.(*RefreshTokenClaims)
 	if !ok || !token.Valid {
-		return nil, fmt.Errorf("invalid refresh token")
+		return nil, errors.New("invalid refresh token")
 	}
 
 	if claims.TokenType != "refresh" {
-		return nil, fmt.Errorf("invalid refresh token")
+		return nil, errors.New("invalid refresh token")
 	}
 
 	return claims, nil
@@ -163,12 +163,12 @@ func (a *Token) HashToken(token string) string {
 func (a *Token) ExtractTokenFromHeader(r *http.Request) (string, error) {
 	authHeader := r.Header.Get("Authorization")
 	if strings.TrimSpace(authHeader) == "" {
-		return "", fmt.Errorf("authorization header missing")
+		return "", errors.New("authorization header missing")
 	}
 
 	parts := strings.SplitN(authHeader, " ", 2)
 	if len(parts) != 2 || strings.TrimSpace(parts[0]) != "Bearer" {
-		return "", fmt.Errorf("authorization header format must be Bearer {token}")
+		return "", errors.New("authorization header format must be Bearer {token}")
 	}
 
 	return strings.TrimSpace(parts[1]), nil
@@ -186,7 +186,7 @@ func (a *Token) ValidateToken(r *http.Request) error {
 
 func (a *Token) ValidateRefreshTokenFromRequest(r *http.Request, token string) error {
 	if token == "" {
-		return fmt.Errorf("refresh token is required")
+		return errors.New("refresh token is required")
 	}
 	_, err := a.ValidateRefreshToken(token)
 	return err

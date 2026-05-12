@@ -1,22 +1,23 @@
 package rest
 
 import (
-	"ne-project/src/internal/models/dto"
 	"net/http"
 	"time"
+
+	"ne-project/src/internal/models/dto"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 )
 
 type SystemHandler struct {
-        db  *sqlx.DB
+	db *sqlx.DB
 }
 
 func NewSystemHandler(db *sqlx.DB) *SystemHandler {
-        return &SystemHandler{
-                db:  db,
-        }
+	return &SystemHandler{
+		db: db,
+	}
 }
 func (h *SystemHandler) RegisterRoutes(r *gin.RouterGroup) {
 	r.GET("/health", h.HealthCheck)

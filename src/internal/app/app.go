@@ -20,7 +20,7 @@ type App struct {
 }
 
 func NewApp(cfg *appconfig.Config) (*App, error) {
-	log := logger.InitLogger(cfg.Logger)
+	log := logger.InitLogger(&cfg.Logger)
 	zerolog.DefaultContextLogger = log
 
 	res, err := resource.InitResources(log, cfg)
@@ -46,7 +46,7 @@ func (a *App) Start() {
 	r := router.SetupRouter(a.log, a.cfg, a.res, a.tokenSvc)
 	srv := server.InitServer(a.cfg, r)
 
-	grace.WaitForShutdown(a.log, srv, a.cfg.App)
+	grace.WaitForShutdown(a.log, srv, &a.cfg.App)
 }
 
 func (a *App) Close() {

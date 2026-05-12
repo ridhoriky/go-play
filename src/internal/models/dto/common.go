@@ -32,7 +32,7 @@ type PaginationMeta struct {
 type APIResponse struct {
 	Status  int             `json:"status"`
 	Message string          `json:"message"`
-	Data    interface{}     `json:"data,omitempty"`
+	Data    any             `json:"data,omitempty"`
 	Error   string          `json:"error,omitempty"`
 	Meta    *PaginationMeta `json:"meta,omitempty"`
 }
@@ -40,8 +40,8 @@ type APIResponse struct {
 // ─── Standard Response Wrapper ───────────────────────────────────────────────
 
 type SuccessResponse struct {
-	Success bool        `json:"success"`
-	Data    interface{} `json:"data"`
+	Success bool `json:"success"`
+	Data    any  `json:"data"`
 }
 
 type ErrorDetail struct {
@@ -83,7 +83,7 @@ func NewError(code int, message string) *Error {
 	}
 }
 
-func NewSuccessResponse(data interface{}) SuccessResponse {
+func NewSuccessResponse(data any) SuccessResponse {
 	return SuccessResponse{Success: true, Data: data}
 }
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"slices"
 
 	"ne-project/src/internal/models/dto"
 	"ne-project/src/internal/models/entity"
@@ -62,7 +63,7 @@ func (s *transactionService) UpdateStatus(ctx context.Context, id string, req *d
 
 	newStatus := entity.TransactionStatus(req.Status)
 
-	if err := validateStatusTransition(trx.Transaction.Status, newStatus); err != nil {
+	if err := validateStatusTransition(trx.Status, newStatus); err != nil {
 		zerolog.Ctx(ctx).Warn().Str("transaction_id", id).Msg("err validate transaction status")
 		return entity.Transaction{}, err
 	}
@@ -71,7 +72,7 @@ func (s *transactionService) UpdateStatus(ctx context.Context, id string, req *d
 		return entity.Transaction{}, err
 	}
 
-	trx.Transaction.Status = newStatus
+	trx.Status = newStatus
 
 	return trx.Transaction, nil
 }
@@ -80,22 +81,20 @@ func validateStatusTransition(current, new entity.TransactionStatus) error {
 	allowed := map[entity.TransactionStatus][]entity.TransactionStatus{
 		entity.TransactionStatusPending: {
 			entity.TransactionStatusPaid,
-			entity.TransactionStatusCancelled,
+			entity.TransactionStatusCanceled,
 		},
 		entity.TransactionStatusPaid: {
-			entity.TransactionStatusCancelled,
+			entity.TransactionStatusCanceled,
 		},
-		entity.TransactionStatusCancelled: {},
+		entity.TransactionStatusCanceled: {},
 	}
 
-	for _, allowedStatus := range allowed[current] {
-		if allowedStatus == new {
-			return nil
-		}
+	if slices.Contains(allowed[current], new) {
+		return nil
 	}
 
 	return dto.NewError(http.StatusUnprocessableEntity, fmt.Sprintf(
-			"Transition from '%s' to '%s' is not allowed",
-			current, new,
-		))
+		"Transition from '%s' to '%s' is not allowed",
+		current, new,
+	))
 }

@@ -45,7 +45,7 @@ func (r *reportRepository) GetTopProducts(
 	}()
 	for rows.Next() {
 		var product dto.TopProductItem
-		if err := rows.Scan(&product.ProductID, &product.ProductName, &product.TotalQuantity, &product.TotalRevenue); err != nil {
+		if err = rows.Scan(&product.ProductID, &product.ProductName, &product.TotalQuantity, &product.TotalRevenue); err != nil {
 			zerolog.Ctx(ctx).Error().Err(err).Msg("err scanning top products")
 			return dto.TopProductsResponse{}, err
 		}

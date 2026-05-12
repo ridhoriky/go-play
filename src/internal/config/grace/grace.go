@@ -2,16 +2,18 @@ package grace
 
 import (
 	"context"
-	"ne-project/src/internal/config/appconfig"
+	"errors"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"ne-project/src/internal/config/appconfig"
+
 	"github.com/rs/zerolog"
 )
 
-func WaitForShutdown(log *zerolog.Logger, srv *http.Server, appCfg appconfig.AppConfig) {
+func WaitForShutdown(log *zerolog.Logger, srv *http.Server, appCfg *appconfig.AppConfig) {
 	serverError := make(chan error, 1)
 
 	go func() {
@@ -32,7 +34,7 @@ func WaitForShutdown(log *zerolog.Logger, srv *http.Server, appCfg appconfig.App
 	case s := <-interrupt:
 		log.Info().Str("signal", s.String()).Msg("app - Run - signal received")
 	case err := <-serverError:
-		if err != http.ErrServerClosed {
+		if !errors.Is(err, http.ErrServerClosed) {
 			log.Error().Err(err).Msg("app - Run - unexpected server error")
 		}
 	}

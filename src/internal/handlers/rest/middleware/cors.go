@@ -1,11 +1,12 @@
 package middleware
 
 import (
-	"ne-project/src/internal/handlers/helpers"
-	"ne-project/src/internal/models/dto"
 	"net/http"
 	"os"
 	"strings"
+
+	"ne-project/src/internal/handlers/helpers"
+	"ne-project/src/internal/models/dto"
 
 	"github.com/gin-gonic/gin"
 )

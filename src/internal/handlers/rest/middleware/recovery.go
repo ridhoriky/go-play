@@ -1,9 +1,10 @@
 package middleware
 
 import (
-	"ne-project/src/internal/preference"
 	"net/http"
 	"runtime/debug"
+
+	"ne-project/src/internal/preference"
 
 	"github.com/gin-gonic/gin"
 )

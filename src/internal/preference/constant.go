@@ -1,13 +1,13 @@
 package preference
 
 const (
-	//Error code postgre
+	// Error code postgre
 	PgErrUniqueViolation     = "23505"
 	PgErrForeignKeyViolation = "23503"
 	PgErrNotNullViolation    = "23502"
 	PgErrCheckViolation      = "23514"
 
-	//Generic Errors
+	// Generic Errors
 	ErrBadRequest          = "BAD_REQUEST"
 	ErrUnauthorized        = "UNAUTHORIZED"
 	ErrForbidden           = "FORBIDDEN"
@@ -28,14 +28,14 @@ const (
 	ErrProductNotFound      = "Product not found"
 	ErrProductPriceNegative = "Price cannot be negative"
 	ErrProductStockNegative = "Stock cannot be negative"
-	ErrProductNameRequired   = "Product name is required"
+	ErrProductNameRequired  = "Product name is required"
 	ErrProductBatchTooLarge = "Number of products exceeds maximum batch size (max: 500)"
 
 	// Error message category
 	ErrInvalidCategoryID     = "Invalid category ID"
 	ErrCategoryAlreadyExists = "Category name already exists"
 	ErrCategoryNotFound      = "Category not found"
-	ErrCategoryNameRequired   = "Category name is required"
+	ErrCategoryNameRequired  = "Category name is required"
 
 	// Error message User
 	ErrInvalidUserID     = "Invalid user ID"

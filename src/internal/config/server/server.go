@@ -2,8 +2,9 @@ package server
 
 import (
 	"fmt"
-	"ne-project/src/internal/config/appconfig"
 	"net/http"
+
+	"ne-project/src/internal/config/appconfig"
 )
 
 func InitServer(cfg *appconfig.Config, handler http.Handler) *http.Server {

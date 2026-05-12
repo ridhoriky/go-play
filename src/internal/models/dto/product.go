@@ -1,8 +1,9 @@
 package dto
 
 import (
-	"ne-project/src/internal/models/entity"
 	"time"
+
+	"ne-project/src/internal/models/entity"
 
 	"github.com/shopspring/decimal"
 )
