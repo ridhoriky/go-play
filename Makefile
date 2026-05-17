@@ -15,7 +15,7 @@ DB_URL = postgres://$(DB_USER):$(DB_PASS)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmo
 
 # ─── Targets ─────────────────────────────────────────────────────────────────
 
-.PHONY: all build run test clean tidy swag migrate-up migrate-down help
+.PHONY: all build run test clean tidy swag migrate-up migrate-down help lint install-tools lefthook-run lefthook-uninstall
 
 all: build
 
@@ -65,21 +65,31 @@ help:
 lint:
 	@echo "Running golangci-lint..."
 	@if command -v golangci-lint >/dev/null 2>&1; then \
-        golangci-lint run; \
-    else \
-        echo "golangci-lint not installed. Run: make install-tools"; \
-        exit 1; \
-    fi
+	    golangci-lint run; \
+	else \
+	    echo "golangci-lint not installed. Run: make install-tools"; \
+	    exit 1; \
+	fi
 	@echo "golangci-lint finished."
 
-## install-tools: Install necessary tools (golangci-lint, swag, migrate)
+## install-tools: Install all tools (linter, lefthook, swag, migrate) and setup hooks
 install-tools:
 	@echo "Installing golangci-lint..."
-	@curl curl -sSfL "https://golangci-lint.run/install.sh"
-	@sudo mv ./bin/golangci-lint /usr/local/bin/
+	@go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
+	@echo "Installing lefthook..."
+	@go install github.com/evilmartians/lefthook/v2@latest
 	@echo "Installing swag..."
 	@go install github.com/swaggo/swag/cmd/swag@latest
 	@echo "Installing migrate..."
 	@go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
-	@echo "All tools installed."	
-	@echo "Installation completed."
+	@echo "Installing Lefthook Git hooks..."
+	@lefthook install
+	@echo "All tools installed and hooks activated."
+
+## lefthook-run: Run Lefthook pre-commit manually (for testing)
+lefthook-run:
+	@lefthook run pre-commit
+
+## lefthook-uninstall: Remove Lefthook hooks
+lefthook-uninstall:
+	@lefthook uninstall
