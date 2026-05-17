@@ -201,6 +201,7 @@ func (h *ProductHandler) CreateMultiple(c *gin.Context) {
 		products = append(products, entity.Product{
 			Name:       p.Name,
 			Price:      decimal.NewFromFloat(p.Price),
+			Stock:      p.Stock,
 			CategoryID: p.CategoryID,
 		})
 	}
