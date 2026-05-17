@@ -26,7 +26,8 @@ func (s *productService) GetAllProducts(ctx context.Context, req *dto.GetProduct
 
 	res := make([]entity.ProductWithCategory, 0, len(products))
 
-	for _, p := range products {
+	for i := range products {
+		p := &products[i]
 		resProduct := entity.ProductWithCategory{
 			Product: entity.Product{
 				ID:        p.ID,
@@ -110,6 +111,9 @@ func (s *productService) GetProductByID(ctx context.Context, id string) (*dto.Pr
 
 func (s *productService) UpdateProduct(ctx context.Context, id string, req *dto.UpdateProductRequest) (*entity.Product, error) {
 	existingProduct, _, err := s.productRepository.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
 
 	if req.Price < 0 {
 		zerolog.Ctx(ctx).Error().Msg(preference.ErrProductPriceNegative)
@@ -131,11 +135,11 @@ func (s *productService) UpdateProduct(ctx context.Context, id string, req *dto.
 	existingProduct.Stock = req.Stock
 	existingProduct.CategoryID = req.CategoryID
 
-	if err := s.productRepository.Update(ctx, id, existingProduct); err != nil {
+	if err = s.productRepository.Update(ctx, id, existingProduct); err != nil {
 		return nil, err
 	}
 
-	return existingProduct, err
+	return existingProduct, nil
 }
 
 func (s *productService) DeleteProduct(ctx context.Context, id string) error {

@@ -16,7 +16,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-func (repo *productRepository) GetAll(ctx context.Context, filter *dto.GetProductsQuery) ([]entity.ProductWithCategory, int, error) {
+func (r *productRepository) GetAll(ctx context.Context, filter *dto.GetProductsQuery) ([]entity.ProductWithCategory, int, error) {
 	filterQuery, args := buildProductFilters(filter)
 
 	dataQuery := getAllProductsQuery + filterQuery
@@ -44,17 +44,17 @@ func (repo *productRepository) GetAll(ctx context.Context, filter *dto.GetProduc
 
 	offset := (filter.Page - 1) * filter.Limit
 
-	argsData := append(args, filter.Limit, offset)
+	args = append(args, filter.Limit, offset)
 
-	rows, err := repo.db.QueryContext(ctx, dataQuery, argsData...)
+	rows, err := r.db.QueryContext(ctx, dataQuery, args...)
 	if err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Msg("err find product with query")
 		return nil, 0, err
 	}
 
 	defer func() {
-		if err := rows.Close(); err != nil {
-			zerolog.Ctx(ctx).Error().Err(err).Msg("failed to close rows")
+		if closeErr := rows.Close(); closeErr != nil {
+			zerolog.Ctx(ctx).Error().Err(closeErr).Msg("failed to close rows")
 		}
 	}()
 
@@ -65,7 +65,7 @@ func (repo *productRepository) GetAll(ctx context.Context, filter *dto.GetProduc
 
 		var p entity.ProductWithCategory
 
-		err = rows.Scan(
+		if scanErr := rows.Scan(
 			&p.ID,
 			&p.Name,
 			&p.Price,
@@ -73,11 +73,9 @@ func (repo *productRepository) GetAll(ctx context.Context, filter *dto.GetProduc
 			&p.CategoryID,
 			&p.CategoryName,
 			&total,
-		)
-
-		if err != nil {
-			zerolog.Ctx(ctx).Error().Err(err).Str("productID", p.ID).Msg("err mapping product row")
-			return nil, 0, err
+		); scanErr != nil {
+			zerolog.Ctx(ctx).Error().Err(scanErr).Str("productID", p.ID).Msg("err mapping product row")
+			return nil, 0, scanErr
 		}
 
 		products = append(products, p)
@@ -122,20 +120,14 @@ func buildProductFilters(filter *dto.GetProductsQuery) (string, []any) {
 	if !filter.MaxPrice.IsZero() {
 		query += fmt.Sprintf(" AND p.price <= $%d", argPos)
 		args = append(args, filter.MaxPrice)
-		argPos++
-	}
-
-	// stock filter
-	if filter.InStock {
-		query += " AND p.stock > 0"
 	}
 
 	return query, args
 }
 
-func (repo *productRepository) Create(ctx context.Context, product *entity.Product) error {
+func (r *productRepository) Create(ctx context.Context, product *entity.Product) error {
 	query := insertProductQuery
-	err := repo.db.QueryRowContext(ctx, query, product.Name, product.Price, product.Stock, product.CategoryID).Scan(&product.ID)
+	err := r.db.QueryRowContext(ctx, query, product.Name, product.Price, product.Stock, product.CategoryID).Scan(&product.ID)
 	if err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Msg("err create product")
 		return err
@@ -143,56 +135,54 @@ func (repo *productRepository) Create(ctx context.Context, product *entity.Produ
 	return nil
 }
 
-func (repo *productRepository) Update(ctx context.Context, id string, product *entity.Product) error {
+func (r *productRepository) Update(ctx context.Context, id string, product *entity.Product) error {
 	query := updateProductQuery
-	result, err := repo.db.ExecContext(ctx, query, product.Name, product.Price, product.Stock, product.CategoryID, id)
+	result, err := r.db.ExecContext(ctx, query, product.Name, product.Price, product.Stock, product.CategoryID, id)
 	if err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg("err update product")
 		return err
 	}
 
-	rows, err := result.RowsAffected()
+	rowCount, err := result.RowsAffected()
 	if err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg("err rows affected")
 		return err
 	}
 
-	if rows == 0 {
-		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg(preference.ErrProductNotFound)
+	if rowCount == 0 {
 		return dto.NewError(http.StatusNotFound, preference.ErrProductNotFound)
 	}
 
 	return nil
 }
 
-func (repo *productRepository) Delete(ctx context.Context, id string) error {
+func (r *productRepository) Delete(ctx context.Context, id string) error {
 	query := deleteProductQuery
-	result, err := repo.db.ExecContext(ctx, query, id)
+	result, err := r.db.ExecContext(ctx, query, id)
 	if err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg("err delete product")
 		return err
 	}
-	rows, err := result.RowsAffected()
+	rowCount, err := result.RowsAffected()
 	if err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg("err rows affected")
 		return err
 	}
 
-	if rows == 0 {
-		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg(preference.ErrProductNotFound)
+	if rowCount == 0 {
 		return dto.NewError(http.StatusNotFound, preference.ErrProductNotFound)
 	}
 
-	return err
+	return nil
 }
 
-func (repo *productRepository) GetByID(ctx context.Context, id string) (*entity.Product, string, error) {
+func (r *productRepository) GetByID(ctx context.Context, id string) (*entity.Product, string, error) {
 	query := getProductByIDQuery
 
 	var p entity.Product
 	categoryName := ""
 
-	err := repo.db.
+	err := r.db.
 		QueryRowContext(ctx, query, id).
 		Scan(
 			&p.ID,
@@ -215,7 +205,7 @@ func (repo *productRepository) GetByID(ctx context.Context, id string) (*entity.
 	return &p, categoryName, nil
 }
 
-func (repo *productRepository) CreateMultiple(
+func (r *productRepository) CreateMultiple(
 	ctx context.Context,
 	products []entity.Product,
 ) ([]entity.Product, error) {
@@ -238,9 +228,7 @@ func (repo *productRepository) CreateMultiple(
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	var err error
-
-	tx, err := repo.db.BeginTxx(ctx, &sql.TxOptions{
+	tx, err := r.db.BeginTxx(ctx, &sql.TxOptions{
 		Isolation: sql.LevelReadCommitted,
 		ReadOnly:  false,
 	})
@@ -251,11 +239,52 @@ func (repo *productRepository) CreateMultiple(
 	}
 
 	defer func() {
-		if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
-			zerolog.Ctx(ctx).Error().Err(err).Msg("err rollback create product")
+		if rbErr := tx.Rollback(); rbErr != nil && !errors.Is(rbErr, sql.ErrTxDone) {
+			zerolog.Ctx(ctx).Error().Err(rbErr).Msg("err rollback create product")
 		}
 	}()
 
+	query, args := buildBulkInsertQuery(products)
+
+	rows, err := tx.QueryxContext(ctx, query, args...)
+	if err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Msg("err query create products")
+		return nil, err
+	}
+	defer func() {
+		if closeErr := rows.Close(); closeErr != nil {
+			zerolog.Ctx(ctx).Error().Err(closeErr).Msg("failed to close rows")
+		}
+	}()
+
+	var responses []entity.Product
+
+	for rows.Next() {
+
+		var resp entity.Product
+
+		if scanErr := rows.StructScan(&resp); scanErr != nil {
+			zerolog.Ctx(ctx).Error().Err(scanErr).Interface("row_data", resp).Msg("failed to scan product row")
+			return nil, scanErr
+		}
+
+		responses = append(responses, resp)
+	}
+
+	if err = rows.Err(); err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Msg("err iterate product row")
+		return nil, err
+	}
+
+	if err = tx.Commit(); err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Msg("err commit create products")
+		return nil, err
+	}
+
+	return responses, nil
+}
+
+func buildBulkInsertQuery(products []entity.Product) (string, []any) {
 	insertColumns := []string{"name", "price", "stock", "category_id"}
 
 	returningColumns := []string{
@@ -267,13 +296,13 @@ func (repo *productRepository) CreateMultiple(
 	}
 
 	var (
-		values []string
-		args   []any
+		values = make([]string, 0, len(products))
+		args   = make([]any, 0, 4*len(products))
 		argPos = 1
 	)
 
-	for _, p := range products {
-
+	for i := range products {
+		p := &products[i]
 		values = append(values,
 			fmt.Sprintf("($%d,$%d,$%d,$%d)",
 				argPos,
@@ -293,47 +322,10 @@ func (repo *productRepository) CreateMultiple(
 		argPos += 4
 	}
 
-	query := fmt.Sprintf(
+	return fmt.Sprintf(
 		insertBulkProductQuery,
 		strings.Join(insertColumns, ","),
 		strings.Join(values, ","),
 		strings.Join(returningColumns, ","),
-	)
-
-	rows, err := tx.QueryxContext(ctx, query, args...)
-	if err != nil {
-		zerolog.Ctx(ctx).Error().Err(err).Msg("err query create products")
-		return nil, err
-	}
-	defer func() {
-		if err := rows.Close(); err != nil {
-			zerolog.Ctx(ctx).Error().Err(err).Msg("failed to close rows")
-		}
-	}()
-
-	var responses []entity.Product
-
-	for rows.Next() {
-
-		var resp entity.Product
-
-		if err := rows.StructScan(&resp); err != nil {
-			zerolog.Ctx(ctx).Error().Err(err).Interface("row_data", resp).Msg("failed to scan product row")
-			return nil, err
-		}
-
-		responses = append(responses, resp)
-	}
-
-	if err := rows.Err(); err != nil {
-		zerolog.Ctx(ctx).Error().Err(err).Msg("err iterate product row")
-		return nil, err
-	}
-
-	if err := tx.Commit(); err != nil {
-		zerolog.Ctx(ctx).Error().Err(err).Msg("err commit create products")
-		return nil, err
-	}
-
-	return responses, nil
+	), args
 }

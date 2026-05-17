@@ -39,8 +39,8 @@ func (r *reportRepository) GetTopProducts(
 		return dto.TopProductsResponse{}, err
 	}
 	defer func() {
-		if err := rows.Close(); err != nil {
-			zerolog.Ctx(ctx).Error().Err(err).Msg("failed to close rows")
+		if closeErr := rows.Close(); closeErr != nil {
+			zerolog.Ctx(ctx).Error().Err(closeErr).Msg("failed to close rows")
 		}
 	}()
 	for rows.Next() {

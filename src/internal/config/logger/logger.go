@@ -33,34 +33,35 @@ func InitLogger(opt *LoggerOptions) *zerolog.Logger {
 
 	logLevel := parseLogLevel(opt.Level)
 
-	var writers []io.Writer
 	if !opt.Enabled {
-		writers = append(writers, io.Discard)
-	} else {
-		consoleWriter := formatWriter(opt.Format, baseWriter(opt.Output))
-		writers = append(writers, consoleWriter)
-
-		if opt.Path != "" {
-			dir := filepath.Dir(opt.Path)
-			if dir != "." && dir != "" {
-				_ = os.MkdirAll(dir, 0o755)
-			}
-
-			fileLogger := &lumberjack.Logger{
-				Filename:   opt.Path,
-				MaxSize:    opt.MaxSize,
-				MaxBackups: opt.MaxBackups,
-				MaxAge:     opt.MaxAge,
-				Compress:   opt.Compress,
-			}
-			writers = append(writers, fileLogger)
-		}
+		logInst := zerolog.New(io.Discard).Level(logLevel).With().Timestamp().Caller().Logger()
+		return &logInst
 	}
 
-	writer := io.Discard
+	var writers []io.Writer
+	consoleWriter := formatWriter(opt.Format, baseWriter(opt.Output))
+	writers = append(writers, consoleWriter)
+
+	if opt.Path != "" {
+		dir := filepath.Dir(opt.Path)
+		if dir != "." && dir != "" {
+			_ = os.MkdirAll(dir, 0o750)
+		}
+
+		fileLogger := &lumberjack.Logger{
+			Filename:   opt.Path,
+			MaxSize:    opt.MaxSize,
+			MaxBackups: opt.MaxBackups,
+			MaxAge:     opt.MaxAge,
+			Compress:   opt.Compress,
+		}
+		writers = append(writers, fileLogger)
+	}
+
+	var writer io.Writer
 	if len(writers) == 1 {
 		writer = writers[0]
-	} else if len(writers) > 1 {
+	} else {
 		writer = zerolog.MultiLevelWriter(writers...)
 	}
 

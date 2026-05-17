@@ -8,5 +8,5 @@ CREATE TABLE transactions (
   created_at TIMESTAMP NOT NULL DEFAULT now(),
 
   CONSTRAINT chk_transaction_status
-    CHECK (status IN ('pending','paid','cancelled','completed'))
+    CHECK (status IN ('pending','paid','canceled','completed'))
 );

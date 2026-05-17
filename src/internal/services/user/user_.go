@@ -36,7 +36,8 @@ func (s *userService) GetAllUsers(ctx context.Context, req *dto.GetUsersQuery) (
 
 	res := make([]dto.UserResponse, 0, len(users))
 
-	for _, u := range users {
+	for i := range users {
+		u := &users[i]
 		resUser := dto.UserResponse{
 			ID:        u.ID,
 			Name:      u.Name,
@@ -71,7 +72,7 @@ func (s *userService) GetUserByID(ctx context.Context, id string) (*entity.User,
 	val, err := s.rdb.Get(ctx, key).Result()
 	if err == nil {
 		var u entity.User
-		if err := json.Unmarshal([]byte(val), &u); err == nil {
+		if err = json.Unmarshal([]byte(val), &u); err == nil {
 			zerolog.Ctx(ctx).Debug().Str("id", id).Msg("user cache hit")
 			return &u, nil
 		}

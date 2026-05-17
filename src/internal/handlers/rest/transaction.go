@@ -103,7 +103,7 @@ func (h *TransactionHandler) UpdateTransactionStatus(c *gin.Context) {
 	}
 
 	var status *dto.UpdateTransactionStatusRequest
-	if err := c.ShouldBindJSON(&status); err != nil {
+	if err = c.ShouldBindJSON(&status); err != nil {
 		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
 		return
 	}

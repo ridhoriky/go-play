@@ -18,6 +18,11 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+type scannedTransaction struct {
+	entity.TransactionWithDetails
+	isScanned bool
+}
+
 func (r *transactionRepository) Checkout(
 	ctx context.Context, req *dto.CreateTransactionRequest,
 ) (*entity.TransactionWithDetails, error) {
@@ -31,8 +36,8 @@ func (r *transactionRepository) Checkout(
 		return nil, err
 	}
 	defer func() {
-		if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
-			zerolog.Ctx(ctx).Error().Err(err).Msg("err rollback checkout")
+		if rbErr := tx.Rollback(); rbErr != nil && !errors.Is(rbErr, sql.ErrTxDone) {
+			zerolog.Ctx(ctx).Error().Err(rbErr).Msg("err rollback checkout")
 		}
 	}()
 
@@ -190,7 +195,7 @@ func (r *transactionRepository) insertTransactionDetails(
 			detail.Subtotal,
 		)
 	}
-	query := insertTransactionDetailQuery + strings.Join(placeholders, ",")
+	query := insertTransactionDetailQuery + strings.Join(placeholders, ",") //nolint:gosec // placeholders are positional args, not user input
 	_, err := tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		zerolog.Ctx(ctx).Error().Msg("err insert transaction details")
@@ -213,25 +218,40 @@ func buildTransactionDetail(p *dto.ProductSnapshot, item dto.CheckoutItem) entit
 	}
 }
 
-func (repo *transactionRepository) GetTransactionByID(ctx context.Context, id string) (*entity.TransactionWithDetails, error) {
+func (r *transactionRepository) GetTransactionByID(ctx context.Context, id string) (*entity.TransactionWithDetails, error) {
 	query := getTransactionByIDQuery
 
-	rows, err := repo.db.QueryContext(ctx, query, id)
+	rows, err := r.db.QueryContext(ctx, query, id)
 	if err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Str("transaction_id", id).Msg("failed to query transaction with details")
 		return nil, err
 	}
 	defer func() {
-		if err := rows.Close(); err != nil {
-			zerolog.Ctx(ctx).Error().Err(err).Msg("failed to close rows")
+		if closeErr := rows.Close(); closeErr != nil {
+			zerolog.Ctx(ctx).Error().Err(closeErr).Msg("failed to close rows")
 		}
 	}()
-	// Initialize result as pointer
-	result := &entity.TransactionWithDetails{
-		Items: make([]entity.TransactionDetail, 0),
+
+	result, err := scanTransactionRows(rows)
+	if err != nil {
+		return nil, err
 	}
 
-	// Track if we've scanned transaction header
+	if !result.isScanned {
+		zerolog.Ctx(ctx).Warn().Str("transaction_id", id).Msg("transaction not found")
+		return nil, sql.ErrNoRows
+	}
+
+	return &result.TransactionWithDetails, nil
+}
+
+func scanTransactionRows(rows *sql.Rows) (*scannedTransaction, error) {
+	result := &scannedTransaction{
+		TransactionWithDetails: entity.TransactionWithDetails{
+			Items: make([]entity.TransactionDetail, 0),
+		},
+	}
+
 	txScanned := false
 
 	for rows.Next() {
@@ -249,7 +269,7 @@ func (repo *transactionRepository) GetTransactionByID(ctx context.Context, id st
 			subtotal      sql.NullString
 		)
 
-		err = rows.Scan(
+		err := rows.Scan(
 			&txID,
 			&txTotalAmount,
 			&txStatus,
@@ -264,11 +284,9 @@ func (repo *transactionRepository) GetTransactionByID(ctx context.Context, id st
 		)
 
 		if err != nil {
-			zerolog.Ctx(ctx).Error().Err(err).Msg("failed to scan transaction with details row")
 			return nil, err
 		}
 
-		// Scan transaction header only once
 		if !txScanned {
 			result.Transaction = entity.Transaction{
 				ID:          txID,
@@ -279,7 +297,6 @@ func (repo *transactionRepository) GetTransactionByID(ctx context.Context, id st
 			txScanned = true
 		}
 
-		// Add transaction detail if it exists (LEFT JOIN may return NULL for details)
 		if txDetailID.Valid && productID.Valid {
 			priceDecimal, _ := decimal.NewFromString(price.String)
 			subtotalDecimal, _ := decimal.NewFromString(subtotal.String)
@@ -297,17 +314,11 @@ func (repo *transactionRepository) GetTransactionByID(ctx context.Context, id st
 		}
 	}
 
-	if err = rows.Err(); err != nil {
-		zerolog.Ctx(ctx).Error().Err(err).Msg("error iterating transaction rows")
+	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
-	// Check if transaction was found
-	if !txScanned {
-		zerolog.Ctx(ctx).Warn().Str("transaction_id", id).Msg("transaction not found")
-		return nil, sql.ErrNoRows
-	}
-
+	result.isScanned = txScanned
 	return result, nil
 }
 
@@ -323,8 +334,8 @@ func (r *transactionRepository) UpdateStatus(
 		return err
 	}
 	defer func() {
-		if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
-			zerolog.Ctx(ctx).Error().Err(err).Msg("err rollback update status")
+		if rbErr := tx.Rollback(); rbErr != nil && !errors.Is(rbErr, sql.ErrTxDone) {
+			zerolog.Ctx(ctx).Error().Err(rbErr).Msg("err rollback update status")
 		}
 	}()
 

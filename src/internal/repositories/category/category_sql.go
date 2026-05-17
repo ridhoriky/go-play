@@ -39,16 +39,16 @@ func (repo *categoryRepository) GetAll(ctx context.Context, filter *dto.GetCateg
 
 	offset := (filter.Page - 1) * filter.Limit
 
-	argsData := append(args, filter.Limit, offset)
+	args = append(args, filter.Limit, offset)
 
-	rows, err := repo.db.QueryContext(ctx, dataQuery, argsData...)
+	rows, err := repo.db.QueryContext(ctx, dataQuery, args...)
 	if err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Msg("err find category with query")
 		return nil, 0, err
 	}
 	defer func() {
-		if err := rows.Close(); err != nil {
-			zerolog.Ctx(ctx).Error().Err(err).Msg("failed to close rows")
+		if closeErr := rows.Close(); closeErr != nil {
+			zerolog.Ctx(ctx).Error().Err(closeErr).Msg("failed to close rows")
 		}
 	}()
 
@@ -95,13 +95,10 @@ func buildCategoryFilters(filter *dto.GetCategoriesQuery) (string, []any) {
 
 	query := ""
 	args := []any{}
-	argPos := 1
 
-	// search
 	if filter.Search != "" {
-		query += fmt.Sprintf(" AND c.name ILIKE $%d", argPos)
+		query += " AND c.name ILIKE $1"
 		args = append(args, "%"+filter.Search+"%")
-		argPos++
 	}
 
 	if !filter.IncludeDeleted {

@@ -24,7 +24,7 @@ func InitResources(log *zerolog.Logger, cfg *appconfig.Config) (*Resources, erro
 	redisClient, err := redisconfig.InitRedis(log, &cfg.Redis)
 	if err != nil {
 		log.Info().Str("component", "database").Msg("closing database connection due to redis failure")
-		if err := db.Close(); err != nil {
+		if closeErr := db.Close(); closeErr != nil {
 			log.Error().Err(err).Str("component", "database").Msg("failed to close database connection")
 		}
 		return nil, err

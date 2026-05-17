@@ -1,5 +1,6 @@
 package auth
 
+//nolint:gosec // SQL queries are not credentials
 const (
 	createRefreshTokenQuery = `
 		INSERT INTO refresh_tokens (token_hash, user_id, user_agent, ip_address, expires_at, created_at)

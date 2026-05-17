@@ -5,7 +5,9 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
+	"strings"
 	"time"
+	"unicode"
 
 	"ne-project/src/internal/models/dto"
 	"ne-project/src/internal/models/entity"
@@ -163,35 +165,8 @@ func (s *authService) RefreshToken(ctx context.Context, refreshToken string, use
 		return nil, dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
 	}
 
-	tx, err := s.db.BeginTxx(ctx, nil)
-	if err != nil {
-		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to begin transaction")
-		return nil, dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
-	}
-	defer func() {
-		if err != nil {
-			if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
-				zerolog.Ctx(ctx).Error().Err(err).Msg("rollback_create_user")
-			}
-		}
-	}()
-
-	err = s.authRepository.RevokeRefreshToken(ctx, tx, hashedToken)
-	if err != nil {
-		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to revoke refresh token")
-		return nil, dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
-	}
-
-	newHash := s.tokenService.HashToken(newTokens.RefreshToken)
-	err = s.authRepository.SaveRefreshToken(ctx, tx, newHash, user.ID, userAgent, ipAddr, time.Unix(newTokens.ExpiresRt, 0))
-	if err != nil {
-		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to store new refresh token")
-		return nil, dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
-	}
-
-	if err = tx.Commit(); err != nil {
-		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to commit transaction")
-		return nil, dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
+	if err = s.rotateRefreshToken(ctx, hashedToken, newTokens.RefreshToken, newTokens.ExpiresRt, user.ID, userAgent, ipAddr); err != nil {
+		return nil, err
 	}
 
 	return &dto.AuthTokenResponse{
@@ -237,16 +212,54 @@ func (s *authService) Logout(ctx context.Context, userID string, refreshToken st
 	return nil
 }
 
+func (s *authService) rotateRefreshToken(ctx context.Context, oldHash, newRefreshToken string, expiresRt int64, userID, userAgent, ipAddr string) error {
+	tx, err := s.db.BeginTxx(ctx, nil)
+	if err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to begin transaction")
+		return dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
+	}
+	defer func() {
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil && !errors.Is(rbErr, sql.ErrTxDone) {
+				zerolog.Ctx(ctx).Error().Err(rbErr).Msg("rollback_create_user")
+			}
+		}
+	}()
+
+	err = s.authRepository.RevokeRefreshToken(ctx, tx, oldHash)
+	if err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to revoke refresh token")
+		return dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
+	}
+
+	newHash := s.tokenService.HashToken(newRefreshToken)
+	err = s.authRepository.SaveRefreshToken(ctx, tx, newHash, userID, userAgent, ipAddr, time.Unix(expiresRt, 0))
+	if err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to store new refresh token")
+		return dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
+	}
+
+	if err = tx.Commit(); err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to commit transaction")
+		return dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
+	}
+
+	return nil
+}
+
 func validatePassword(password string) error {
 	hasUpper := false
 	hasNumber := false
 	hasSpecial := false
+	const specialChars = "!@#$%^&*"
+
 	for _, char := range password {
-		if char >= 'A' && char <= 'Z' {
+		switch {
+		case unicode.IsUpper(char):
 			hasUpper = true
-		} else if char >= '0' && char <= '9' {
+		case unicode.IsDigit(char):
 			hasNumber = true
-		} else if char == '!' || char == '@' || char == '#' || char == '$' || char == '%' || char == '^' || char == '&' || char == '*' {
+		case strings.ContainsRune(specialChars, char):
 			hasSpecial = true
 		}
 	}

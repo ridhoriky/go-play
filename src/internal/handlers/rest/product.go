@@ -137,7 +137,7 @@ func (h *ProductHandler) Update(c *gin.Context) {
 	}
 	var p dto.UpdateProductRequest
 
-	if err := c.ShouldBindJSON(&p); err != nil {
+	if err = c.ShouldBindJSON(&p); err != nil {
 		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
 		return
 	}

@@ -132,7 +132,7 @@ func (h *CategoryHandler) Update(c *gin.Context) {
 	}
 
 	var cat dto.UpdateCategoryRequest
-	if err := c.ShouldBindJSON(&cat); err != nil {
+	if err = c.ShouldBindJSON(&cat); err != nil {
 		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
 		return
 	}

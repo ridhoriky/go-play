@@ -77,7 +77,7 @@ func (s *transactionService) UpdateStatus(ctx context.Context, id string, req *d
 	return trx.Transaction, nil
 }
 
-func validateStatusTransition(current, new entity.TransactionStatus) error {
+func validateStatusTransition(current, target entity.TransactionStatus) error {
 	allowed := map[entity.TransactionStatus][]entity.TransactionStatus{
 		entity.TransactionStatusPending: {
 			entity.TransactionStatusPaid,
@@ -89,12 +89,12 @@ func validateStatusTransition(current, new entity.TransactionStatus) error {
 		entity.TransactionStatusCanceled: {},
 	}
 
-	if slices.Contains(allowed[current], new) {
+	if slices.Contains(allowed[current], target) {
 		return nil
 	}
 
 	return dto.NewError(http.StatusUnprocessableEntity, fmt.Sprintf(
 		"Transition from '%s' to '%s' is not allowed",
-		current, new,
+		current, target,
 	))
 }

@@ -132,7 +132,7 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 	}
 
 	var user dto.UpdateUserRequest
-	if err := c.ShouldBindJSON(&user); err != nil {
+	if err = c.ShouldBindJSON(&user); err != nil {
 		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
 		return
 	}

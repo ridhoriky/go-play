@@ -49,7 +49,7 @@ const (
 	ErrInvalidCredentials     = "Invalid email or password"
 	ErrInvalidPassword        = "Password must be at least 6 characters"
 	ErrEmailAlreadyRegistered = "Email already registered"
-	ErrInvalidToken           = "Invalid or expired token"
+	ErrInvalidToken           = "Invalid or expired token" //nolint:gosec // not a credential
 	ErrTokenExpired           = "Token has expired"
 	ErrMissingAuthHeader      = "Missing authorization header"
 	ErrInvalidAuthFormat      = "Invalid authorization header format"

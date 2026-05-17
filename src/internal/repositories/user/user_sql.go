@@ -14,7 +14,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-func (repo *userRepository) GetAll(ctx context.Context, filter *dto.GetUsersQuery) ([]entity.User, int, error) {
+func (r *userRepository) GetAll(ctx context.Context, filter *dto.GetUsersQuery) ([]entity.User, int, error) {
 	filterQuery, args := buildUserFilters(filter)
 	dataQuery := getAllUsersQuery + filterQuery
 
@@ -39,17 +39,17 @@ func (repo *userRepository) GetAll(ctx context.Context, filter *dto.GetUsersQuer
 
 	offset := (filter.Page - 1) * filter.Limit
 
-	argsData := append(args, filter.Limit, offset)
+	args = append(args, filter.Limit, offset)
 
-	rows, err := repo.db.QueryContext(ctx, dataQuery, argsData...)
+	rows, err := r.db.QueryContext(ctx, dataQuery, args...)
 	if err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Msg("err find user with query")
 		return nil, 0, err
 	}
 
 	defer func() {
-		if err := rows.Close(); err != nil {
-			zerolog.Ctx(ctx).Error().Err(err).Msg("failed to close rows")
+		if closeErr := rows.Close(); closeErr != nil {
+			zerolog.Ctx(ctx).Error().Err(closeErr).Msg("failed to close rows")
 		}
 	}()
 	users := []entity.User{}
@@ -60,7 +60,7 @@ func (repo *userRepository) GetAll(ctx context.Context, filter *dto.GetUsersQuer
 		var u entity.User
 		var rowCount int
 
-		err = rows.Scan(
+		if scanErr := rows.Scan(
 			&u.ID,
 			&u.Name,
 			&u.Email,
@@ -69,11 +69,9 @@ func (repo *userRepository) GetAll(ctx context.Context, filter *dto.GetUsersQuer
 			&u.CreatedAt,
 			&u.UpdatedAt,
 			&rowCount,
-		)
-
-		if err != nil {
-			zerolog.Ctx(ctx).Error().Err(err).Str("userID", u.ID).Msg("err mapping user row")
-			return nil, 0, err
+		); scanErr != nil {
+			zerolog.Ctx(ctx).Error().Err(scanErr).Str("userID", u.ID).Msg("err mapping user row")
+			return nil, 0, scanErr
 		}
 
 		users = append(users, u)
@@ -96,20 +94,17 @@ func buildUserFilters(filter *dto.GetUsersQuery) (string, []any) {
 
 	query := ""
 	args := []any{}
-	argPos := 1
 
-	// search
 	if filter.Search != "" {
-		query += fmt.Sprintf(" AND u.name ILIKE $%d", argPos)
+		query += " AND u.name ILIKE $1"
 		args = append(args, "%"+filter.Search+"%")
-		argPos++
 	}
 
 	return query, args
 }
 
-func (repo *userRepository) Create(ctx context.Context, user *entity.User) error {
-	_, err := repo.db.ExecContext(ctx, createUserQuery, user.ID, user.Name, user.Email, user.Password, user.Role, user.IsActive, user.CreatedAt, user.UpdatedAt)
+func (r *userRepository) Create(ctx context.Context, user *entity.User) error {
+	_, err := r.db.ExecContext(ctx, createUserQuery, user.ID, user.Name, user.Email, user.Password, user.Role, user.IsActive, user.CreatedAt, user.UpdatedAt)
 	if err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Msg("err to create user")
 		return err
@@ -117,9 +112,9 @@ func (repo *userRepository) Create(ctx context.Context, user *entity.User) error
 	return nil
 }
 
-func (repo *userRepository) GetByID(ctx context.Context, id string) (*entity.User, error) {
+func (r *userRepository) GetByID(ctx context.Context, id string) (*entity.User, error) {
 	var u entity.User
-	err := repo.db.QueryRowContext(ctx, getUserByIDQuery, id).Scan(&u.ID, &u.Name, &u.Email, &u.Password, &u.Role, &u.IsActive, &u.CreatedAt, &u.UpdatedAt)
+	err := r.db.QueryRowContext(ctx, getUserByIDQuery, id).Scan(&u.ID, &u.Name, &u.Email, &u.Password, &u.Role, &u.IsActive, &u.CreatedAt, &u.UpdatedAt)
 	if errors.Is(err, sql.ErrNoRows) {
 		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg("err user id not found")
 		return nil, dto.NewError(http.StatusNotFound, preference.ErrUserNotFound)
@@ -133,11 +128,11 @@ func (repo *userRepository) GetByID(ctx context.Context, id string) (*entity.Use
 	return &u, nil
 }
 
-func (repo *userRepository) GetByEmail(ctx context.Context, email string) (*entity.User, error) {
+func (r *userRepository) GetByEmail(ctx context.Context, email string) (*entity.User, error) {
 	var u entity.User
-	err := repo.db.QueryRowContext(ctx, getUserByEmailQuery, email).Scan(&u.ID, &u.Name, &u.Email, &u.Password, &u.Role, &u.IsActive, &u.CreatedAt, &u.UpdatedAt)
+	err := r.db.QueryRowContext(ctx, getUserByEmailQuery, email).Scan(&u.ID, &u.Name, &u.Email, &u.Password, &u.Role, &u.IsActive, &u.CreatedAt, &u.UpdatedAt)
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, nil
+		return nil, sql.ErrNoRows
 	}
 
 	if err != nil {
@@ -148,41 +143,38 @@ func (repo *userRepository) GetByEmail(ctx context.Context, email string) (*enti
 	return &u, nil
 }
 
-func (repo *userRepository) Update(ctx context.Context, id string, user *entity.User) error {
-	result, err := repo.db.ExecContext(ctx, updateUserQuery, user.Name, user.Email, user.Role, id)
+func (r *userRepository) Update(ctx context.Context, id string, user *entity.User) error {
+	result, err := r.db.ExecContext(ctx, updateUserQuery, user.Name, user.Email, user.Role, id)
 	if err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg("err update user")
 		return err
 	}
-	rows, err := result.RowsAffected()
+	rowsAffected, err := result.RowsAffected()
 	if err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg("err get rows affected")
 		return err
 	}
-	if rows == 0 {
-		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg("err not found update user")
+	if rowsAffected == 0 {
 		return dto.NewError(http.StatusNotFound, preference.ErrUserNotFound)
 	}
 	return nil
 }
 
-func (repo *userRepository) Delete(ctx context.Context, id string) error {
-	result, err := repo.db.ExecContext(ctx, deleteUserQuery, id)
+func (r *userRepository) Delete(ctx context.Context, id string) error {
+	result, err := r.db.ExecContext(ctx, deleteUserQuery, id)
 	if err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg("err delete user")
 		return err
 	}
-	rows, err := result.RowsAffected()
+	rowsAffected, err := result.RowsAffected()
 	if err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg("err get rows affected")
 		return err
 	}
 
-	if rows == 0 {
-		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg("err not found delete user")
+	if rowsAffected == 0 {
 		return dto.NewError(http.StatusNotFound, preference.ErrUserNotFound)
 	}
 
-	return err
-
+	return nil
 }
