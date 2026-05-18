@@ -30,12 +30,13 @@ func (s *productService) GetAllProducts(ctx context.Context, req *dto.GetProduct
 		p := &products[i]
 		resProduct := entity.ProductWithCategory{
 			Product: entity.Product{
-				ID:        p.ID,
-				Name:      p.Name,
-				Price:     p.Price,
-				Stock:     p.Stock,
-				CreatedAt: p.CreatedAt,
-				UpdatedAt: p.UpdatedAt,
+				ID:         p.ID,
+				Name:       p.Name,
+				Price:      p.Price,
+				Stock:      p.Stock,
+				CategoryID: p.CategoryID,
+				CreatedAt:  p.CreatedAt,
+				UpdatedAt:  p.UpdatedAt,
 			},
 			CategoryName: p.CategoryName,
 		}

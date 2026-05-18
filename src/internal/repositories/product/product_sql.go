@@ -122,6 +122,11 @@ func buildProductFilters(filter *dto.GetProductsQuery) (string, []any) {
 		args = append(args, filter.MaxPrice)
 	}
 
+	// stock filter
+	if filter.InStock {
+		query += " AND p.stock > 0"
+	}
+
 	return query, args
 }
 
@@ -150,6 +155,7 @@ func (r *productRepository) Update(ctx context.Context, id string, product *enti
 	}
 
 	if rowCount == 0 {
+		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg(preference.ErrProductNotFound)
 		return dto.NewError(http.StatusNotFound, preference.ErrProductNotFound)
 	}
 
@@ -170,6 +176,7 @@ func (r *productRepository) Delete(ctx context.Context, id string) error {
 	}
 
 	if rowCount == 0 {
+		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg(preference.ErrProductNotFound)
 		return dto.NewError(http.StatusNotFound, preference.ErrProductNotFound)
 	}
 
