@@ -43,15 +43,15 @@ A high-performance, structured RESTful API built with Go for a cashier managemen
 
 3. **Install Dependencies**:
 
-```bash
-make tidy
-```
+   ```bash
+   make tidy
+   ```
 
 4. **Run Migrations**:
 
-```bash
-make migrate-up
-```
+   ```bash
+   make migrate-up
+   ```
 
 ---
 
