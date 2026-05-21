@@ -5,6 +5,7 @@ import (
 
 	"ne-project/src/internal/handlers/helpers"
 	"ne-project/src/internal/models/dto"
+	_ "ne-project/src/internal/models/entity"
 	"ne-project/src/internal/preference"
 	"ne-project/src/internal/services/category"
 

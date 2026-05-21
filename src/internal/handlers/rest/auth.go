@@ -118,7 +118,7 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        request body dto.LogoutRequest true "Refresh token"
-// @Success      200 {object} dto.MessageResponse
+// @Success      200 {object} dto.APIResponse
 // @Failure      400 {object} dto.Error
 // @Failure      401 {object} dto.Error
 // @Failure      500 {object} dto.Error

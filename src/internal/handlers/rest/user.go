@@ -5,6 +5,7 @@ import (
 
 	"ne-project/src/internal/handlers/helpers"
 	"ne-project/src/internal/models/dto"
+	_ "ne-project/src/internal/models/entity"
 	"ne-project/src/internal/preference"
 	"ne-project/src/internal/services/user"
 
@@ -153,7 +154,7 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path string true "User ID"
-// @Success 200 {object} dto.MessageResponse
+// @Success 200 {object} dto.APIResponse
 // @Failure 400 {object} dto.Error
 // @Failure 404 {object} dto.Error
 // @Failure 500 {object} dto.Error

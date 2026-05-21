@@ -1,6 +1,5 @@
-basePath: /api/v1
 definitions:
-  dto.APIResponse:
+  ne-project_src_internal_models_dto.APIResponse:
     properties:
       data: {}
       error:
@@ -8,11 +7,24 @@ definitions:
       message:
         type: string
       meta:
-        $ref: '#/definitions/dto.PaginationMeta'
+        $ref: '#/definitions/ne-project_src_internal_models_dto.PaginationMeta'
       status:
         type: integer
     type: object
-  dto.CheckoutItem:
+  ne-project_src_internal_models_dto.AuthTokenResponse:
+    properties:
+      accessToken:
+        type: string
+      expiresAt:
+        type: integer
+      expiresRt:
+        type: integer
+      refreshToken:
+        type: string
+      user:
+        $ref: '#/definitions/ne-project_src_internal_models_dto.UserResponse'
+    type: object
+  ne-project_src_internal_models_dto.CheckoutItem:
     properties:
       product_id:
         type: string
@@ -23,7 +35,7 @@ definitions:
     - product_id
     - quantity
     type: object
-  dto.CreateCategoryRequest:
+  ne-project_src_internal_models_dto.CreateCategoryRequest:
     properties:
       description:
         maxLength: 500
@@ -35,17 +47,17 @@ definitions:
     required:
     - name
     type: object
-  dto.CreateMultipleProducts:
+  ne-project_src_internal_models_dto.CreateMultipleProducts:
     properties:
       data:
         items:
-          $ref: '#/definitions/dto.CreateProductRequest'
+          $ref: '#/definitions/ne-project_src_internal_models_dto.CreateProductRequest'
         minItems: 1
         type: array
     required:
     - data
     type: object
-  dto.CreateProductRequest:
+  ne-project_src_internal_models_dto.CreateProductRequest:
     properties:
       category_id:
         type: string
@@ -65,17 +77,112 @@ definitions:
     - price
     - stock
     type: object
-  dto.CreateTransactionRequest:
+  ne-project_src_internal_models_dto.CreateTransactionRequest:
     properties:
       items:
         items:
-          $ref: '#/definitions/dto.CheckoutItem'
+          $ref: '#/definitions/ne-project_src_internal_models_dto.CheckoutItem'
         minItems: 1
         type: array
     required:
     - items
     type: object
-  dto.PaginationMeta:
+  ne-project_src_internal_models_dto.CreateUserRequest:
+    properties:
+      email:
+        type: string
+      name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      password:
+        minLength: 6
+        type: string
+      role:
+        enum:
+        - admin
+        - user
+        type: string
+    required:
+    - email
+    - name
+    - password
+    - role
+    type: object
+  ne-project_src_internal_models_dto.Error:
+    properties:
+      code:
+        type: integer
+      details:
+        items:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.ErrorDetail'
+        type: array
+      message:
+        type: string
+    type: object
+  ne-project_src_internal_models_dto.ErrorDetail:
+    properties:
+      field:
+        type: string
+      message:
+        type: string
+    type: object
+  ne-project_src_internal_models_dto.ErrorResponse:
+    properties:
+      error:
+        $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+      success:
+        type: boolean
+    type: object
+  ne-project_src_internal_models_dto.HealthCheckResponse:
+    properties:
+      service:
+        example: go-play
+        type: string
+      status:
+        example: alive
+        type: string
+      time:
+        example: "2024-01-15T10:30:00Z"
+        type: string
+      version:
+        example: 1.0.0
+        type: string
+    type: object
+  ne-project_src_internal_models_dto.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  ne-project_src_internal_models_dto.LoginResponse:
+    properties:
+      accessToken:
+        type: string
+      expiresAt:
+        type: integer
+      expiresRt:
+        type: integer
+      message:
+        type: string
+      refreshToken:
+        type: string
+      user:
+        $ref: '#/definitions/ne-project_src_internal_models_dto.UserResponse'
+    type: object
+  ne-project_src_internal_models_dto.LogoutRequest:
+    properties:
+      refreshToken:
+        type: string
+    required:
+    - refreshToken
+    type: object
+  ne-project_src_internal_models_dto.PaginationMeta:
     properties:
       limit:
         type: integer
@@ -86,7 +193,62 @@ definitions:
       total_pages:
         type: integer
     type: object
-  dto.SummaryResponse:
+  ne-project_src_internal_models_dto.ReadyCheckResponse:
+    properties:
+      dependencies:
+        additionalProperties:
+          type: string
+        description: database, cache, etc
+        type: object
+      message:
+        type: string
+      service:
+        type: string
+      status:
+        description: ready, not_ready
+        example: ready
+        type: string
+      time:
+        type: string
+      version:
+        type: string
+    type: object
+  ne-project_src_internal_models_dto.RefreshTokenRequest:
+    properties:
+      refreshToken:
+        type: string
+    required:
+    - refreshToken
+    type: object
+  ne-project_src_internal_models_dto.RegisterRequest:
+    properties:
+      email:
+        type: string
+      name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      password:
+        minLength: 6
+        type: string
+      role:
+        enum:
+        - admin
+        - user
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  ne-project_src_internal_models_dto.RegisterResponse:
+    properties:
+      message:
+        type: string
+      user:
+        $ref: '#/definitions/ne-project_src_internal_models_dto.UserResponse'
+    type: object
+  ne-project_src_internal_models_dto.SummaryResponse:
     properties:
       average_transaction:
         type: number
@@ -97,7 +259,7 @@ definitions:
       total_transactions:
         type: integer
     type: object
-  dto.TopProductItem:
+  ne-project_src_internal_models_dto.TopProductItem:
     properties:
       product_id:
         type: string
@@ -108,14 +270,14 @@ definitions:
       total_revenue:
         type: number
     type: object
-  dto.TopProductsResponse:
+  ne-project_src_internal_models_dto.TopProductsResponse:
     properties:
       data:
         items:
-          $ref: '#/definitions/dto.TopProductItem'
+          $ref: '#/definitions/ne-project_src_internal_models_dto.TopProductItem'
         type: array
     type: object
-  dto.TransactionDetailResponse:
+  ne-project_src_internal_models_dto.TransactionDetailResponse:
     properties:
       created_at:
         example: "2025-01-01T10:00:00Z"
@@ -125,7 +287,7 @@ definitions:
         type: string
       items:
         items:
-          $ref: '#/definitions/dto.TransactionItemResponse'
+          $ref: '#/definitions/ne-project_src_internal_models_dto.TransactionItemResponse'
         type: array
       status:
         example: paid
@@ -134,7 +296,7 @@ definitions:
         example: 15000
         type: number
     type: object
-  dto.TransactionItemResponse:
+  ne-project_src_internal_models_dto.TransactionItemResponse:
     properties:
       id:
         type: string
@@ -149,7 +311,7 @@ definitions:
       subtotal:
         type: number
     type: object
-  dto.UpdateCategoryRequest:
+  ne-project_src_internal_models_dto.UpdateCategoryRequest:
     properties:
       description:
         maxLength: 500
@@ -161,7 +323,7 @@ definitions:
     required:
     - name
     type: object
-  dto.UpdateProductRequest:
+  ne-project_src_internal_models_dto.UpdateProductRequest:
     properties:
       category_id:
         type: string
@@ -181,7 +343,47 @@ definitions:
     - price
     - stock
     type: object
-  entity.Category:
+  ne-project_src_internal_models_dto.UpdateUserRequest:
+    properties:
+      email:
+        type: string
+      name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      role:
+        enum:
+        - admin
+        - user
+        type: string
+    type: object
+  ne-project_src_internal_models_dto.UserListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.UserResponse'
+        type: array
+      meta:
+        $ref: '#/definitions/ne-project_src_internal_models_dto.PaginationMeta'
+    type: object
+  ne-project_src_internal_models_dto.UserResponse:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      name:
+        type: string
+      role:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  ne-project_src_internal_models_entity.Category:
     properties:
       created_at:
         type: string
@@ -196,7 +398,7 @@ definitions:
       updated_at:
         type: string
     type: object
-  entity.Product:
+  ne-project_src_internal_models_entity.Product:
     properties:
       category_id:
         type: string
@@ -215,7 +417,7 @@ definitions:
       updated_at:
         type: string
     type: object
-  entity.ProductWithCategory:
+  ne-project_src_internal_models_entity.ProductWithCategory:
     properties:
       category_id:
         type: string
@@ -236,14 +438,163 @@ definitions:
       updated_at:
         type: string
     type: object
-host: localhost:8080
+  ne-project_src_internal_models_entity.User:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      name:
+        type: string
+      role:
+        type: string
+      updated_at:
+        type: string
+    type: object
 info:
   contact: {}
-  description: KasirApp, a RESTful API built with Go for a simple cashier system using
-    Gin and PostgreSQL.
-  title: Kasir APP
-  version: "1.0"
 paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user with email and password, returns access and refresh
+        tokens
+      parameters:
+      - description: Login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+      summary: User login
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Invalidate refresh token and logout user
+      parameters:
+      - description: Refresh token
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.LogoutRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+      summary: User logout
+      tags:
+      - auth
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Generate new access token using refresh token
+      parameters:
+      - description: Refresh token
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.AuthTokenResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+      summary: Refresh access token
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account
+      parameters:
+      - description: User registration data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.RegisterResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+      summary: Register new user
+      tags:
+      - auth
   /categories:
     get:
       description: Retrieve list of categories with optional filters and pagination
@@ -282,21 +633,21 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/dto.APIResponse'
+            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
             - properties:
                 data:
                   items:
-                    $ref: '#/definitions/entity.Category'
+                    $ref: '#/definitions/ne-project_src_internal_models_entity.Category'
                   type: array
               type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIResponse'
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/dto.APIResponse'
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
       summary: List Category
       tags:
       - categories
@@ -310,7 +661,7 @@ paths:
         name: category
         required: true
         schema:
-          $ref: '#/definitions/dto.CreateCategoryRequest'
+          $ref: '#/definitions/ne-project_src_internal_models_dto.CreateCategoryRequest'
       produces:
       - application/json
       responses:
@@ -318,19 +669,19 @@ paths:
           description: Created
           schema:
             allOf:
-            - $ref: '#/definitions/dto.APIResponse'
+            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/entity.Category'
+                  $ref: '#/definitions/ne-project_src_internal_models_entity.Category'
               type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIResponse'
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/dto.APIResponse'
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
       summary: Create Single category
       tags:
       - categories
@@ -352,15 +703,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.APIResponse'
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIResponse'
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/dto.APIResponse'
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
       summary: Delete Category
       tags:
       - categories
@@ -380,19 +731,19 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/dto.APIResponse'
+            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/entity.Category'
+                  $ref: '#/definitions/ne-project_src_internal_models_entity.Category'
               type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIResponse'
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/dto.APIResponse'
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
       summary: Get Single category
       tags:
       - categories
@@ -412,7 +763,7 @@ paths:
         name: category
         required: true
         schema:
-          $ref: '#/definitions/dto.UpdateCategoryRequest'
+          $ref: '#/definitions/ne-project_src_internal_models_dto.UpdateCategoryRequest'
       produces:
       - application/json
       responses:
@@ -420,22 +771,37 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/dto.APIResponse'
+            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/entity.Category'
+                  $ref: '#/definitions/ne-project_src_internal_models_entity.Category'
               type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIResponse'
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/dto.APIResponse'
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
       summary: Update Category
       tags:
       - categories
+  /health:
+    get:
+      consumes:
+      - application/json
+      description: Check if the application is alive (lightweight check)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.HealthCheckResponse'
+      summary: Liveness Probe
+      tags:
+      - System
   /products:
     get:
       consumes:
@@ -488,21 +854,21 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/dto.APIResponse'
+            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
             - properties:
                 data:
                   items:
-                    $ref: '#/definitions/entity.ProductWithCategory'
+                    $ref: '#/definitions/ne-project_src_internal_models_entity.ProductWithCategory'
                   type: array
               type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIResponse'
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/dto.APIResponse'
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
       summary: List Product
       tags:
       - products
@@ -516,7 +882,7 @@ paths:
         name: product
         required: true
         schema:
-          $ref: '#/definitions/dto.CreateProductRequest'
+          $ref: '#/definitions/ne-project_src_internal_models_dto.CreateProductRequest'
       produces:
       - application/json
       responses:
@@ -524,19 +890,19 @@ paths:
           description: Created
           schema:
             allOf:
-            - $ref: '#/definitions/dto.APIResponse'
+            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/entity.Product'
+                  $ref: '#/definitions/ne-project_src_internal_models_entity.Product'
               type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIResponse'
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/dto.APIResponse'
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
       summary: Create Single product
       tags:
       - products
@@ -558,15 +924,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.APIResponse'
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIResponse'
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/dto.APIResponse'
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
       summary: Delete Product
       tags:
       - products
@@ -586,19 +952,19 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/dto.APIResponse'
+            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/entity.Product'
+                  $ref: '#/definitions/ne-project_src_internal_models_entity.Product'
               type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIResponse'
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/dto.APIResponse'
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
       summary: Get Single product
       tags:
       - products
@@ -618,7 +984,7 @@ paths:
         name: product
         required: true
         schema:
-          $ref: '#/definitions/dto.UpdateProductRequest'
+          $ref: '#/definitions/ne-project_src_internal_models_dto.UpdateProductRequest'
       produces:
       - application/json
       responses:
@@ -626,19 +992,19 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/dto.APIResponse'
+            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/entity.Product'
+                  $ref: '#/definitions/ne-project_src_internal_models_entity.Product'
               type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIResponse'
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/dto.APIResponse'
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
       summary: Update Product
       tags:
       - products
@@ -653,7 +1019,7 @@ paths:
         name: product
         required: true
         schema:
-          $ref: '#/definitions/dto.CreateMultipleProducts'
+          $ref: '#/definitions/ne-project_src_internal_models_dto.CreateMultipleProducts'
       produces:
       - application/json
       responses:
@@ -661,24 +1027,43 @@ paths:
           description: Created
           schema:
             allOf:
-            - $ref: '#/definitions/dto.APIResponse'
+            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
             - properties:
                 data:
                   items:
-                    $ref: '#/definitions/entity.Product'
+                    $ref: '#/definitions/ne-project_src_internal_models_entity.Product'
                   type: array
               type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIResponse'
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/dto.APIResponse'
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
       summary: Create Multiple product
       tags:
       - products
+  /ready:
+    get:
+      consumes:
+      - application/json
+      description: Check if the application is ready to accept traffic
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.ReadyCheckResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.ErrorResponse'
+      summary: Readiness Probe
+      tags:
+      - System
   /reports:
     get:
       consumes:
@@ -705,21 +1090,21 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/dto.APIResponse'
+            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
             - properties:
                 data:
                   items:
-                    $ref: '#/definitions/dto.SummaryResponse'
+                    $ref: '#/definitions/ne-project_src_internal_models_dto.SummaryResponse'
                   type: array
               type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIResponse'
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/dto.APIResponse'
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
       summary: List Report
       tags:
       - reports
@@ -754,21 +1139,21 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/dto.APIResponse'
+            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
             - properties:
                 data:
                   items:
-                    $ref: '#/definitions/dto.TopProductsResponse'
+                    $ref: '#/definitions/ne-project_src_internal_models_dto.TopProductsResponse'
                   type: array
               type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIResponse'
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/dto.APIResponse'
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
       summary: List Top Products
       tags:
       - reports
@@ -783,7 +1168,7 @@ paths:
         name: transaction
         required: true
         schema:
-          $ref: '#/definitions/dto.CreateTransactionRequest'
+          $ref: '#/definitions/ne-project_src_internal_models_dto.CreateTransactionRequest'
       produces:
       - application/json
       responses:
@@ -791,19 +1176,19 @@ paths:
           description: Created
           schema:
             allOf:
-            - $ref: '#/definitions/dto.APIResponse'
+            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/dto.TransactionDetailResponse'
+                  $ref: '#/definitions/ne-project_src_internal_models_dto.TransactionDetailResponse'
               type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIResponse'
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/dto.APIResponse'
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
       summary: Create Transaction
       tags:
       - transactions
@@ -825,15 +1210,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.APIResponse'
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIResponse'
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/dto.APIResponse'
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
       summary: Get Transaction
       tags:
       - transactions
@@ -855,16 +1240,182 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.APIResponse'
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIResponse'
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/dto.APIResponse'
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
       summary: Update Transaction Status
       tags:
       - transactions
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of all users with pagination
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.UserListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+      summary: Get all users
+      tags:
+      - Users
+    post:
+      consumes:
+      - application/json
+      description: Create a new user with the provided information
+      parameters:
+      - description: User information
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_entity.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+      summary: Create a new user
+      tags:
+      - Users
+  /users/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a user by their unique ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+      summary: Delete a user
+      tags:
+      - Users
+    get:
+      consumes:
+      - application/json
+      description: Get a single user by their unique ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_entity.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+      summary: Get user by ID
+      tags:
+      - Users
+    put:
+      consumes:
+      - application/json
+      description: Update user information by their unique ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated user information
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_entity.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+      summary: Update an existing user
+      tags:
+      - Users
 swagger: "2.0"

@@ -15,6 +15,214 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/auth/login": {
+            "post": {
+                "description": "Authenticate user with email and password, returns access and refresh tokens",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "User login",
+                "parameters": [
+                    {
+                        "description": "Login credentials",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.LoginResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/logout": {
+            "post": {
+                "description": "Invalidate refresh token and logout user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "User logout",
+                "parameters": [
+                    {
+                        "description": "Refresh token",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.LogoutRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/refresh": {
+            "post": {
+                "description": "Generate new access token using refresh token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Refresh access token",
+                "parameters": [
+                    {
+                        "description": "Refresh token",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.RefreshTokenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.AuthTokenResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/register": {
+            "post": {
+                "description": "Create a new user account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Register new user",
+                "parameters": [
+                    {
+                        "description": "User registration data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.RegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.RegisterResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/categories": {
             "get": {
                 "description": "Retrieve list of categories with optional filters and pagination",
@@ -72,7 +280,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/dto.APIResponse"
+                                    "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                                 },
                                 {
                                     "type": "object",
@@ -80,7 +288,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/entity.Category"
+                                                "$ref": "#/definitions/ne-project_src_internal_models_entity.Category"
                                             }
                                         }
                                     }
@@ -91,13 +299,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/dto.APIResponse"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/dto.APIResponse"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                         }
                     }
                 }
@@ -121,7 +329,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateCategoryRequest"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.CreateCategoryRequest"
                         }
                     }
                 ],
@@ -131,13 +339,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/dto.APIResponse"
+                                    "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/entity.Category"
+                                            "$ref": "#/definitions/ne-project_src_internal_models_entity.Category"
                                         }
                                     }
                                 }
@@ -147,13 +355,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/dto.APIResponse"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/dto.APIResponse"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                         }
                     }
                 }
@@ -185,13 +393,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/dto.APIResponse"
+                                    "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/entity.Category"
+                                            "$ref": "#/definitions/ne-project_src_internal_models_entity.Category"
                                         }
                                     }
                                 }
@@ -201,13 +409,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/dto.APIResponse"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/dto.APIResponse"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                         }
                     }
                 }
@@ -239,7 +447,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.UpdateCategoryRequest"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.UpdateCategoryRequest"
                         }
                     }
                 ],
@@ -249,13 +457,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/dto.APIResponse"
+                                    "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/entity.Category"
+                                            "$ref": "#/definitions/ne-project_src_internal_models_entity.Category"
                                         }
                                     }
                                 }
@@ -265,13 +473,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/dto.APIResponse"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/dto.APIResponse"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                         }
                     }
                 }
@@ -302,19 +510,42 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.APIResponse"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/dto.APIResponse"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/dto.APIResponse"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/health": {
+            "get": {
+                "description": "Check if the application is alive (lightweight check)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System"
+                ],
+                "summary": "Liveness Probe",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.HealthCheckResponse"
                         }
                     }
                 }
@@ -398,7 +629,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/dto.APIResponse"
+                                    "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                                 },
                                 {
                                     "type": "object",
@@ -406,7 +637,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/entity.ProductWithCategory"
+                                                "$ref": "#/definitions/ne-project_src_internal_models_entity.ProductWithCategory"
                                             }
                                         }
                                     }
@@ -417,13 +648,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/dto.APIResponse"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/dto.APIResponse"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                         }
                     }
                 }
@@ -447,7 +678,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateProductRequest"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.CreateProductRequest"
                         }
                     }
                 ],
@@ -457,13 +688,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/dto.APIResponse"
+                                    "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/entity.Product"
+                                            "$ref": "#/definitions/ne-project_src_internal_models_entity.Product"
                                         }
                                     }
                                 }
@@ -473,13 +704,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/dto.APIResponse"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/dto.APIResponse"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                         }
                     }
                 }
@@ -505,7 +736,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateMultipleProducts"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.CreateMultipleProducts"
                         }
                     }
                 ],
@@ -515,7 +746,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/dto.APIResponse"
+                                    "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                                 },
                                 {
                                     "type": "object",
@@ -523,7 +754,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/entity.Product"
+                                                "$ref": "#/definitions/ne-project_src_internal_models_entity.Product"
                                             }
                                         }
                                     }
@@ -534,13 +765,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/dto.APIResponse"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/dto.APIResponse"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                         }
                     }
                 }
@@ -572,13 +803,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/dto.APIResponse"
+                                    "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/entity.Product"
+                                            "$ref": "#/definitions/ne-project_src_internal_models_entity.Product"
                                         }
                                     }
                                 }
@@ -588,13 +819,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/dto.APIResponse"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/dto.APIResponse"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                         }
                     }
                 }
@@ -626,7 +857,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.UpdateProductRequest"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.UpdateProductRequest"
                         }
                     }
                 ],
@@ -636,13 +867,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/dto.APIResponse"
+                                    "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/entity.Product"
+                                            "$ref": "#/definitions/ne-project_src_internal_models_entity.Product"
                                         }
                                     }
                                 }
@@ -652,13 +883,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/dto.APIResponse"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/dto.APIResponse"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                         }
                     }
                 }
@@ -689,19 +920,48 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.APIResponse"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/dto.APIResponse"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/dto.APIResponse"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/ready": {
+            "get": {
+                "description": "Check if the application is ready to accept traffic",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System"
+                ],
+                "summary": "Readiness Probe",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.ReadyCheckResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.ErrorResponse"
                         }
                     }
                 }
@@ -747,7 +1007,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/dto.APIResponse"
+                                    "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                                 },
                                 {
                                     "type": "object",
@@ -755,7 +1015,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/dto.SummaryResponse"
+                                                "$ref": "#/definitions/ne-project_src_internal_models_dto.SummaryResponse"
                                             }
                                         }
                                     }
@@ -766,13 +1026,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/dto.APIResponse"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/dto.APIResponse"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                         }
                     }
                 }
@@ -825,7 +1085,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/dto.APIResponse"
+                                    "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                                 },
                                 {
                                     "type": "object",
@@ -833,7 +1093,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/dto.TopProductsResponse"
+                                                "$ref": "#/definitions/ne-project_src_internal_models_dto.TopProductsResponse"
                                             }
                                         }
                                     }
@@ -844,13 +1104,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/dto.APIResponse"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/dto.APIResponse"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                         }
                     }
                 }
@@ -876,7 +1136,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateTransactionRequest"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.CreateTransactionRequest"
                         }
                     }
                 ],
@@ -886,13 +1146,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/dto.APIResponse"
+                                    "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/dto.TransactionDetailResponse"
+                                            "$ref": "#/definitions/ne-project_src_internal_models_dto.TransactionDetailResponse"
                                         }
                                     }
                                 }
@@ -902,13 +1162,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/dto.APIResponse"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/dto.APIResponse"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                         }
                     }
                 }
@@ -941,19 +1201,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.APIResponse"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/dto.APIResponse"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/dto.APIResponse"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                         }
                     }
                 }
@@ -986,19 +1246,269 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.APIResponse"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/dto.APIResponse"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/dto.APIResponse"
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users": {
+            "get": {
+                "description": "Get a list of all users with pagination",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Get all users",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Number of items per page",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.UserListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new user with the provided information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Create a new user",
+                "parameters": [
+                    {
+                        "description": "User information",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.CreateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_entity.User"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{id}": {
+            "get": {
+                "description": "Get a single user by their unique ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Get user by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_entity.User"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update user information by their unique ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Update an existing user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated user information",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.UpdateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_entity.User"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a user by their unique ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Delete a user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
                         }
                     }
                 }
@@ -1006,7 +1516,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "dto.APIResponse": {
+        "ne-project_src_internal_models_dto.APIResponse": {
             "type": "object",
             "properties": {
                 "data": {},
@@ -1017,14 +1527,34 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "meta": {
-                    "$ref": "#/definitions/dto.PaginationMeta"
+                    "$ref": "#/definitions/ne-project_src_internal_models_dto.PaginationMeta"
                 },
                 "status": {
                     "type": "integer"
                 }
             }
         },
-        "dto.CheckoutItem": {
+        "ne-project_src_internal_models_dto.AuthTokenResponse": {
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "type": "string"
+                },
+                "expiresAt": {
+                    "type": "integer"
+                },
+                "expiresRt": {
+                    "type": "integer"
+                },
+                "refreshToken": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/ne-project_src_internal_models_dto.UserResponse"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.CheckoutItem": {
             "type": "object",
             "required": [
                 "product_id",
@@ -1040,7 +1570,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.CreateCategoryRequest": {
+        "ne-project_src_internal_models_dto.CreateCategoryRequest": {
             "type": "object",
             "required": [
                 "name"
@@ -1057,7 +1587,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.CreateMultipleProducts": {
+        "ne-project_src_internal_models_dto.CreateMultipleProducts": {
             "type": "object",
             "required": [
                 "data"
@@ -1067,12 +1597,12 @@ const docTemplate = `{
                     "type": "array",
                     "minItems": 1,
                     "items": {
-                        "$ref": "#/definitions/dto.CreateProductRequest"
+                        "$ref": "#/definitions/ne-project_src_internal_models_dto.CreateProductRequest"
                     }
                 }
             }
         },
-        "dto.CreateProductRequest": {
+        "ne-project_src_internal_models_dto.CreateProductRequest": {
             "type": "object",
             "required": [
                 "category_id",
@@ -1099,7 +1629,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.CreateTransactionRequest": {
+        "ne-project_src_internal_models_dto.CreateTransactionRequest": {
             "type": "object",
             "required": [
                 "items"
@@ -1109,12 +1639,152 @@ const docTemplate = `{
                     "type": "array",
                     "minItems": 1,
                     "items": {
-                        "$ref": "#/definitions/dto.CheckoutItem"
+                        "$ref": "#/definitions/ne-project_src_internal_models_dto.CheckoutItem"
                     }
                 }
             }
         },
-        "dto.PaginationMeta": {
+        "ne-project_src_internal_models_dto.CreateUserRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "name",
+                "password",
+                "role"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 6
+                },
+                "role": {
+                    "type": "string",
+                    "enum": [
+                        "admin",
+                        "user"
+                    ]
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.Error": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "details": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ne-project_src_internal_models_dto.ErrorDetail"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.ErrorDetail": {
+            "type": "object",
+            "properties": {
+                "field": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.HealthCheckResponse": {
+            "type": "object",
+            "properties": {
+                "service": {
+                    "type": "string",
+                    "example": "go-play"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "alive"
+                },
+                "time": {
+                    "type": "string",
+                    "example": "2024-01-15T10:30:00Z"
+                },
+                "version": {
+                    "type": "string",
+                    "example": "1.0.0"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.LoginRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 6
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.LoginResponse": {
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "type": "string"
+                },
+                "expiresAt": {
+                    "type": "integer"
+                },
+                "expiresRt": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "refreshToken": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/ne-project_src_internal_models_dto.UserResponse"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.LogoutRequest": {
+            "type": "object",
+            "required": [
+                "refreshToken"
+            ],
+            "properties": {
+                "refreshToken": {
+                    "type": "string"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.PaginationMeta": {
             "type": "object",
             "properties": {
                 "limit": {
@@ -1131,7 +1801,87 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.SummaryResponse": {
+        "ne-project_src_internal_models_dto.ReadyCheckResponse": {
+            "type": "object",
+            "properties": {
+                "dependencies": {
+                    "description": "database, cache, etc",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "service": {
+                    "type": "string"
+                },
+                "status": {
+                    "description": "ready, not_ready",
+                    "type": "string",
+                    "example": "ready"
+                },
+                "time": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.RefreshTokenRequest": {
+            "type": "object",
+            "required": [
+                "refreshToken"
+            ],
+            "properties": {
+                "refreshToken": {
+                    "type": "string"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.RegisterRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "name",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 6
+                },
+                "role": {
+                    "type": "string",
+                    "enum": [
+                        "admin",
+                        "user"
+                    ]
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.RegisterResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/ne-project_src_internal_models_dto.UserResponse"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.SummaryResponse": {
             "type": "object",
             "properties": {
                 "average_transaction": {
@@ -1148,7 +1898,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.TopProductItem": {
+        "ne-project_src_internal_models_dto.TopProductItem": {
             "type": "object",
             "properties": {
                 "product_id": {
@@ -1165,18 +1915,18 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.TopProductsResponse": {
+        "ne-project_src_internal_models_dto.TopProductsResponse": {
             "type": "object",
             "properties": {
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dto.TopProductItem"
+                        "$ref": "#/definitions/ne-project_src_internal_models_dto.TopProductItem"
                     }
                 }
             }
         },
-        "dto.TransactionDetailResponse": {
+        "ne-project_src_internal_models_dto.TransactionDetailResponse": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -1190,7 +1940,7 @@ const docTemplate = `{
                 "items": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dto.TransactionItemResponse"
+                        "$ref": "#/definitions/ne-project_src_internal_models_dto.TransactionItemResponse"
                     }
                 },
                 "status": {
@@ -1203,7 +1953,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.TransactionItemResponse": {
+        "ne-project_src_internal_models_dto.TransactionItemResponse": {
             "type": "object",
             "properties": {
                 "id": {
@@ -1226,7 +1976,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.UpdateCategoryRequest": {
+        "ne-project_src_internal_models_dto.UpdateCategoryRequest": {
             "type": "object",
             "required": [
                 "name"
@@ -1243,7 +1993,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.UpdateProductRequest": {
+        "ne-project_src_internal_models_dto.UpdateProductRequest": {
             "type": "object",
             "required": [
                 "category_id",
@@ -1270,7 +2020,67 @@ const docTemplate = `{
                 }
             }
         },
-        "entity.Category": {
+        "ne-project_src_internal_models_dto.UpdateUserRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
+                },
+                "role": {
+                    "type": "string",
+                    "enum": [
+                        "admin",
+                        "user"
+                    ]
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.UserListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ne-project_src_internal_models_dto.UserResponse"
+                    }
+                },
+                "meta": {
+                    "$ref": "#/definitions/ne-project_src_internal_models_dto.PaginationMeta"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.UserResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "ne-project_src_internal_models_entity.Category": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -1293,7 +2103,7 @@ const docTemplate = `{
                 }
             }
         },
-        "entity.Product": {
+        "ne-project_src_internal_models_entity.Product": {
             "type": "object",
             "properties": {
                 "category_id": {
@@ -1322,7 +2132,7 @@ const docTemplate = `{
                 }
             }
         },
-        "entity.ProductWithCategory": {
+        "ne-project_src_internal_models_entity.ProductWithCategory": {
             "type": "object",
             "properties": {
                 "category_id": {
@@ -1353,18 +2163,44 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "ne-project_src_internal_models_entity.User": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
         }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "1.0",
-	Host:             "localhost:8080",
-	BasePath:         "/api/v1",
+	Version:          "",
+	Host:             "",
+	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "Kasir APP",
-	Description:      "KasirApp, a RESTful API built with Go for a simple cashier system using Gin and PostgreSQL.",
+	Title:            "",
+	Description:      "",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",
