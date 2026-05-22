@@ -89,6 +89,7 @@ require (
 	github.com/quic-go/qpack v0.5.1 // indirect
 	github.com/quic-go/quic-go v0.54.0 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
+	github.com/rs/xid v1.6.0 // indirect
 	github.com/schollz/progressbar/v3 v3.19.0 // indirect
 	github.com/spf13/afero v1.15.0 // indirect
 	github.com/tidwall/jsonc v0.3.3 // indirect

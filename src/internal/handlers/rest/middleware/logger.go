@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
+	"github.com/rs/xid"
 	"github.com/rs/zerolog"
 )
 
@@ -23,7 +23,7 @@ func (m *Middleware) Logger() gin.HandlerFunc {
 
 		requestID := c.GetHeader("X-Request-ID")
 		if requestID == "" {
-			requestID = uuid.New().String()
+			requestID = xid.New().String()
 		}
 		c.Header("X-Request-ID", requestID)
 
