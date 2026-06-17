@@ -15,13 +15,13 @@ DB_URL = postgres://$(DB_USER):$(DB_PASS)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmo
 
 # ─── Targets ─────────────────────────────────────────────────────────────────
 
-.PHONY: all build run test clean tidy swag migrate-up migrate-down help lint install-tools lefthook-run lefthook-uninstall
+.PHONY: all build run test clean tidy swag migrate-up migrate-down help lint install-tools lefthook-run lefthook-uninstall 
 
 all: build
 
 ## build: Build the binary
 build:
-	@echo "Building $(APP_NAME)..."
+	@echo "Building $(APP_NAME)..."ocker-build docker-up docker-down docker-logs docker-ps docker-stop-all
 	@go build -o $(BUILD_DIR)/$(APP_NAME) $(MAIN_PATH)
 
 ## run: Run the application
@@ -72,10 +72,10 @@ lint:
 	fi
 	@echo "golangci-lint finished."
 
-## install-tools: Install all tools (linter, lefthook, swag, migrate) and setup hooks
+## install-tools: Install all tools (linter, lefthook, swag, migrate, hey) and setup hooks
 install-tools:
 	@echo "Installing golangci-lint..."
-	@go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
+	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	@echo "Installing lefthook..."
 	@go install github.com/evilmartians/lefthook/v2@latest
 	@echo "Installing swag..."

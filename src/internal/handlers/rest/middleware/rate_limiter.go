@@ -12,7 +12,7 @@ import (
 )
 
 type RateLimiterOptions struct {
-	Limit  int           `yaml:"limit" env:"RATE_LIMIT" env-default:"100"`
+	Limit  int           `yaml:"limit" env:"RATE_LIMIT" env-default:"1000"`
 	Window time.Duration `yaml:"window" env:"RATE_LIMIT_WINDOW" env-default:"1m"`
 }
 

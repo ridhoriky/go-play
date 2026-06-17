@@ -1,0 +1,27 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+
+processors:
+  batch:
+    send_batch_size: 1024
+    timeout: 1s
+
+exporters:
+  # Debug: Cetak metrik ke console
+  logging:
+    verbosity: detailed
+
+  # Sajikan metrik dalam format Prometheus di port 8889
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+    namespace: "otel" # awalan opsional untuk nama metrik
+
+service:
+  pipelines:
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [prometheus, logging]

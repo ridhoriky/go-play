@@ -1,6 +1,7 @@
 package router
 
 import (
+	_ "ne-project/docs"
 	"ne-project/src/internal/config/appconfig"
 	"ne-project/src/internal/config/resource"
 	"ne-project/src/internal/config/token"
@@ -13,16 +14,18 @@ import (
 	"github.com/rs/zerolog"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 )
 
 func SetupRouter(log *zerolog.Logger, cfg *appconfig.Config, res *resource.Resources, tokenSvc *token.Token) *gin.Engine {
+
 	mw := middleware.InitMiddleware(log, tokenSvc, &cfg.RateLimit)
 	repo := repositories.NewRepository(res.DB)
 	service := services.NewServices(repo, tokenSvc, res.DB, res.Redis)
 	handlers := routes.NewHandlers(res.DB, service)
 
 	r := gin.New()
-	r.Use(mw.Logger(), mw.CORS(), mw.Recovery())
+	r.Use(mw.Logger(), mw.CORS(), mw.Recovery(), otelgin.Middleware("kasir-app"))
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	v1 := r.Group("/api/v1")
