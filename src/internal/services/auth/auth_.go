@@ -2,7 +2,6 @@ package auth
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"net/http"
 	"strings"
@@ -12,6 +11,7 @@ import (
 	"ne-project/src/internal/models/dto"
 	"ne-project/src/internal/models/entity"
 	"ne-project/src/internal/preference"
+	"ne-project/src/internal/repositories/auth"
 	"ne-project/src/internal/utils/hash"
 
 	"github.com/google/uuid"
@@ -43,7 +43,7 @@ func (s *authService) Login(ctx context.Context, email string, password string, 
 
 	hashedToken := s.tokenService.HashToken(tokens.RefreshToken)
 	expiresAt := time.Unix(tokens.ExpiresRt, 0)
-	if err := s.authRepository.SaveRefreshToken(ctx, nil, hashedToken, user.ID, userAgent, ipAddr, expiresAt); err != nil {
+	if err := s.authRepository.SaveRefreshToken(ctx, hashedToken, user.ID, userAgent, ipAddr, expiresAt); err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to persist refresh token")
 		return nil, dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
 	}
@@ -146,7 +146,7 @@ func (s *authService) RefreshToken(ctx context.Context, refreshToken string, use
 
 	hashedToken := s.tokenService.HashToken(refreshToken)
 	storedToken, err := s.authRepository.GetRefreshTokenByHash(ctx, hashedToken)
-	if err != nil {
+	if err != nil && !errors.Is(err, auth.ErrRefreshTokenNotFound) {
 		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to get refresh token")
 		return nil, dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
 	}
@@ -202,7 +202,7 @@ func (s *authService) Logout(ctx context.Context, userID string, refreshToken st
 	}
 
 	hashedToken := s.tokenService.HashToken(refreshToken)
-	if err := s.authRepository.RevokeRefreshToken(ctx, nil, hashedToken); err != nil {
+	if err := s.authRepository.RevokeRefreshToken(ctx, hashedToken); err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to revoke refresh token on logout")
 		return dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
 
@@ -213,38 +213,12 @@ func (s *authService) Logout(ctx context.Context, userID string, refreshToken st
 }
 
 func (s *authService) rotateRefreshToken(ctx context.Context, oldHash, newRefreshToken string, expiresRt int64, userID, userAgent, ipAddr string) error {
-	tx, err := s.db.BeginTxx(ctx, nil)
+	err := s.authRepository.RevokeRefreshToken(ctx, oldHash)
 	if err != nil {
-		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to begin transaction")
-		return dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
+		return err
 	}
-	defer func() {
-		if err != nil {
-			if rbErr := tx.Rollback(); rbErr != nil && !errors.Is(rbErr, sql.ErrTxDone) {
-				zerolog.Ctx(ctx).Error().Err(rbErr).Msg("rollback_create_user")
-			}
-		}
-	}()
-
-	err = s.authRepository.RevokeRefreshToken(ctx, tx, oldHash)
-	if err != nil {
-		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to revoke refresh token")
-		return dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
-	}
-
 	newHash := s.tokenService.HashToken(newRefreshToken)
-	err = s.authRepository.SaveRefreshToken(ctx, tx, newHash, userID, userAgent, ipAddr, time.Unix(expiresRt, 0))
-	if err != nil {
-		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to store new refresh token")
-		return dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
-	}
-
-	if err = tx.Commit(); err != nil {
-		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to commit transaction")
-		return dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
-	}
-
-	return nil
+	return s.authRepository.SaveRefreshToken(ctx, newHash, userID, userAgent, ipAddr, time.Unix(expiresRt, 0))
 }
 
 func validatePassword(password string) error {

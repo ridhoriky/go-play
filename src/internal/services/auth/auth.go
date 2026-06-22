@@ -7,8 +7,6 @@ import (
 	"ne-project/src/internal/models/dto"
 	"ne-project/src/internal/repositories/auth"
 	"ne-project/src/internal/repositories/user"
-
-	"github.com/jmoiron/sqlx"
 )
 
 type AuthServiceItf interface {
@@ -22,14 +20,12 @@ type authService struct {
 	userRepository user.UserRepositoryItf
 	authRepository auth.AuthRepositoryItf
 	tokenService   *token.Token
-	db             *sqlx.DB
 }
 
-func NewAuthService(userRepository user.UserRepositoryItf, authRepository auth.AuthRepositoryItf, tokenService *token.Token, db *sqlx.DB) AuthServiceItf {
+func NewAuthService(userRepository user.UserRepositoryItf, authRepository auth.AuthRepositoryItf, tokenService *token.Token) AuthServiceItf {
 	return &authService{
 		userRepository: userRepository,
 		authRepository: authRepository,
 		tokenService:   tokenService,
-		db:             db,
 	}
 }

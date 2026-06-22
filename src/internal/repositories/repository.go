@@ -9,6 +9,7 @@ import (
 	"ne-project/src/internal/repositories/user"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/redis/go-redis/v9"
 )
 
 type Repositories struct {
@@ -20,9 +21,9 @@ type Repositories struct {
 	User        user.UserRepositoryItf
 }
 
-func NewRepository(db *sqlx.DB) *Repositories {
+func NewRepository(db *sqlx.DB, rdb *redis.Client) *Repositories {
 	return &Repositories{
-		Auth:        auth.NewAuthRepository(db),
+		Auth:        auth.NewAuthRepository(rdb),
 		Category:    category.NewCategoryRepository(db),
 		Product:     product.NewProductRepository(db),
 		Transaction: transaction.NewTransactionRepository(db),

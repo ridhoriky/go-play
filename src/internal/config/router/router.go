@@ -20,8 +20,8 @@ import (
 func SetupRouter(log *zerolog.Logger, cfg *appconfig.Config, res *resource.Resources, tokenSvc *token.Token) *gin.Engine {
 
 	mw := middleware.InitMiddleware(log, tokenSvc, &cfg.RateLimit)
-	repo := repositories.NewRepository(res.DB)
-	service := services.NewServices(repo, tokenSvc, res.DB, res.Redis)
+	repo := repositories.NewRepository(res.DB, res.Redis)
+	service := services.NewServices(repo, tokenSvc, res.Redis)
 	handlers := routes.NewHandlers(res.DB, service)
 
 	r := gin.New()
