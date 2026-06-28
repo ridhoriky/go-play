@@ -7,7 +7,7 @@ CONFIG_FILE = config.yaml
 
 # DB Configuration (adjust as needed or use environment variables)
 DB_USER ?= postgres
-DB_PASS ?= postgres
+DB_PASS ?= mypassword
 DB_HOST ?= localhost
 DB_PORT ?= 5432
 DB_NAME ?= kasir_db
@@ -15,7 +15,7 @@ DB_URL = postgres://$(DB_USER):$(DB_PASS)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmo
 
 # ─── Targets ─────────────────────────────────────────────────────────────────
 
-.PHONY: all build run test clean tidy swag migrate-up migrate-down help lint install-tools lefthook-run lefthook-uninstall 
+.PHONY: all build run test clean tidy swag migrate-up migrate-down seed help lint install-tools lefthook-run lefthook-uninstall 
 
 all: build
 
@@ -53,6 +53,10 @@ migrate-up:
 ## migrate-down: Run database migrations down
 migrate-down:
 	@migrate -path ./etc/migrations -database "$(DB_URL)" down 1
+
+## seed: Run database seeder
+seed:
+	@go run ./src/cmd/seeder/main.go
 
 ## help: Show this help message
 help:

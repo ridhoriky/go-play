@@ -3,6 +3,7 @@ package appconfig
 import (
 	"time"
 
+	"ne-project/src/internal/config/business"
 	"ne-project/src/internal/config/database"
 	"ne-project/src/internal/config/logger"
 	"ne-project/src/internal/config/redis"
@@ -19,6 +20,7 @@ type Config struct {
 	Token     token.TokenOptions            `yaml:"token"`
 	RateLimit middleware.RateLimiterOptions `yaml:"rate_limit"`
 	Redis     redis.RedisOptions            `yaml:"redis"`
+	Business  business.BusinessConfig       `yaml:"business"`
 }
 
 type AppConfig struct {

@@ -21,7 +21,7 @@ func SetupRouter(log *zerolog.Logger, cfg *appconfig.Config, res *resource.Resou
 
 	mw := middleware.InitMiddleware(log, tokenSvc, &cfg.RateLimit)
 	repo := repositories.NewRepository(res.DB, res.Redis)
-	service := services.NewServices(repo, tokenSvc, res.Redis)
+	service := services.NewServices(repo, tokenSvc, res.Redis, cfg)
 	handlers := routes.NewHandlers(res.DB, service)
 
 	r := gin.New()

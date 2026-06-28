@@ -8,12 +8,12 @@ import (
 )
 
 func main() {
-	// 1. Load Configuration
+	// Load Configuration
 	cfg, err := appconfig.LoadConfig()
 	if err != nil {
 		log.Fatalf("Config error: %s", err)
 	}
 
-	// 2. Run Application
+	// Run Application
 	app.Run(cfg)
 }
