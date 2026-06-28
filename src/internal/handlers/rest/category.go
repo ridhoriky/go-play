@@ -25,29 +25,17 @@ func NewCategoryHandler(categoryService category.CategoryServiceItf) *CategoryHa
 
 // GetCategories godoc
 // @Summary      List Category
-// @Description  Retrieve list of categories with optional filters and pagination
+// @Description  Retrieve list of categories as a tree structure
 // @Tags         categories
 // @Produce      json
-// @Param		 search				query		string	false	"Filter by name"
-// @Param 		 include_deleted 	query 		bool 	false 	"Include soft deleted categories"
-// @Param		 page				query		int		false	"Page number"	default(1)
-// @Param		 limit				query		int		false	"Page size"		default(10)
-// @Param		 sort_by			query		string	false	"Sort by field"
-// @Param		 sort_dir			query		string	false	"Sort direction (asc/desc)"	default(asc)
-// @Success      200  {object}  	dto.APIResponse{data=[]entity.Category}
+// @Success      200  {object}  	dto.APIResponse{data=[]dto.CategoryTreeNode}
 // @Failure      400  {object} 		dto.APIResponse
 // @Failure      404  {object}  	dto.APIResponse
 // @Router       /categories [get]
 func (h *CategoryHandler) GetAll(c *gin.Context) {
 	ctx := c.Request.Context()
 
-	var req dto.GetCategoriesQuery
-	if err := c.ShouldBindQuery(&req); err != nil {
-		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidQueryParams))
-		return
-	}
-
-	categories, err := h.categoryService.GetAllCategories(ctx, &req)
+	categories, err := h.categoryService.GetCategoryTree(ctx)
 	if err != nil {
 		helpers.ResponseError(c, err)
 		return
@@ -65,7 +53,7 @@ func (h *CategoryHandler) GetAll(c *gin.Context) {
 // @Success      201		{object}  	dto.APIResponse{data=entity.Category}
 // @Failure      400  		{object} 	dto.APIResponse
 // @Failure      404  		{object}  	dto.APIResponse
-// @Router       /categories [post]
+// @Router       /admin/categories [post]
 func (h *CategoryHandler) Create(c *gin.Context) {
 	ctx := c.Request.Context()
 
@@ -90,7 +78,7 @@ func (h *CategoryHandler) Create(c *gin.Context) {
 // @Tags         categories
 // @Produce      json
 // @Param 		 id   path 		string true "Category ID (UUID)" format(uuid)
-// @Success      200  {object}  dto.APIResponse{data=entity.Category}
+// @Success      200  {object}  dto.APIResponse{data=dto.CategoryDetailResponse}
 // @Failure      400  {object} 	dto.APIResponse
 // @Failure      404  {object}  	dto.APIResponse
 // @Router       /categories/{id} [get]
@@ -122,7 +110,7 @@ func (h *CategoryHandler) GetByID(c *gin.Context) {
 // @Success      200  {object}  dto.APIResponse{data=entity.Category}
 // @Failure      400  {object} 	dto.APIResponse
 // @Failure      404  {object}  dto.APIResponse
-// @Router       /categories/{id} [put]
+// @Router       /admin/categories/{id} [put]
 func (h *CategoryHandler) Update(c *gin.Context) {
 	ctx := c.Request.Context()
 
@@ -157,7 +145,7 @@ func (h *CategoryHandler) Update(c *gin.Context) {
 // @Success      200  {object}  dto.APIResponse
 // @Failure      400  {object} 	dto.APIResponse
 // @Failure      404  {object}  dto.APIResponse
-// @Router       /categories/{id} [delete]
+// @Router       /admin/categories/{id} [delete]
 func (h *CategoryHandler) Delete(c *gin.Context) {
 	ctx := c.Request.Context()
 
@@ -172,4 +160,23 @@ func (h *CategoryHandler) Delete(c *gin.Context) {
 		return
 	}
 	helpers.ResponseSuccess(c, http.StatusOK, "Category deleted successfully", nil)
+}
+
+// GetCategoryTree godoc
+// @Summary      Get Category Tree
+// @Description  Get full category tree hierarchy
+// @Tags         categories
+// @Produce      json
+// @Success      200  {object}  dto.APIResponse{data=[]dto.CategoryTreeNode}
+// @Failure      400  {object} 	dto.APIResponse
+// @Failure      500  {object}  dto.APIResponse
+// @Router       /admin/categories/tree [get]
+func (h *CategoryHandler) GetCategoryTree(c *gin.Context) {
+	ctx := c.Request.Context()
+	tree, err := h.categoryService.GetCategoryTree(ctx)
+	if err != nil {
+		helpers.ResponseError(c, err)
+		return
+	}
+	helpers.ResponseSuccess(c, http.StatusOK, "Success", tree)
 }
