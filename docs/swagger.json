@@ -212,6 +212,139 @@
                 }
             }
         },
+        "/cart": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Get my cart",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.CartResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Add item to cart",
+                "parameters": [
+                    {
+                        "description": "Cart item details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.AddToCartRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.CartItemResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Clear all items from cart",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/cart/{id}": {
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Update cart item quantity",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Cart Item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.UpdateCartRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Remove item from cart",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Cart Item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/categories": {
             "get": {
                 "description": "Retrieve list of categories with optional filters and pagination",
@@ -540,6 +673,163 @@
                 }
             }
         },
+        "/orders": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Order (Buyer)"
+                ],
+                "summary": "Get buyer orders",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Order status",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.OrderListResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Order (Buyer)"
+                ],
+                "summary": "Checkout cart items",
+                "parameters": [
+                    {
+                        "description": "Checkout details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.CheckoutRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/ne-project_src_internal_models_dto.OrderDetailResponse"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/orders/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Order (Buyer)"
+                ],
+                "summary": "Get buyer order detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Order ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.OrderDetailResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/orders/{id}/cancel": {
+            "patch": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Order (Buyer)"
+                ],
+                "summary": "Cancel order",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Order ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/orders/{id}/confirm": {
+            "patch": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Order (Buyer)"
+                ],
+                "summary": "Confirm order received",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Order ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/products": {
             "get": {
                 "description": "Get list of products",
@@ -556,14 +846,20 @@
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Filter by product name",
-                        "name": "search",
+                        "description": "Filter by product name/description",
+                        "name": "q",
                         "in": "query"
                     },
                     {
                         "type": "string",
                         "description": "Filter by category ID (UUID)",
-                        "name": "category_id",
+                        "name": "category",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by store ID (UUID)",
+                        "name": "store",
                         "in": "query"
                     },
                     {
@@ -576,6 +872,12 @@
                         "type": "number",
                         "description": "Maximum product price",
                         "name": "max_price",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Minimum product rating",
+                        "name": "rating",
                         "in": "query"
                     },
                     {
@@ -600,15 +902,8 @@
                     },
                     {
                         "type": "string",
-                        "description": "Sort by field",
-                        "name": "sort_by",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "default": "asc",
-                        "description": "Sort direction (asc/desc)",
-                        "name": "sort_dir",
+                        "description": "Sort by field (newest, price_asc, price_desc, rating, popular)",
+                        "name": "sort",
                         "in": "query"
                     }
                 ],
@@ -624,10 +919,7 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/ne-project_src_internal_models_entity.ProductWithCategory"
-                                            }
+                                            "$ref": "#/definitions/ne-project_src_internal_models_dto.ProductListResponse"
                                         }
                                     }
                                 }
@@ -798,7 +1090,7 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/ne-project_src_internal_models_entity.Product"
+                                            "$ref": "#/definitions/ne-project_src_internal_models_dto.ProductDetailResponse"
                                         }
                                     }
                                 }
@@ -922,6 +1214,46 @@
                         "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/products/{id}/reviews": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Review"
+                ],
+                "summary": "Get product reviews",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Product ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit per page",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.ReviewListResponse"
                         }
                     }
                 }
@@ -1105,9 +1437,1078 @@
                 }
             }
         },
+        "/reviews": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Review"
+                ],
+                "summary": "Create a product review",
+                "parameters": [
+                    {
+                        "description": "Review details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.CreateReviewRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.ReviewResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/seller/orders": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Order (Seller)"
+                ],
+                "summary": "Get seller orders",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Order status",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.OrderListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/seller/orders/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Order (Seller)"
+                ],
+                "summary": "Get seller order detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Order ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.OrderDetailResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/seller/orders/{id}/status": {
+            "patch": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Order (Seller)"
+                ],
+                "summary": "Update order status",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Order ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Status",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.UpdateOrderStatusRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/seller/products": {
+            "get": {
+                "description": "Get list of products belonging to the logged-in seller",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "seller-products"
+                ],
+                "summary": "List My Product",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/ne-project_src_internal_models_dto.ProductListResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/seller/products/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get product detail for seller including recent orders",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "seller-products"
+                ],
+                "summary": "Get Seller Product Detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Product ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/ne-project_src_internal_models_dto.SellerProductDetailResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update a product by their id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "seller-products"
+                ],
+                "summary": "Update Seller Product",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Product ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Product data",
+                        "name": "product",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.UpdateProductRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/ne-project_src_internal_models_entity.Product"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete a product by their id with active order validation",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "seller-products"
+                ],
+                "summary": "Delete Seller Product",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Product ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/seller/products/{id}/images": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Add an image to a product",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "seller-products"
+                ],
+                "summary": "Add Product Image",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Product ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Image data",
+                        "name": "image",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.AddProductImageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/ne-project_src_internal_models_entity.ProductImage"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/seller/products/{id}/images/{imageId}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete an image from a product",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "seller-products"
+                ],
+                "summary": "Delete Product Image",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Product ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Image ID (UUID)",
+                        "name": "imageId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/seller/products/{id}/images/{imageId}/primary": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Set an image as the primary image for a product",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "seller-products"
+                ],
+                "summary": "Set Primary Product Image",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Product ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Image ID (UUID)",
+                        "name": "imageId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/seller/profile": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get seller profile including user and store info",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "seller-profile"
+                ],
+                "summary": "Get seller profile",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.SellerProfileResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update seller profile including user and store info",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "seller-profile"
+                ],
+                "summary": "Update seller profile",
+                "parameters": [
+                    {
+                        "description": "Update profile request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.UpdateSellerProfileRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.SellerProfileResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/seller/reports/dashboard": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get seller dashboard with summary, top products, recent orders",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "seller-reports"
+                ],
+                "summary": "Get seller dashboard",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "this_week",
+                        "description": "Period (today, this_week, this_month)",
+                        "name": "period",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/ne-project_src_internal_models_dto.SellerDashboard"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/seller/reports/summary": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get seller sales summary",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "seller-reports"
+                ],
+                "summary": "Get seller sales summary",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "this_week",
+                        "description": "Period (today, this_week, this_month)",
+                        "name": "period",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Date from (YYYY-MM-DD)",
+                        "name": "date_from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Date to (YYYY-MM-DD)",
+                        "name": "date_to",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/ne-project_src_internal_models_dto.SellerSalesSummary"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/seller/reports/top-products": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get seller top products",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "seller-reports"
+                ],
+                "summary": "Get seller top products",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "this_week",
+                        "description": "Period (today, this_week, this_month)",
+                        "name": "period",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Date from (YYYY-MM-DD)",
+                        "name": "date_from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Date to (YYYY-MM-DD)",
+                        "name": "date_to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/ne-project_src_internal_models_dto.SellerTopProduct"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/seller/reviews/{id}/reply": {
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Review"
+                ],
+                "summary": "Reply to a review",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Review ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Reply details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.SellerReplyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/seller/store/stats": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get store quick statistics",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "seller-profile"
+                ],
+                "summary": "Get store statistics",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.StoreStats"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/seller/stores": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Stores"
+                ],
+                "summary": "Create a new store",
+                "parameters": [
+                    {
+                        "description": "Store details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.CreateStoreRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.StoreResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/seller/stores/me": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Stores"
+                ],
+                "summary": "Get my store details",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.StoreResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Stores"
+                ],
+                "summary": "Update store details",
+                "parameters": [
+                    {
+                        "description": "Store details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.UpdateStoreRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.StoreResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/stores": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Stores"
+                ],
+                "summary": "List all stores",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search query",
+                        "name": "search",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.StoreListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/stores/{slug}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Stores"
+                ],
+                "summary": "Get store by slug",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Store Slug",
+                        "name": "slug",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.StoreResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/stores/{slug}/products": {
+            "get": {
+                "tags": [
+                    "Stores"
+                ],
+                "summary": "Get products of a store",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Store Slug",
+                        "name": "slug",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/ne-project_src_internal_models_dto.ProductListResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/transactions": {
             "post": {
-                "description": "Create a transaction with multiple items",
+                "description": "Create a transaction with multiple items (Deprecated: Use /api/v1/orders instead)",
                 "consumes": [
                     "application/json"
                 ],
@@ -1118,6 +2519,7 @@
                     "transactions"
                 ],
                 "summary": "Create Transaction",
+                "deprecated": true,
                 "parameters": [
                     {
                         "description": "Transaction data",
@@ -1165,7 +2567,7 @@
         },
         "/transactions/{id}": {
             "get": {
-                "description": "Get transaction by their id",
+                "description": "Get transaction by their id (Deprecated: Use /api/v1/orders instead)",
                 "consumes": [
                     "application/json"
                 ],
@@ -1176,6 +2578,7 @@
                     "transactions"
                 ],
                 "summary": "Get Transaction",
+                "deprecated": true,
                 "parameters": [
                     {
                         "type": "string",
@@ -1210,7 +2613,7 @@
         },
         "/transactions/{id}/status": {
             "patch": {
-                "description": "Update transaction Status by their id",
+                "description": "Update transaction Status by their id (Deprecated: Use /api/v1/orders instead)",
                 "consumes": [
                     "application/json"
                 ],
@@ -1221,6 +2624,7 @@
                     "transactions"
                 ],
                 "summary": "Update Transaction Status",
+                "deprecated": true,
                 "parameters": [
                     {
                         "type": "string",
@@ -1502,6 +2906,118 @@
                     }
                 }
             }
+        },
+        "/wishlist": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Wishlist"
+                ],
+                "summary": "Get my wishlist",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.WishlistResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Wishlist"
+                ],
+                "summary": "Add item to wishlist",
+                "parameters": [
+                    {
+                        "description": "Wishlist product ID",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.AddToWishlistRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/wishlist/toggle": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Wishlist"
+                ],
+                "summary": "Toggle item in wishlist",
+                "parameters": [
+                    {
+                        "description": "Wishlist product ID",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.AddToWishlistRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/wishlist/{productId}": {
+            "delete": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Wishlist"
+                ],
+                "summary": "Remove item from wishlist",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Product ID",
+                        "name": "productId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1520,6 +3036,47 @@
                 },
                 "status": {
                     "type": "integer"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.AddProductImageRequest": {
+            "type": "object",
+            "required": [
+                "url"
+            ],
+            "properties": {
+                "alt_text": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.AddToCartRequest": {
+            "type": "object",
+            "required": [
+                "product_id",
+                "quantity"
+            ],
+            "properties": {
+                "product_id": {
+                    "type": "string"
+                },
+                "quantity": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.AddToWishlistRequest": {
+            "type": "object",
+            "required": [
+                "product_id"
+            ],
+            "properties": {
+                "product_id": {
+                    "type": "string"
                 }
             }
         },
@@ -1543,6 +3100,54 @@
                 }
             }
         },
+        "ne-project_src_internal_models_dto.CartItemResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "product": {
+                    "$ref": "#/definitions/ne-project_src_internal_models_dto.ProductResponse"
+                },
+                "quantity": {
+                    "type": "integer"
+                },
+                "store": {
+                    "$ref": "#/definitions/ne-project_src_internal_models_dto.StoreResponse"
+                },
+                "subtotal": {
+                    "type": "number"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.CartResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ne-project_src_internal_models_dto.CartItemResponse"
+                    }
+                },
+                "total_amount": {
+                    "type": "number"
+                },
+                "total_items": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.CategorySummary": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "ne-project_src_internal_models_dto.CheckoutItem": {
             "type": "object",
             "required": [
@@ -1556,6 +3161,31 @@
                 "quantity": {
                     "type": "integer",
                     "minimum": 1
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.CheckoutRequest": {
+            "type": "object",
+            "required": [
+                "cart_ids",
+                "shipping_address"
+            ],
+            "properties": {
+                "cart_ids": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "shipping_address": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
                 }
             }
         },
@@ -1595,12 +3225,16 @@
             "type": "object",
             "required": [
                 "category_id",
+                "description",
                 "name",
                 "price",
                 "stock"
             ],
             "properties": {
                 "category_id": {
+                    "type": "string"
+                },
+                "description": {
                     "type": "string"
                 },
                 "name": {
@@ -1615,6 +3249,51 @@
                 "stock": {
                     "type": "integer",
                     "minimum": 0
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.CreateReviewRequest": {
+            "type": "object",
+            "required": [
+                "order_id",
+                "product_id",
+                "rating"
+            ],
+            "properties": {
+                "comment": {
+                    "type": "string"
+                },
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "order_id": {
+                    "type": "string"
+                },
+                "product_id": {
+                    "type": "string"
+                },
+                "rating": {
+                    "type": "integer",
+                    "maximum": 5,
+                    "minimum": 1
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.CreateStoreRequest": {
+            "type": "object",
+            "required": [
+                "store_name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "store_name": {
+                    "type": "string",
+                    "minLength": 3
                 }
             }
         },
@@ -1773,6 +3452,139 @@
                 }
             }
         },
+        "ne-project_src_internal_models_dto.OrderDetailResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ne-project_src_internal_models_dto.OrderItemSummary"
+                    }
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "order_number": {
+                    "type": "string"
+                },
+                "payment_method": {
+                    "type": "string"
+                },
+                "shipping_address": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "shipping_cost": {
+                    "type": "number"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "store": {
+                    "$ref": "#/definitions/ne-project_src_internal_models_dto.StoreSummary"
+                },
+                "total_amount": {
+                    "type": "number"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.OrderItemSummary": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "product_id": {
+                    "type": "string"
+                },
+                "product_image": {
+                    "type": "string"
+                },
+                "product_name": {
+                    "type": "string"
+                },
+                "quantity": {
+                    "type": "integer"
+                },
+                "subtotal": {
+                    "type": "number"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.OrderListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ne-project_src_internal_models_dto.OrderResponse"
+                    }
+                },
+                "meta": {
+                    "$ref": "#/definitions/ne-project_src_internal_models_dto.PaginationMeta"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.OrderResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ne-project_src_internal_models_dto.OrderItemSummary"
+                    }
+                },
+                "order_number": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "store": {
+                    "$ref": "#/definitions/ne-project_src_internal_models_dto.StoreSummary"
+                },
+                "total_amount": {
+                    "type": "number"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.OrderSummary": {
+            "type": "object",
+            "properties": {
+                "buyer_name": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "total_amount": {
+                    "type": "number"
+                }
+            }
+        },
         "ne-project_src_internal_models_dto.PaginationMeta": {
             "type": "object",
             "properties": {
@@ -1787,6 +3599,192 @@
                 },
                 "total_pages": {
                     "type": "integer"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.ProductDetailResponse": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "$ref": "#/definitions/ne-project_src_internal_models_dto.CategorySummary"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ne-project_src_internal_models_dto.ProductImageResponse"
+                    }
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "is_in_wishlist": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "rating_avg": {
+                    "type": "number"
+                },
+                "slug": {
+                    "type": "string"
+                },
+                "stock": {
+                    "type": "integer"
+                },
+                "store": {
+                    "$ref": "#/definitions/ne-project_src_internal_models_dto.ProductStoreSummary"
+                },
+                "total_reviews": {
+                    "type": "integer"
+                },
+                "total_sold": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.ProductImageResponse": {
+            "type": "object",
+            "properties": {
+                "alt_text": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_primary": {
+                    "type": "boolean"
+                },
+                "sort_order": {
+                    "type": "integer"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.ProductListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ne-project_src_internal_models_dto.ProductResponse"
+                    }
+                },
+                "meta": {
+                    "$ref": "#/definitions/ne-project_src_internal_models_dto.PaginationMeta"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.ProductLowStock": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "stock": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.ProductResponse": {
+            "type": "object",
+            "properties": {
+                "category_id": {
+                    "type": "string"
+                },
+                "category_name": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "is_in_wishlist": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "primary_image": {
+                    "type": "string"
+                },
+                "rating_avg": {
+                    "type": "number"
+                },
+                "slug": {
+                    "type": "string"
+                },
+                "stock": {
+                    "type": "integer"
+                },
+                "store_id": {
+                    "type": "string"
+                },
+                "store_name": {
+                    "type": "string"
+                },
+                "store_slug": {
+                    "type": "string"
+                },
+                "total_sold": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.ProductStoreSummary": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "logo_url": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "rating_avg": {
+                    "type": "number"
+                },
+                "slug": {
+                    "type": "string"
                 }
             }
         },
@@ -1867,6 +3865,309 @@
                 },
                 "user": {
                     "$ref": "#/definitions/ne-project_src_internal_models_dto.UserResponse"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.ReviewListResponse": {
+            "type": "object",
+            "properties": {
+                "average_rating": {
+                    "type": "number"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ne-project_src_internal_models_dto.ReviewResponse"
+                    }
+                },
+                "meta": {
+                    "$ref": "#/definitions/ne-project_src_internal_models_dto.PaginationMeta"
+                },
+                "total_reviews": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.ReviewResponse": {
+            "type": "object",
+            "properties": {
+                "buyer_avatar": {
+                    "type": "string"
+                },
+                "buyer_name": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "rating": {
+                    "type": "integer"
+                },
+                "seller_replied_at": {
+                    "type": "string"
+                },
+                "seller_reply": {
+                    "type": "string"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.SellerDashboard": {
+            "type": "object",
+            "properties": {
+                "low_stock_items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ne-project_src_internal_models_dto.ProductLowStock"
+                    }
+                },
+                "pending_orders": {
+                    "type": "integer"
+                },
+                "recent_orders": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ne-project_src_internal_models_dto.OrderSummary"
+                    }
+                },
+                "summary": {
+                    "$ref": "#/definitions/ne-project_src_internal_models_dto.SellerSalesSummary"
+                },
+                "top_products": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ne-project_src_internal_models_dto.SellerTopProduct"
+                    }
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.SellerProductDetailResponse": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "$ref": "#/definitions/ne-project_src_internal_models_dto.CategorySummary"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ne-project_src_internal_models_dto.ProductImageResponse"
+                    }
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "is_in_wishlist": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "rating_avg": {
+                    "type": "number"
+                },
+                "recent_orders": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ne-project_src_internal_models_dto.OrderSummary"
+                    }
+                },
+                "slug": {
+                    "type": "string"
+                },
+                "stock": {
+                    "type": "integer"
+                },
+                "store": {
+                    "$ref": "#/definitions/ne-project_src_internal_models_dto.ProductStoreSummary"
+                },
+                "total_reviews": {
+                    "type": "integer"
+                },
+                "total_sold": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.SellerProfileResponse": {
+            "type": "object",
+            "properties": {
+                "store": {
+                    "$ref": "#/definitions/ne-project_src_internal_models_dto.StoreResponse"
+                },
+                "user": {
+                    "$ref": "#/definitions/ne-project_src_internal_models_dto.UserResponse"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.SellerReplyRequest": {
+            "type": "object",
+            "required": [
+                "reply"
+            ],
+            "properties": {
+                "reply": {
+                    "type": "string"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.SellerSalesSummary": {
+            "type": "object",
+            "properties": {
+                "average_order_value": {
+                    "type": "number"
+                },
+                "conversion_rate": {
+                    "type": "number"
+                },
+                "period": {
+                    "type": "string"
+                },
+                "total_items_sold": {
+                    "type": "integer"
+                },
+                "total_orders": {
+                    "type": "integer"
+                },
+                "total_revenue": {
+                    "type": "number"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.SellerTopProduct": {
+            "type": "object",
+            "properties": {
+                "average_rating": {
+                    "type": "number"
+                },
+                "product_id": {
+                    "type": "string"
+                },
+                "product_name": {
+                    "type": "string"
+                },
+                "revenue": {
+                    "type": "number"
+                },
+                "total_sold": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.StoreListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ne-project_src_internal_models_dto.StoreResponse"
+                    }
+                },
+                "meta": {
+                    "$ref": "#/definitions/ne-project_src_internal_models_dto.PaginationMeta"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.StoreResponse": {
+            "type": "object",
+            "properties": {
+                "banner_url": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_verified": {
+                    "type": "boolean"
+                },
+                "logo_url": {
+                    "type": "string"
+                },
+                "rating_avg": {
+                    "type": "number"
+                },
+                "slug": {
+                    "type": "string"
+                },
+                "store_name": {
+                    "type": "string"
+                },
+                "total_sales": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.StoreStats": {
+            "type": "object",
+            "properties": {
+                "active_products": {
+                    "type": "integer"
+                },
+                "average_rating": {
+                    "type": "number"
+                },
+                "total_orders": {
+                    "type": "integer"
+                },
+                "total_products": {
+                    "type": "integer"
+                },
+                "total_revenue": {
+                    "type": "number"
+                },
+                "total_reviews": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.StoreSummary": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
                 }
             }
         },
@@ -1965,6 +4266,18 @@
                 }
             }
         },
+        "ne-project_src_internal_models_dto.UpdateCartRequest": {
+            "type": "object",
+            "required": [
+                "quantity"
+            ],
+            "properties": {
+                "quantity": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            }
+        },
         "ne-project_src_internal_models_dto.UpdateCategoryRequest": {
             "type": "object",
             "required": [
@@ -1982,16 +4295,39 @@
                 }
             }
         },
+        "ne-project_src_internal_models_dto.UpdateOrderStatusRequest": {
+            "type": "object",
+            "required": [
+                "status"
+            ],
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "paid",
+                        "processing",
+                        "shipped",
+                        "delivered",
+                        "canceled",
+                        "refunded"
+                    ]
+                }
+            }
+        },
         "ne-project_src_internal_models_dto.UpdateProductRequest": {
             "type": "object",
             "required": [
                 "category_id",
+                "description",
                 "name",
                 "price",
                 "stock"
             ],
             "properties": {
                 "category_id": {
+                    "type": "string"
+                },
+                "description": {
                     "type": "string"
                 },
                 "name": {
@@ -2009,9 +4345,59 @@
                 }
             }
         },
+        "ne-project_src_internal_models_dto.UpdateSellerProfileRequest": {
+            "type": "object",
+            "properties": {
+                "avatar_url": {
+                    "type": "string"
+                },
+                "banner_url": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "logo_url": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "store_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.UpdateStoreRequest": {
+            "type": "object",
+            "required": [
+                "store_name"
+            ],
+            "properties": {
+                "banner_url": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "logo_url": {
+                    "type": "string"
+                },
+                "store_name": {
+                    "type": "string",
+                    "minLength": 3
+                }
+            }
+        },
         "ne-project_src_internal_models_dto.UpdateUserRequest": {
             "type": "object",
             "properties": {
+                "avatar_url": {
+                    "type": "string"
+                },
                 "email": {
                     "type": "string"
                 },
@@ -2019,6 +4405,9 @@
                     "type": "string",
                     "maxLength": 100,
                     "minLength": 1
+                },
+                "phone": {
+                    "type": "string"
                 },
                 "role": {
                     "type": "string",
@@ -2046,6 +4435,9 @@
         "ne-project_src_internal_models_dto.UserResponse": {
             "type": "object",
             "properties": {
+                "avatar_url": {
+                    "type": "string"
+                },
                 "created_at": {
                     "type": "string"
                 },
@@ -2061,11 +4453,42 @@
                 "name": {
                     "type": "string"
                 },
+                "phone": {
+                    "type": "string"
+                },
                 "role": {
                     "type": "string"
                 },
                 "updated_at": {
                     "type": "string"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.WishlistItemResponse": {
+            "type": "object",
+            "properties": {
+                "added_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "product": {
+                    "$ref": "#/definitions/ne-project_src_internal_models_dto.ProductResponse"
+                }
+            }
+        },
+        "ne-project_src_internal_models_dto.WishlistResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ne-project_src_internal_models_dto.WishlistItemResponse"
+                    }
+                },
+                "total_items": {
+                    "type": "integer"
                 }
             }
         },
@@ -2104,8 +4527,14 @@
                 "deleted_at": {
                     "type": "string"
                 },
+                "description": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
+                },
+                "is_active": {
+                    "type": "boolean"
                 },
                 "name": {
                     "type": "string"
@@ -2113,7 +4542,19 @@
                 "price": {
                     "type": "number"
                 },
+                "rating_avg": {
+                    "type": "number"
+                },
+                "slug": {
+                    "type": "string"
+                },
                 "stock": {
+                    "type": "integer"
+                },
+                "store_id": {
+                    "type": "string"
+                },
+                "total_sold": {
                     "type": "integer"
                 },
                 "updated_at": {
@@ -2121,34 +4562,28 @@
                 }
             }
         },
-        "ne-project_src_internal_models_entity.ProductWithCategory": {
+        "ne-project_src_internal_models_entity.ProductImage": {
             "type": "object",
             "properties": {
-                "category_id": {
-                    "type": "string"
-                },
-                "category_name": {
+                "alt_text": {
                     "type": "string"
                 },
                 "created_at": {
                     "type": "string"
                 },
-                "deleted_at": {
-                    "type": "string"
-                },
                 "id": {
                     "type": "string"
                 },
-                "name": {
+                "is_primary": {
+                    "type": "boolean"
+                },
+                "product_id": {
                     "type": "string"
                 },
-                "price": {
-                    "type": "number"
-                },
-                "stock": {
+                "sort_order": {
                     "type": "integer"
                 },
-                "updated_at": {
+                "url": {
                     "type": "string"
                 }
             }
@@ -2156,6 +4591,12 @@
         "ne-project_src_internal_models_entity.User": {
             "type": "object",
             "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "avatar_url": {
+                    "type": "string"
+                },
                 "created_at": {
                     "type": "string"
                 },
@@ -2169,6 +4610,9 @@
                     "type": "boolean"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "phone": {
                     "type": "string"
                 },
                 "role": {

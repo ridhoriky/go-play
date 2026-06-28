@@ -59,6 +59,16 @@ func ResponseSuccess(c *gin.Context, status int, message string, data any) {
 	c.JSON(status, resp)
 }
 
+func ResponseSuccessWithMeta(c *gin.Context, status int, message string, data any, meta *dto.PaginationMeta) {
+	resp := dto.APIResponse{
+		Status:  status,
+		Message: message,
+		Data:    data,
+		Meta:    meta,
+	}
+	c.JSON(status, resp)
+}
+
 func ResponseError(c *gin.Context, err error) {
 	appErr := &dto.Error{}
 	ok := errors.As(err, &appErr)

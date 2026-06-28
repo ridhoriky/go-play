@@ -11,6 +11,33 @@ definitions:
       status:
         type: integer
     type: object
+  ne-project_src_internal_models_dto.AddProductImageRequest:
+    properties:
+      alt_text:
+        type: string
+      url:
+        type: string
+    required:
+    - url
+    type: object
+  ne-project_src_internal_models_dto.AddToCartRequest:
+    properties:
+      product_id:
+        type: string
+      quantity:
+        minimum: 1
+        type: integer
+    required:
+    - product_id
+    - quantity
+    type: object
+  ne-project_src_internal_models_dto.AddToWishlistRequest:
+    properties:
+      product_id:
+        type: string
+    required:
+    - product_id
+    type: object
   ne-project_src_internal_models_dto.AuthTokenResponse:
     properties:
       accessToken:
@@ -24,6 +51,37 @@ definitions:
       user:
         $ref: '#/definitions/ne-project_src_internal_models_dto.UserResponse'
     type: object
+  ne-project_src_internal_models_dto.CartItemResponse:
+    properties:
+      id:
+        type: string
+      product:
+        $ref: '#/definitions/ne-project_src_internal_models_dto.ProductResponse'
+      quantity:
+        type: integer
+      store:
+        $ref: '#/definitions/ne-project_src_internal_models_dto.StoreResponse'
+      subtotal:
+        type: number
+    type: object
+  ne-project_src_internal_models_dto.CartResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.CartItemResponse'
+        type: array
+      total_amount:
+        type: number
+      total_items:
+        type: integer
+    type: object
+  ne-project_src_internal_models_dto.CategorySummary:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+    type: object
   ne-project_src_internal_models_dto.CheckoutItem:
     properties:
       product_id:
@@ -34,6 +92,23 @@ definitions:
     required:
     - product_id
     - quantity
+    type: object
+  ne-project_src_internal_models_dto.CheckoutRequest:
+    properties:
+      cart_ids:
+        items:
+          type: string
+        minItems: 1
+        type: array
+      notes:
+        type: string
+      shipping_address:
+        items:
+          type: integer
+        type: array
+    required:
+    - cart_ids
+    - shipping_address
     type: object
   ne-project_src_internal_models_dto.CreateCategoryRequest:
     properties:
@@ -61,6 +136,8 @@ definitions:
     properties:
       category_id:
         type: string
+      description:
+        type: string
       name:
         maxLength: 255
         minLength: 1
@@ -73,9 +150,41 @@ definitions:
         type: integer
     required:
     - category_id
+    - description
     - name
     - price
     - stock
+    type: object
+  ne-project_src_internal_models_dto.CreateReviewRequest:
+    properties:
+      comment:
+        type: string
+      images:
+        items:
+          type: string
+        type: array
+      order_id:
+        type: string
+      product_id:
+        type: string
+      rating:
+        maximum: 5
+        minimum: 1
+        type: integer
+    required:
+    - order_id
+    - product_id
+    - rating
+    type: object
+  ne-project_src_internal_models_dto.CreateStoreRequest:
+    properties:
+      description:
+        type: string
+      store_name:
+        minLength: 3
+        type: string
+    required:
+    - store_name
     type: object
   ne-project_src_internal_models_dto.CreateTransactionRequest:
     properties:
@@ -182,6 +291,93 @@ definitions:
     required:
     - refreshToken
     type: object
+  ne-project_src_internal_models_dto.OrderDetailResponse:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      items:
+        items:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.OrderItemSummary'
+        type: array
+      notes:
+        type: string
+      order_number:
+        type: string
+      payment_method:
+        type: string
+      shipping_address:
+        items:
+          type: integer
+        type: array
+      shipping_cost:
+        type: number
+      status:
+        type: string
+      store:
+        $ref: '#/definitions/ne-project_src_internal_models_dto.StoreSummary'
+      total_amount:
+        type: number
+    type: object
+  ne-project_src_internal_models_dto.OrderItemSummary:
+    properties:
+      id:
+        type: string
+      price:
+        type: number
+      product_id:
+        type: string
+      product_image:
+        type: string
+      product_name:
+        type: string
+      quantity:
+        type: integer
+      subtotal:
+        type: number
+    type: object
+  ne-project_src_internal_models_dto.OrderListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.OrderResponse'
+        type: array
+      meta:
+        $ref: '#/definitions/ne-project_src_internal_models_dto.PaginationMeta'
+    type: object
+  ne-project_src_internal_models_dto.OrderResponse:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      items:
+        items:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.OrderItemSummary'
+        type: array
+      order_number:
+        type: string
+      status:
+        type: string
+      store:
+        $ref: '#/definitions/ne-project_src_internal_models_dto.StoreSummary'
+      total_amount:
+        type: number
+    type: object
+  ne-project_src_internal_models_dto.OrderSummary:
+    properties:
+      buyer_name:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      status:
+        type: string
+      total_amount:
+        type: number
+    type: object
   ne-project_src_internal_models_dto.PaginationMeta:
     properties:
       limit:
@@ -192,6 +388,128 @@ definitions:
         type: integer
       total_pages:
         type: integer
+    type: object
+  ne-project_src_internal_models_dto.ProductDetailResponse:
+    properties:
+      category:
+        $ref: '#/definitions/ne-project_src_internal_models_dto.CategorySummary'
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      images:
+        items:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.ProductImageResponse'
+        type: array
+      is_active:
+        type: boolean
+      is_in_wishlist:
+        type: boolean
+      name:
+        type: string
+      price:
+        type: number
+      rating_avg:
+        type: number
+      slug:
+        type: string
+      stock:
+        type: integer
+      store:
+        $ref: '#/definitions/ne-project_src_internal_models_dto.ProductStoreSummary'
+      total_reviews:
+        type: integer
+      total_sold:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  ne-project_src_internal_models_dto.ProductImageResponse:
+    properties:
+      alt_text:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      is_primary:
+        type: boolean
+      sort_order:
+        type: integer
+      url:
+        type: string
+    type: object
+  ne-project_src_internal_models_dto.ProductListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.ProductResponse'
+        type: array
+      meta:
+        $ref: '#/definitions/ne-project_src_internal_models_dto.PaginationMeta'
+    type: object
+  ne-project_src_internal_models_dto.ProductLowStock:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      stock:
+        type: integer
+    type: object
+  ne-project_src_internal_models_dto.ProductResponse:
+    properties:
+      category_id:
+        type: string
+      category_name:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      is_in_wishlist:
+        type: boolean
+      name:
+        type: string
+      price:
+        type: number
+      primary_image:
+        type: string
+      rating_avg:
+        type: number
+      slug:
+        type: string
+      stock:
+        type: integer
+      store_id:
+        type: string
+      store_name:
+        type: string
+      store_slug:
+        type: string
+      total_sold:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  ne-project_src_internal_models_dto.ProductStoreSummary:
+    properties:
+      id:
+        type: string
+      logo_url:
+        type: string
+      name:
+        type: string
+      rating_avg:
+        type: number
+      slug:
+        type: string
     type: object
   ne-project_src_internal_models_dto.ReadyCheckResponse:
     properties:
@@ -247,6 +565,204 @@ definitions:
         type: string
       user:
         $ref: '#/definitions/ne-project_src_internal_models_dto.UserResponse'
+    type: object
+  ne-project_src_internal_models_dto.ReviewListResponse:
+    properties:
+      average_rating:
+        type: number
+      items:
+        items:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.ReviewResponse'
+        type: array
+      meta:
+        $ref: '#/definitions/ne-project_src_internal_models_dto.PaginationMeta'
+      total_reviews:
+        type: integer
+    type: object
+  ne-project_src_internal_models_dto.ReviewResponse:
+    properties:
+      buyer_avatar:
+        type: string
+      buyer_name:
+        type: string
+      comment:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      images:
+        items:
+          type: string
+        type: array
+      rating:
+        type: integer
+      seller_replied_at:
+        type: string
+      seller_reply:
+        type: string
+    type: object
+  ne-project_src_internal_models_dto.SellerDashboard:
+    properties:
+      low_stock_items:
+        items:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.ProductLowStock'
+        type: array
+      pending_orders:
+        type: integer
+      recent_orders:
+        items:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.OrderSummary'
+        type: array
+      summary:
+        $ref: '#/definitions/ne-project_src_internal_models_dto.SellerSalesSummary'
+      top_products:
+        items:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.SellerTopProduct'
+        type: array
+    type: object
+  ne-project_src_internal_models_dto.SellerProductDetailResponse:
+    properties:
+      category:
+        $ref: '#/definitions/ne-project_src_internal_models_dto.CategorySummary'
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      images:
+        items:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.ProductImageResponse'
+        type: array
+      is_active:
+        type: boolean
+      is_in_wishlist:
+        type: boolean
+      name:
+        type: string
+      price:
+        type: number
+      rating_avg:
+        type: number
+      recent_orders:
+        items:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.OrderSummary'
+        type: array
+      slug:
+        type: string
+      stock:
+        type: integer
+      store:
+        $ref: '#/definitions/ne-project_src_internal_models_dto.ProductStoreSummary'
+      total_reviews:
+        type: integer
+      total_sold:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  ne-project_src_internal_models_dto.SellerProfileResponse:
+    properties:
+      store:
+        $ref: '#/definitions/ne-project_src_internal_models_dto.StoreResponse'
+      user:
+        $ref: '#/definitions/ne-project_src_internal_models_dto.UserResponse'
+    type: object
+  ne-project_src_internal_models_dto.SellerReplyRequest:
+    properties:
+      reply:
+        type: string
+    required:
+    - reply
+    type: object
+  ne-project_src_internal_models_dto.SellerSalesSummary:
+    properties:
+      average_order_value:
+        type: number
+      conversion_rate:
+        type: number
+      period:
+        type: string
+      total_items_sold:
+        type: integer
+      total_orders:
+        type: integer
+      total_revenue:
+        type: number
+    type: object
+  ne-project_src_internal_models_dto.SellerTopProduct:
+    properties:
+      average_rating:
+        type: number
+      product_id:
+        type: string
+      product_name:
+        type: string
+      revenue:
+        type: number
+      total_sold:
+        type: integer
+    type: object
+  ne-project_src_internal_models_dto.StoreListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.StoreResponse'
+        type: array
+      meta:
+        $ref: '#/definitions/ne-project_src_internal_models_dto.PaginationMeta'
+    type: object
+  ne-project_src_internal_models_dto.StoreResponse:
+    properties:
+      banner_url:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      is_verified:
+        type: boolean
+      logo_url:
+        type: string
+      rating_avg:
+        type: number
+      slug:
+        type: string
+      store_name:
+        type: string
+      total_sales:
+        type: integer
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  ne-project_src_internal_models_dto.StoreStats:
+    properties:
+      active_products:
+        type: integer
+      average_rating:
+        type: number
+      total_orders:
+        type: integer
+      total_products:
+        type: integer
+      total_revenue:
+        type: number
+      total_reviews:
+        type: integer
+    type: object
+  ne-project_src_internal_models_dto.StoreSummary:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      slug:
+        type: string
     type: object
   ne-project_src_internal_models_dto.SummaryResponse:
     properties:
@@ -311,6 +827,14 @@ definitions:
       subtotal:
         type: number
     type: object
+  ne-project_src_internal_models_dto.UpdateCartRequest:
+    properties:
+      quantity:
+        minimum: 1
+        type: integer
+    required:
+    - quantity
+    type: object
   ne-project_src_internal_models_dto.UpdateCategoryRequest:
     properties:
       description:
@@ -323,9 +847,25 @@ definitions:
     required:
     - name
     type: object
+  ne-project_src_internal_models_dto.UpdateOrderStatusRequest:
+    properties:
+      status:
+        enum:
+        - paid
+        - processing
+        - shipped
+        - delivered
+        - canceled
+        - refunded
+        type: string
+    required:
+    - status
+    type: object
   ne-project_src_internal_models_dto.UpdateProductRequest:
     properties:
       category_id:
+        type: string
+      description:
         type: string
       name:
         maxLength: 255
@@ -339,17 +879,53 @@ definitions:
         type: integer
     required:
     - category_id
+    - description
     - name
     - price
     - stock
     type: object
+  ne-project_src_internal_models_dto.UpdateSellerProfileRequest:
+    properties:
+      avatar_url:
+        type: string
+      banner_url:
+        type: string
+      description:
+        type: string
+      logo_url:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      store_name:
+        type: string
+    type: object
+  ne-project_src_internal_models_dto.UpdateStoreRequest:
+    properties:
+      banner_url:
+        type: string
+      description:
+        type: string
+      logo_url:
+        type: string
+      store_name:
+        minLength: 3
+        type: string
+    required:
+    - store_name
+    type: object
   ne-project_src_internal_models_dto.UpdateUserRequest:
     properties:
+      avatar_url:
+        type: string
       email:
         type: string
       name:
         maxLength: 100
         minLength: 1
+        type: string
+      phone:
         type: string
       role:
         enum:
@@ -368,6 +944,8 @@ definitions:
     type: object
   ne-project_src_internal_models_dto.UserResponse:
     properties:
+      avatar_url:
+        type: string
       created_at:
         type: string
       email:
@@ -378,10 +956,30 @@ definitions:
         type: boolean
       name:
         type: string
+      phone:
+        type: string
       role:
         type: string
       updated_at:
         type: string
+    type: object
+  ne-project_src_internal_models_dto.WishlistItemResponse:
+    properties:
+      added_at:
+        type: string
+      id:
+        type: string
+      product:
+        $ref: '#/definitions/ne-project_src_internal_models_dto.ProductResponse'
+    type: object
+  ne-project_src_internal_models_dto.WishlistResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.WishlistItemResponse'
+        type: array
+      total_items:
+        type: integer
     type: object
   ne-project_src_internal_models_entity.Category:
     properties:
@@ -406,40 +1004,52 @@ definitions:
         type: string
       deleted_at:
         type: string
+      description:
+        type: string
       id:
         type: string
+      is_active:
+        type: boolean
       name:
         type: string
       price:
         type: number
+      rating_avg:
+        type: number
+      slug:
+        type: string
       stock:
+        type: integer
+      store_id:
+        type: string
+      total_sold:
         type: integer
       updated_at:
         type: string
     type: object
-  ne-project_src_internal_models_entity.ProductWithCategory:
+  ne-project_src_internal_models_entity.ProductImage:
     properties:
-      category_id:
-        type: string
-      category_name:
+      alt_text:
         type: string
       created_at:
         type: string
-      deleted_at:
-        type: string
       id:
         type: string
-      name:
+      is_primary:
+        type: boolean
+      product_id:
         type: string
-      price:
-        type: number
-      stock:
+      sort_order:
         type: integer
-      updated_at:
+      url:
         type: string
     type: object
   ne-project_src_internal_models_entity.User:
     properties:
+      address:
+        type: string
+      avatar_url:
+        type: string
       created_at:
         type: string
       email:
@@ -449,6 +1059,8 @@ definitions:
       is_active:
         type: boolean
       name:
+        type: string
+      phone:
         type: string
       role:
         type: string
@@ -595,6 +1207,92 @@ paths:
       summary: Register new user
       tags:
       - auth
+  /cart:
+    delete:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            type: string
+      summary: Clear all items from cart
+      tags:
+      - Cart
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.CartResponse'
+      summary: Get my cart
+      tags:
+      - Cart
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Cart item details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.AddToCartRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.CartItemResponse'
+      summary: Add item to cart
+      tags:
+      - Cart
+  /cart/{id}:
+    delete:
+      parameters:
+      - description: Cart Item ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            type: string
+      summary: Remove item from cart
+      tags:
+      - Cart
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Cart Item ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.UpdateCartRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            type: string
+      summary: Update cart item quantity
+      tags:
+      - Cart
   /categories:
     get:
       description: Retrieve list of categories with optional filters and pagination
@@ -802,19 +1500,124 @@ paths:
       summary: Liveness Probe
       tags:
       - System
+  /orders:
+    get:
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page limit
+        in: query
+        name: limit
+        type: integer
+      - description: Order status
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.OrderListResponse'
+      summary: Get buyer orders
+      tags:
+      - Order (Buyer)
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Checkout details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.CheckoutRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            items:
+              $ref: '#/definitions/ne-project_src_internal_models_dto.OrderDetailResponse'
+            type: array
+      summary: Checkout cart items
+      tags:
+      - Order (Buyer)
+  /orders/{id}:
+    get:
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.OrderDetailResponse'
+      summary: Get buyer order detail
+      tags:
+      - Order (Buyer)
+  /orders/{id}/cancel:
+    patch:
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            type: string
+      summary: Cancel order
+      tags:
+      - Order (Buyer)
+  /orders/{id}/confirm:
+    patch:
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            type: string
+      summary: Confirm order received
+      tags:
+      - Order (Buyer)
   /products:
     get:
       consumes:
       - application/json
       description: Get list of products
       parameters:
-      - description: Filter by product name
+      - description: Filter by product name/description
         in: query
-        name: search
+        name: q
         type: string
       - description: Filter by category ID (UUID)
         in: query
-        name: category_id
+        name: category
+        type: string
+      - description: Filter by store ID (UUID)
+        in: query
+        name: store
         type: string
       - description: Minimum product price
         in: query
@@ -823,6 +1626,10 @@ paths:
       - description: Maximum product price
         in: query
         name: max_price
+        type: number
+      - description: Minimum product rating
+        in: query
+        name: rating
         type: number
       - description: Filter products that have stock
         in: query
@@ -838,14 +1645,9 @@ paths:
         in: query
         name: limit
         type: integer
-      - description: Sort by field
+      - description: Sort by field (newest, price_asc, price_desc, rating, popular)
         in: query
-        name: sort_by
-        type: string
-      - default: asc
-        description: Sort direction (asc/desc)
-        in: query
-        name: sort_dir
+        name: sort
         type: string
       produces:
       - application/json
@@ -857,9 +1659,7 @@ paths:
             - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
             - properties:
                 data:
-                  items:
-                    $ref: '#/definitions/ne-project_src_internal_models_entity.ProductWithCategory'
-                  type: array
+                  $ref: '#/definitions/ne-project_src_internal_models_dto.ProductListResponse'
               type: object
         "400":
           description: Bad Request
@@ -955,7 +1755,7 @@ paths:
             - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/ne-project_src_internal_models_entity.Product'
+                  $ref: '#/definitions/ne-project_src_internal_models_dto.ProductDetailResponse'
               type: object
         "400":
           description: Bad Request
@@ -1008,6 +1808,32 @@ paths:
       summary: Update Product
       tags:
       - products
+  /products/{id}/reviews:
+    get:
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Limit per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.ReviewListResponse'
+      summary: Get product reviews
+      tags:
+      - Review
   /products/bulk:
     post:
       consumes:
@@ -1157,11 +1983,678 @@ paths:
       summary: List Top Products
       tags:
       - reports
+  /reviews:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Review details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.CreateReviewRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.ReviewResponse'
+      summary: Create a product review
+      tags:
+      - Review
+  /seller/orders:
+    get:
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page limit
+        in: query
+        name: limit
+        type: integer
+      - description: Order status
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.OrderListResponse'
+      summary: Get seller orders
+      tags:
+      - Order (Seller)
+  /seller/orders/{id}:
+    get:
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.OrderDetailResponse'
+      summary: Get seller order detail
+      tags:
+      - Order (Seller)
+  /seller/orders/{id}/status:
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Status
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.UpdateOrderStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            type: string
+      summary: Update order status
+      tags:
+      - Order (Seller)
+  /seller/products:
+    get:
+      description: Get list of products belonging to the logged-in seller
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/ne-project_src_internal_models_dto.ProductListResponse'
+              type: object
+      summary: List My Product
+      tags:
+      - seller-products
+  /seller/products/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a product by their id with active order validation
+      parameters:
+      - description: Product ID (UUID)
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete Seller Product
+      tags:
+      - seller-products
+    get:
+      description: Get product detail for seller including recent orders
+      parameters:
+      - description: Product ID (UUID)
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/ne-project_src_internal_models_dto.SellerProductDetailResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get Seller Product Detail
+      tags:
+      - seller-products
+    put:
+      consumes:
+      - application/json
+      description: Update a product by their id
+      parameters:
+      - description: Product ID (UUID)
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Product data
+        in: body
+        name: product
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.UpdateProductRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/ne-project_src_internal_models_entity.Product'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Update Seller Product
+      tags:
+      - seller-products
+  /seller/products/{id}/images:
+    post:
+      consumes:
+      - application/json
+      description: Add an image to a product
+      parameters:
+      - description: Product ID (UUID)
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Image data
+        in: body
+        name: image
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.AddProductImageRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/ne-project_src_internal_models_entity.ProductImage'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Add Product Image
+      tags:
+      - seller-products
+  /seller/products/{id}/images/{imageId}:
+    delete:
+      description: Delete an image from a product
+      parameters:
+      - description: Product ID (UUID)
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Image ID (UUID)
+        format: uuid
+        in: path
+        name: imageId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete Product Image
+      tags:
+      - seller-products
+  /seller/products/{id}/images/{imageId}/primary:
+    put:
+      description: Set an image as the primary image for a product
+      parameters:
+      - description: Product ID (UUID)
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Image ID (UUID)
+        format: uuid
+        in: path
+        name: imageId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Set Primary Product Image
+      tags:
+      - seller-products
+  /seller/profile:
+    get:
+      description: Get seller profile including user and store info
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.SellerProfileResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get seller profile
+      tags:
+      - seller-profile
+    put:
+      consumes:
+      - application/json
+      description: Update seller profile including user and store info
+      parameters:
+      - description: Update profile request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.UpdateSellerProfileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.SellerProfileResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update seller profile
+      tags:
+      - seller-profile
+  /seller/reports/dashboard:
+    get:
+      consumes:
+      - application/json
+      description: Get seller dashboard with summary, top products, recent orders
+      parameters:
+      - default: this_week
+        description: Period (today, this_week, this_month)
+        in: query
+        name: period
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/ne-project_src_internal_models_dto.SellerDashboard'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get seller dashboard
+      tags:
+      - seller-reports
+  /seller/reports/summary:
+    get:
+      consumes:
+      - application/json
+      description: Get seller sales summary
+      parameters:
+      - default: this_week
+        description: Period (today, this_week, this_month)
+        in: query
+        name: period
+        type: string
+      - description: Date from (YYYY-MM-DD)
+        in: query
+        name: date_from
+        type: string
+      - description: Date to (YYYY-MM-DD)
+        in: query
+        name: date_to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/ne-project_src_internal_models_dto.SellerSalesSummary'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get seller sales summary
+      tags:
+      - seller-reports
+  /seller/reports/top-products:
+    get:
+      consumes:
+      - application/json
+      description: Get seller top products
+      parameters:
+      - default: this_week
+        description: Period (today, this_week, this_month)
+        in: query
+        name: period
+        type: string
+      - description: Date from (YYYY-MM-DD)
+        in: query
+        name: date_from
+        type: string
+      - description: Date to (YYYY-MM-DD)
+        in: query
+        name: date_to
+        type: string
+      - default: 10
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/ne-project_src_internal_models_dto.SellerTopProduct'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get seller top products
+      tags:
+      - seller-reports
+  /seller/reviews/{id}/reply:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Review ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Reply details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.SellerReplyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            type: string
+      summary: Reply to a review
+      tags:
+      - Review
+  /seller/store/stats:
+    get:
+      description: Get store quick statistics
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.StoreStats'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get store statistics
+      tags:
+      - seller-profile
+  /seller/stores:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Store details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.CreateStoreRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.StoreResponse'
+      summary: Create a new store
+      tags:
+      - Stores
+  /seller/stores/me:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.StoreResponse'
+      summary: Get my store details
+      tags:
+      - Stores
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Store details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.UpdateStoreRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.StoreResponse'
+      summary: Update store details
+      tags:
+      - Stores
+  /stores:
+    get:
+      parameters:
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Search query
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.StoreListResponse'
+      summary: List all stores
+      tags:
+      - Stores
+  /stores/{slug}:
+    get:
+      parameters:
+      - description: Store Slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.StoreResponse'
+      summary: Get store by slug
+      tags:
+      - Stores
+  /stores/{slug}/products:
+    get:
+      parameters:
+      - description: Store Slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/ne-project_src_internal_models_dto.ProductListResponse'
+              type: object
+      summary: Get products of a store
+      tags:
+      - Stores
   /transactions:
     post:
       consumes:
       - application/json
-      description: Create a transaction with multiple items
+      deprecated: true
+      description: 'Create a transaction with multiple items (Deprecated: Use /api/v1/orders
+        instead)'
       parameters:
       - description: Transaction data
         in: body
@@ -1196,7 +2689,8 @@ paths:
     get:
       consumes:
       - application/json
-      description: Get transaction by their id
+      deprecated: true
+      description: 'Get transaction by their id (Deprecated: Use /api/v1/orders instead)'
       parameters:
       - description: Category ID (UUID)
         format: uuid
@@ -1226,7 +2720,9 @@ paths:
     patch:
       consumes:
       - application/json
-      description: Update transaction Status by their id
+      deprecated: true
+      description: 'Update transaction Status by their id (Deprecated: Use /api/v1/orders
+        instead)'
       parameters:
       - description: Transaction ID (UUID)
         format: uuid
@@ -1418,4 +2914,76 @@ paths:
       summary: Update an existing user
       tags:
       - Users
+  /wishlist:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.WishlistResponse'
+      summary: Get my wishlist
+      tags:
+      - Wishlist
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Wishlist product ID
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.AddToWishlistRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Success
+          schema:
+            type: string
+      summary: Add item to wishlist
+      tags:
+      - Wishlist
+  /wishlist/{productId}:
+    delete:
+      parameters:
+      - description: Product ID
+        in: path
+        name: productId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            type: string
+      summary: Remove item from wishlist
+      tags:
+      - Wishlist
+  /wishlist/toggle:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Wishlist product ID
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.AddToWishlistRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Toggle item in wishlist
+      tags:
+      - Wishlist
 swagger: "2.0"
