@@ -69,7 +69,6 @@ func (r *transactionRepository) Checkout(
 	return &entity.TransactionWithDetails{Transaction: trx, Items: details}, nil
 }
 
-// processItem
 func (r *transactionRepository) processItems(
 	ctx context.Context, tx *sql.Tx, items []dto.CheckoutItem,
 ) ([]entity.TransactionDetail, decimal.Decimal, error) {
@@ -88,7 +87,6 @@ func (r *transactionRepository) processItems(
 	return details, totalAmount, nil
 }
 
-// processSingleItem
 func (r *transactionRepository) processSingleItem(
 	ctx context.Context, tx *sql.Tx, item dto.CheckoutItem,
 ) (entity.TransactionDetail, error) {
@@ -114,7 +112,6 @@ func (r *transactionRepository) processSingleItem(
 	return buildTransactionDetail(product, item), nil
 }
 
-// fetchProduct
 func (r *transactionRepository) fetchProduct(
 	ctx context.Context, tx *sql.Tx, productID string,
 ) (*dto.ProductSnapshot, error) {
@@ -133,7 +130,6 @@ func (r *transactionRepository) fetchProduct(
 	return p, nil
 }
 
-// lockAndValidateStock
 func (r *transactionRepository) lockAndValidateStock(
 	ctx context.Context, tx *sql.Tx, productName string, item dto.CheckoutItem,
 ) error {
@@ -153,7 +149,6 @@ func (r *transactionRepository) lockAndValidateStock(
 	return nil
 }
 
-// insertTransaction
 func (r *transactionRepository) insertTransaction(
 	ctx context.Context, tx *sql.Tx, totalAmount decimal.Decimal,
 ) (entity.Transaction, error) {
@@ -168,7 +163,6 @@ func (r *transactionRepository) insertTransaction(
 	return trx, nil
 }
 
-// insertTransactionDetails
 func (r *transactionRepository) insertTransactionDetails(
 	ctx context.Context, tx *sql.Tx, transactionID string, details []entity.TransactionDetail,
 ) error {
@@ -205,7 +199,6 @@ func (r *transactionRepository) insertTransactionDetails(
 	return nil
 }
 
-// buildTransactionDetail
 func buildTransactionDetail(p *dto.ProductSnapshot, item dto.CheckoutItem) entity.TransactionDetail {
 	subtotal := p.Price.Mul(decimal.NewFromInt(int64(item.Quantity)))
 	return entity.TransactionDetail{

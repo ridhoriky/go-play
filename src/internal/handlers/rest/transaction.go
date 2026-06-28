@@ -24,7 +24,8 @@ func NewTransactionHandler(transactionService transaction.TransactionServiceItf)
 
 // CreateTransaction godoc
 // @Summary      Create Transaction
-// @Description  Create a transaction with multiple items
+// @Description  Create a transaction with multiple items (Deprecated: Use /api/v1/orders instead)
+// @Deprecated   true
 // @Tags         transactions
 // @Accept       json
 // @Produce      json
@@ -55,7 +56,8 @@ func (h *TransactionHandler) Checkout(c *gin.Context) {
 
 // GetTransactionByID godoc
 // @Summary      Get Transaction
-// @Description  Get transaction by their id
+// @Description  Get transaction by their id (Deprecated: Use /api/v1/orders instead)
+// @Deprecated   true
 // @Tags         transactions
 // @Accept       json
 // @Produce      json
@@ -83,7 +85,8 @@ func (h *TransactionHandler) GetByID(c *gin.Context) {
 
 // UpdateTransactionStatus godoc
 // @Summary      Update Transaction Status
-// @Description  Update transaction Status by their id
+// @Description  Update transaction Status by their id (Deprecated: Use /api/v1/orders instead)
+// @Deprecated   true
 // @Tags         transactions
 // @Accept       json
 // @Produce      json
