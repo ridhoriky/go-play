@@ -21,30 +21,10 @@ func (r *productRepository) GetAll(ctx context.Context, filter *dto.GetProductsQ
 
 	dataQuery := getAllProductsQuery + filterQuery
 
-	sortBy := "p.created_at"
-	allowedSortColumns := map[string]string{
-		"name":       "p.name",
-		"price":      "p.price",
-		"stock":      "p.stock",
-		"created_at": "p.created_at",
-	}
-
-	if val, ok := allowedSortColumns[filter.SortBy]; ok {
-		sortBy = val
-	}
-
-	sortDir := "ASC"
-	if filter.SortDir == "DESC" {
-		sortDir = "DESC"
-	}
-
-	dataQuery += fmt.Sprintf(" ORDER BY %s %s", sortBy, sortDir)
+	dataQuery += buildProductSort(filter, &args)
 
 	dataQuery += fmt.Sprintf(" LIMIT $%d OFFSET $%d", len(args)+1, len(args)+2)
-
-	offset := (filter.Page - 1) * filter.Limit
-
-	args = append(args, filter.Limit, offset)
+	args = append(args, filter.Limit, (filter.Page-1)*filter.Limit)
 
 	rows, err := r.db.QueryContext(ctx, dataQuery, args...)
 	if err != nil {
@@ -67,11 +47,21 @@ func (r *productRepository) GetAll(ctx context.Context, filter *dto.GetProductsQ
 
 		if scanErr := rows.Scan(
 			&p.ID,
+			&p.StoreID,
+			&p.CategoryID,
 			&p.Name,
+			&p.Slug,
+			&p.Description,
 			&p.Price,
 			&p.Stock,
-			&p.CategoryID,
+			&p.RatingAvg,
+			&p.TotalSold,
+			&p.IsActive,
 			&p.CategoryName,
+			&p.StoreName,
+			&p.StoreSlug,
+			&p.StoreIsVerified,
+			&p.PrimaryImage,
 			&total,
 		); scanErr != nil {
 			zerolog.Ctx(ctx).Error().Err(scanErr).Str("productID", p.ID).Msg("err mapping product row")
@@ -89,6 +79,36 @@ func (r *productRepository) GetAll(ctx context.Context, filter *dto.GetProductsQ
 	return products, total, nil
 }
 
+func buildProductSort(filter *dto.GetProductsQuery, args *[]any) string {
+	sortBy := "p.created_at"
+	allowedSortColumns := map[string]string{
+		"newest":     "p.created_at",
+		"price_asc":  "p.price",
+		"price_desc": "p.price",
+		"rating":     "p.rating_avg",
+		"popular":    "p.total_sold",
+	}
+
+	if val, ok := allowedSortColumns[filter.Sort]; ok {
+		sortBy = val
+	}
+
+	sortDir := "ASC"
+	if filter.Sort == "newest" || filter.Sort == "price_desc" || filter.Sort == "rating" || filter.Sort == "popular" {
+		sortDir = "DESC"
+	}
+
+	if filter.Sort == "" && filter.Q != "" {
+		// When searching without explicit sort, sort by search rank
+		// Add weight for verified stores
+		sortBy = fmt.Sprintf("ts_rank(p.search_vector, plainto_tsquery('english', $%d)) + CASE WHEN s.is_verified THEN 0.2 ELSE 0.0 END", len(*args)+1)
+		*args = append(*args, filter.Q)
+		sortDir = "DESC"
+	}
+
+	return fmt.Sprintf(" ORDER BY %s %s", sortBy, sortDir)
+}
+
 func buildProductFilters(filter *dto.GetProductsQuery) (string, []any) {
 
 	query := ""
@@ -96,16 +116,23 @@ func buildProductFilters(filter *dto.GetProductsQuery) (string, []any) {
 	argPos := 1
 
 	// search
-	if filter.Search != "" {
-		query += fmt.Sprintf(" AND p.name ILIKE $%d", argPos)
-		args = append(args, "%"+filter.Search+"%")
+	if filter.Q != "" {
+		query += fmt.Sprintf(" AND p.search_vector @@ plainto_tsquery('english', $%d)", argPos)
+		args = append(args, filter.Q)
 		argPos++
 	}
 
 	// category
-	if filter.CategoryID != "" {
+	if filter.Category != "" {
 		query += fmt.Sprintf(" AND p.category_id = $%d", argPos)
-		args = append(args, filter.CategoryID)
+		args = append(args, filter.Category)
+		argPos++
+	}
+
+	// store
+	if filter.Store != "" {
+		query += fmt.Sprintf(" AND p.store_id = $%d", argPos)
+		args = append(args, filter.Store)
 		argPos++
 	}
 
@@ -120,6 +147,13 @@ func buildProductFilters(filter *dto.GetProductsQuery) (string, []any) {
 	if !filter.MaxPrice.IsZero() {
 		query += fmt.Sprintf(" AND p.price <= $%d", argPos)
 		args = append(args, filter.MaxPrice)
+		argPos++
+	}
+
+	// rating
+	if filter.Rating > 0 {
+		query += fmt.Sprintf(" AND p.rating_avg >= $%d", argPos)
+		args = append(args, filter.Rating)
 	}
 
 	// stock filter
@@ -127,12 +161,21 @@ func buildProductFilters(filter *dto.GetProductsQuery) (string, []any) {
 		query += " AND p.stock > 0"
 	}
 
+	if filter.LowStock {
+		query += " AND p.stock <= 5 AND p.stock > 0"
+	}
+
+	if filter.IsActive != nil {
+		query += fmt.Sprintf(" AND p.is_active = $%d", argPos)
+		args = append(args, *filter.IsActive)
+	}
+
 	return query, args
 }
 
 func (r *productRepository) Create(ctx context.Context, product *entity.Product) error {
 	query := insertProductQuery
-	err := r.db.QueryRowContext(ctx, query, product.Name, product.Price, product.Stock, product.CategoryID).Scan(&product.ID)
+	err := r.db.QueryRowContext(ctx, query, product.StoreID, product.CategoryID, product.Name, product.Slug, product.Description, product.Price, product.Stock, product.IsActive).Scan(&product.ID)
 	if err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Msg("err create product")
 		return err
@@ -142,7 +185,7 @@ func (r *productRepository) Create(ctx context.Context, product *entity.Product)
 
 func (r *productRepository) Update(ctx context.Context, id string, product *entity.Product) error {
 	query := updateProductQuery
-	result, err := r.db.ExecContext(ctx, query, product.Name, product.Price, product.Stock, product.CategoryID, id)
+	result, err := r.db.ExecContext(ctx, query, product.CategoryID, product.Name, product.Description, product.Price, product.Stock, product.IsActive, id, product.StoreID)
 	if err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg("err update product")
 		return err
@@ -183,33 +226,78 @@ func (r *productRepository) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-func (r *productRepository) GetByID(ctx context.Context, id string) (*entity.Product, string, error) {
+func (r *productRepository) GetByID(ctx context.Context, id string) (*entity.ProductDetail, error) {
 	query := getProductByIDQuery
 
-	var p entity.Product
-	categoryName := ""
+	var p entity.ProductDetail
 
 	err := r.db.
 		QueryRowContext(ctx, query, id).
 		Scan(
 			&p.ID,
+			&p.StoreID,
+			&p.CategoryID,
 			&p.Name,
+			&p.Slug,
+			&p.Description,
 			&p.Price,
 			&p.Stock,
-			&p.CategoryID,
-			&categoryName,
+			&p.RatingAvg,
+			&p.TotalSold,
+			&p.IsActive,
+			&p.CreatedAt,
+			&p.UpdatedAt,
+			&p.CategoryName,
+			&p.StoreName,
+			&p.StoreSlug,
+			&p.StoreIsVerified,
+			&p.StoreLogoURL,
+			&p.StoreRatingAvg,
+			&p.TotalReviews,
 		)
 
 	if errors.Is(err, sql.ErrNoRows) {
 		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg(preference.ErrProductNotFound)
-		return nil, categoryName, dto.NewError(http.StatusNotFound, preference.ErrProductNotFound)
+		return nil, dto.NewError(http.StatusNotFound, preference.ErrProductNotFound)
 	}
 
 	if err != nil {
-		return nil, categoryName, err
+		return nil, err
 	}
 
-	return &p, categoryName, nil
+	return &p, nil
+}
+
+func (r *productRepository) GetBySlug(ctx context.Context, slug string) (*entity.Product, error) {
+	query := getProductBySlugQuery
+
+	var p entity.Product
+
+	err := r.db.
+		QueryRowContext(ctx, query, slug).
+		Scan(
+			&p.ID,
+			&p.StoreID,
+			&p.CategoryID,
+			&p.Name,
+			&p.Slug,
+			&p.Description,
+			&p.Price,
+			&p.Stock,
+			&p.RatingAvg,
+			&p.TotalSold,
+			&p.IsActive,
+		)
+
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, dto.NewError(http.StatusNotFound, preference.ErrProductNotFound)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &p, nil
 }
 
 func (r *productRepository) CreateMultiple(
@@ -292,41 +380,53 @@ func (r *productRepository) CreateMultiple(
 }
 
 func buildBulkInsertQuery(products []entity.Product) (string, []any) {
-	insertColumns := []string{"name", "price", "stock", "category_id"}
+	insertColumns := []string{"store_id", "category_id", "name", "slug", "description", "price", "stock", "is_active"}
 
 	returningColumns := []string{
 		"id",
+		"store_id",
+		"category_id",
 		"name",
+		"slug",
+		"description",
 		"price",
 		"stock",
-		"category_id",
+		"is_active",
 	}
 
 	var (
 		values = make([]string, 0, len(products))
-		args   = make([]any, 0, 4*len(products))
+		args   = make([]any, 0, 8*len(products))
 		argPos = 1
 	)
 
 	for i := range products {
 		p := &products[i]
 		values = append(values,
-			fmt.Sprintf("($%d,$%d,$%d,$%d)",
+			fmt.Sprintf("($%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d)",
 				argPos,
 				argPos+1,
 				argPos+2,
 				argPos+3,
+				argPos+4,
+				argPos+5,
+				argPos+6,
+				argPos+7,
 			),
 		)
 
 		args = append(args,
+			p.StoreID,
+			p.CategoryID,
 			p.Name,
+			p.Slug,
+			p.Description,
 			p.Price,
 			p.Stock,
-			p.CategoryID,
+			p.IsActive,
 		)
 
-		argPos += 4
+		argPos += 8
 	}
 
 	return fmt.Sprintf(
