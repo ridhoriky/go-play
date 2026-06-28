@@ -165,6 +165,12 @@ func (s *userService) UpdateUser(ctx context.Context, id string, user *dto.Updat
 	if user.Role != nil {
 		existingUser.Role = *user.Role
 	}
+	if user.Phone != nil {
+		existingUser.Phone = user.Phone
+	}
+	if user.AvatarURL != nil {
+		existingUser.AvatarURL = user.AvatarURL
+	}
 
 	if err := s.userRepository.Update(ctx, id, existingUser); err != nil {
 		return nil, err

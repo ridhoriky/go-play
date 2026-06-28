@@ -48,6 +48,41 @@ func (m *Middleware) JWTAuth(tokenSvc *token.Token) gin.HandlerFunc {
 			Logger()
 		c.Request = c.Request.WithContext(logger.WithContext(ctx))
 
+	}
+}
+
+func (m *Middleware) OptionalJWTAuth(tokenSvc *token.Token) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		authHeader := c.GetHeader("Authorization")
+		if strings.TrimSpace(authHeader) == "" {
+			c.Next()
+			return
+		}
+
+		parts := strings.Fields(authHeader)
+		if len(parts) != 2 || !strings.EqualFold(parts[0], "Bearer") {
+			c.Next()
+			return
+		}
+
+		claims, err := tokenSvc.ValidateAccessToken(parts[1])
+		if err != nil {
+			c.Next()
+			return
+		}
+
+		c.Set("user_id", claims.UserID)
+		c.Set("user_role", claims.Role)
+		c.Set("user_name", claims.Name)
+
+		// Enrich context logger with user data
+		ctx := c.Request.Context()
+		logger := zerolog.Ctx(ctx).With().
+			Str("user_id", claims.UserID).
+			Str("user_role", claims.Role).
+			Logger()
+		c.Request = c.Request.WithContext(logger.WithContext(ctx))
+
 		c.Next()
 	}
 }
