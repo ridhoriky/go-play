@@ -9,6 +9,9 @@ type User struct {
 	Password  string    `db:"password_hash" json:"-"`
 	Role      string    `db:"role" json:"role"`
 	IsActive  bool      `db:"is_active" json:"is_active"`
+	AvatarURL *string   `db:"avatar_url" json:"avatar_url"`
+	Phone     *string   `db:"phone" json:"phone"`
+	Address   *string   `db:"address" json:"address"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
 }

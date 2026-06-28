@@ -7,20 +7,17 @@ import "time"
 type CreateCategoryRequest struct {
 	Name        string  `json:"name"        binding:"required,min=1,max=100"`
 	Description *string `json:"description" binding:"omitempty,max=500"`
+	ParentID    *string `json:"parent_id"   binding:"omitempty,uuid"`
+	ImageURL    *string `json:"image_url"   binding:"omitempty,url,max=512"`
+	SortOrder   int     `json:"sort_order"  binding:"omitempty,min=0"`
 }
 
 type UpdateCategoryRequest struct {
 	Name        string  `json:"name"        binding:"required,min=1,max=100"`
 	Description *string `json:"description" binding:"omitempty,max=500"`
-}
-
-type GetCategoriesQuery struct {
-	Page           int    `form:"page"            binding:"omitempty,min=1"`
-	Limit          int    `form:"limit"           binding:"omitempty,min=1,max=100"`
-	Search         string `form:"search"          binding:"omitempty,max=100"`
-	IncludeDeleted bool   `form:"include_deleted" binding:"omitempty"`
-	SortBy         string `form:"sort_by"     binding:"omitempty,oneof=name created_at"`
-	SortDir        string `form:"sort_dir"    binding:"omitempty,oneof=asc desc"`
+	ParentID    *string `json:"parent_id"   binding:"omitempty,uuid"`
+	ImageURL    *string `json:"image_url"   binding:"omitempty,url,max=512"`
+	SortOrder   int     `json:"sort_order"  binding:"omitempty,min=0"`
 }
 
 // ─── Response ────────────────────────────────────────────────────────────────
@@ -29,19 +26,29 @@ type CategoryResponse struct {
 	ID          string     `json:"id"`
 	Name        string     `json:"name"`
 	Description *string    `json:"description"`
+	ParentID    *string    `json:"parent_id,omitempty"`
+	ImageURL    *string    `json:"image_url,omitempty"`
+	SortOrder   int        `json:"sort_order"`
 	CreatedAt   time.Time  `json:"created_at"`
 	UpdatedAt   time.Time  `json:"updated_at"`
-	DeletedAt   *time.Time `json:"deleted_at"`
+	DeletedAt   *time.Time `json:"deleted_at,omitempty"`
 }
 
 type CategoryDetailResponse struct {
 	CategoryResponse
-	ProductsCount int `json:"products_count"`
+	ProductsCount int                `json:"products_count"`
+	Children      []CategoryResponse `json:"children"`
+	Breadcrumb    []CategoryResponse `json:"breadcrumb"`
 }
 
-type CategoryListResponse struct {
-	Data []CategoryResponse `json:"data"`
-	Meta PaginationMeta     `json:"meta"`
+type CategoryTreeNode struct {
+	ID           string             `json:"id"`
+	Name         string             `json:"name"`
+	Description  *string            `json:"description"`
+	ImageURL     *string            `json:"image_url"`
+	SortOrder    int                `json:"sort_order"`
+	ProductCount int                `json:"product_count"`
+	Children     []CategoryTreeNode `json:"children"`
 }
 
 type DeleteCategoryResponse struct {

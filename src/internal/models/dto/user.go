@@ -12,9 +12,11 @@ type CreateUserRequest struct {
 }
 
 type UpdateUserRequest struct {
-	Name  *string `json:"name"        binding:"omitempty,min=1,max=100"`
-	Email *string `json:"email"       binding:"omitempty,email"`
-	Role  *string `json:"role"        binding:"omitempty,oneof=admin user"`
+	Name      *string `json:"name"        binding:"omitempty,min=1,max=100"`
+	Email     *string `json:"email"       binding:"omitempty,email"`
+	Role      *string `json:"role"        binding:"omitempty,oneof=admin user"`
+	Phone     *string `json:"phone"       binding:"omitempty"`
+	AvatarURL *string `json:"avatar_url"  binding:"omitempty,url"`
 }
 
 type GetUsersQuery struct {
@@ -34,6 +36,8 @@ type UserResponse struct {
 	Email     string    `json:"email"`
 	Role      string    `json:"role"`
 	IsActive  bool      `json:"is_active"`
+	AvatarURL *string   `json:"avatar_url,omitempty"`
+	Phone     *string   `json:"phone,omitempty"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
