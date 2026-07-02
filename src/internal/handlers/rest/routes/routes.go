@@ -73,6 +73,11 @@ func (h *Handlers) registerPublicRoutes(r *gin.RouterGroup, tokenSvc *token.Toke
 		authGroup.POST("/login", h.Auth.Login)
 		authGroup.POST("/register", h.Auth.Register)
 		authGroup.POST("/refresh", h.Auth.RefreshToken)
+		authGroup.POST("/verify-email", h.Auth.VerifyEmail)
+		authGroup.POST("/resend-otp", h.Auth.ResendOTP)
+		authGroup.POST("/google", h.Auth.GoogleLogin)
+		authGroup.POST("/forgot-password", h.Auth.ForgotPassword)
+		authGroup.POST("/reset-password", h.Auth.ResetPassword)
 	}
 
 	// PUBLIC STORE ROUTES

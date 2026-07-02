@@ -1,3 +1,4 @@
+basePath: /api/v1
 definitions:
   ne-project_src_internal_models_dto.APIResponse:
     properties:
@@ -38,6 +39,17 @@ definitions:
     required:
     - product_id
     type: object
+  ne-project_src_internal_models_dto.AdminUpdateUserRequest:
+    properties:
+      is_active:
+        type: boolean
+      role:
+        enum:
+        - buyer
+        - seller
+        - admin
+        type: string
+    type: object
   ne-project_src_internal_models_dto.AuthTokenResponse:
     properties:
       accessToken:
@@ -75,12 +87,83 @@ definitions:
       total_items:
         type: integer
     type: object
+  ne-project_src_internal_models_dto.CategoryDetailResponse:
+    properties:
+      breadcrumb:
+        items:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.CategoryResponse'
+        type: array
+      children:
+        items:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.CategoryResponse'
+        type: array
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      image_url:
+        type: string
+      name:
+        type: string
+      parent_id:
+        type: string
+      products_count:
+        type: integer
+      sort_order:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  ne-project_src_internal_models_dto.CategoryResponse:
+    properties:
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      image_url:
+        type: string
+      name:
+        type: string
+      parent_id:
+        type: string
+      sort_order:
+        type: integer
+      updated_at:
+        type: string
+    type: object
   ne-project_src_internal_models_dto.CategorySummary:
     properties:
       id:
         type: string
       name:
         type: string
+    type: object
+  ne-project_src_internal_models_dto.CategoryTreeNode:
+    properties:
+      children:
+        items:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.CategoryTreeNode'
+        type: array
+      description:
+        type: string
+      id:
+        type: string
+      image_url:
+        type: string
+      name:
+        type: string
+      product_count:
+        type: integer
+      sort_order:
+        type: integer
     type: object
   ne-project_src_internal_models_dto.CheckoutItem:
     properties:
@@ -102,12 +185,19 @@ definitions:
         type: array
       notes:
         type: string
+      payment_method:
+        enum:
+        - bank_transfer
+        - e_wallet
+        - credit_card
+        type: string
       shipping_address:
         items:
           type: integer
         type: array
     required:
     - cart_ids
+    - payment_method
     - shipping_address
     type: object
   ne-project_src_internal_models_dto.CreateCategoryRequest:
@@ -115,10 +205,18 @@ definitions:
       description:
         maxLength: 500
         type: string
+      image_url:
+        maxLength: 512
+        type: string
       name:
         maxLength: 100
         minLength: 1
         type: string
+      parent_id:
+        type: string
+      sort_order:
+        minimum: 0
+        type: integer
     required:
     - name
     type: object
@@ -131,6 +229,17 @@ definitions:
         type: array
     required:
     - data
+    type: object
+  ne-project_src_internal_models_dto.CreatePaymentRequest:
+    properties:
+      payment_method:
+        enum:
+        - bank_transfer
+        - e_wallet
+        - credit_card
+        type: string
+    required:
+    - payment_method
     type: object
   ne-project_src_internal_models_dto.CreateProductRequest:
     properties:
@@ -243,6 +352,20 @@ definitions:
       success:
         type: boolean
     type: object
+  ne-project_src_internal_models_dto.ForgotPasswordRequest:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  ne-project_src_internal_models_dto.GoogleLoginRequest:
+    properties:
+      idToken:
+        type: string
+    required:
+    - idToken
+    type: object
   ne-project_src_internal_models_dto.HealthCheckResponse:
     properties:
       service:
@@ -306,6 +429,8 @@ definitions:
       order_number:
         type: string
       payment_method:
+        type: string
+      payment_url:
         type: string
       shipping_address:
         items:
@@ -388,6 +513,45 @@ definitions:
         type: integer
       total_pages:
         type: integer
+    type: object
+  ne-project_src_internal_models_dto.PaymentCallbackRequest:
+    properties:
+      payment_ref:
+        type: string
+      status:
+        enum:
+        - success
+        - failed
+        type: string
+    required:
+    - payment_ref
+    - status
+    type: object
+  ne-project_src_internal_models_dto.PaymentResult:
+    properties:
+      expires_at:
+        type: string
+      order_id:
+        type: string
+      payment_ref:
+        type: string
+      payment_url:
+        description: for redirect-based methods
+        type: string
+      status:
+        description: pending, success, failed
+        type: string
+    type: object
+  ne-project_src_internal_models_dto.PaymentStatus:
+    properties:
+      order_id:
+        type: string
+      paid_at:
+        type: string
+      payment_ref:
+        type: string
+      status:
+        type: string
     type: object
   ne-project_src_internal_models_dto.ProductDetailResponse:
     properties:
@@ -489,6 +653,8 @@ definitions:
         type: integer
       store_id:
         type: string
+      store_is_verified:
+        type: boolean
       store_name:
         type: string
       store_slug:
@@ -502,6 +668,8 @@ definitions:
     properties:
       id:
         type: string
+      is_verified:
+        type: boolean
       logo_url:
         type: string
       name:
@@ -565,6 +733,24 @@ definitions:
         type: string
       user:
         $ref: '#/definitions/ne-project_src_internal_models_dto.UserResponse'
+    type: object
+  ne-project_src_internal_models_dto.ResendOTPRequest:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  ne-project_src_internal_models_dto.ResetPasswordRequest:
+    properties:
+      newPassword:
+        minLength: 6
+        type: string
+      token:
+        type: string
+    required:
+    - newPassword
+    - token
     type: object
   ne-project_src_internal_models_dto.ReviewListResponse:
     properties:
@@ -764,6 +950,12 @@ definitions:
       slug:
         type: string
     type: object
+  ne-project_src_internal_models_dto.SuccessResponse:
+    properties:
+      data: {}
+      success:
+        type: boolean
+    type: object
   ne-project_src_internal_models_dto.SummaryResponse:
     properties:
       average_transaction:
@@ -840,10 +1032,18 @@ definitions:
       description:
         maxLength: 500
         type: string
+      image_url:
+        maxLength: 512
+        type: string
       name:
         maxLength: 100
         minLength: 1
         type: string
+      parent_id:
+        type: string
+      sort_order:
+        minimum: 0
+        type: integer
     required:
     - name
     type: object
@@ -963,6 +1163,16 @@ definitions:
       updated_at:
         type: string
     type: object
+  ne-project_src_internal_models_dto.VerifyEmailRequest:
+    properties:
+      email:
+        type: string
+      otpCode:
+        type: string
+    required:
+    - email
+    - otpCode
+    type: object
   ne-project_src_internal_models_dto.WishlistItemResponse:
     properties:
       added_at:
@@ -991,8 +1201,14 @@ definitions:
         type: string
       id:
         type: string
+      image_url:
+        type: string
       name:
         type: string
+      parent_id:
+        type: string
+      sort_order:
+        type: integer
       updated_at:
         type: string
     type: object
@@ -1058,6 +1274,8 @@ definitions:
         type: string
       is_active:
         type: boolean
+      is_verified:
+        type: boolean
       name:
         type: string
       phone:
@@ -1069,7 +1287,484 @@ definitions:
     type: object
 info:
   contact: {}
+  description: API Server for GreenMart Marketplace.
+  title: GreenMart API
+  version: "1.0"
 paths:
+  /admin/categories:
+    post:
+      consumes:
+      - application/json
+      description: Create a category
+      parameters:
+      - description: Category data
+        in: body
+        name: category
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.CreateCategoryRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/ne-project_src_internal_models_entity.Category'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+      summary: Create Single category
+      tags:
+      - categories
+  /admin/categories/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a category by their id
+      parameters:
+      - description: Category ID (UUID)
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+      summary: Delete Category
+      tags:
+      - categories
+    put:
+      consumes:
+      - application/json
+      description: Update a category by their id
+      parameters:
+      - description: Category ID (UUID)
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Category data
+        in: body
+        name: category
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.UpdateCategoryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/ne-project_src_internal_models_entity.Category'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+      summary: Update Category
+      tags:
+      - categories
+  /admin/categories/tree:
+    get:
+      description: Get full category tree hierarchy
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/ne-project_src_internal_models_dto.CategoryTreeNode'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+      summary: Get Category Tree
+      tags:
+      - categories
+  /admin/sellers:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of all stores/sellers, with verification status
+      parameters:
+      - description: Search by store name or owner name
+        in: query
+        name: search
+        type: string
+      - description: Filter by verified status
+        in: query
+        name: is_verified
+        type: boolean
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - default: created_at
+        description: Sort by (store_name, rating_avg, total_sales, created_at)
+        in: query
+        name: sort_by
+        type: string
+      - default: desc
+        description: Sort order (asc, desc)
+        in: query
+        name: sort_order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List all sellers (Admin only)
+      tags:
+      - admin
+  /admin/sellers/{id}/unverify:
+    patch:
+      consumes:
+      - application/json
+      description: Mark a seller store as unverified
+      parameters:
+      - description: Store ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.SuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Unverify a seller (Admin only)
+      tags:
+      - admin
+  /admin/sellers/{id}/verify:
+    patch:
+      consumes:
+      - application/json
+      description: Mark a seller store as verified
+      parameters:
+      - description: Store ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.SuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Verify a seller (Admin only)
+      tags:
+      - admin
+  /admin/users:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of all users, searchable by name/email, filterable
+        by role and status
+      parameters:
+      - description: Search by name or email
+        in: query
+        name: search
+        type: string
+      - description: Filter by role (admin, seller, buyer, user)
+        in: query
+        name: role
+        type: string
+      - description: Filter by active status
+        in: query
+        name: is_active
+        type: boolean
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - default: created_at
+        description: Sort by (name, email, created_at)
+        in: query
+        name: sort_by
+        type: string
+      - default: desc
+        description: Sort order (asc, desc)
+        in: query
+        name: sort_order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List all users (Admin only)
+      tags:
+      - admin
+  /admin/users/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get specific user details by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.SuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get user details (Admin only)
+      tags:
+      - admin
+    put:
+      consumes:
+      - application/json
+      description: Update a user's role or active status. Cannot deactivate or change
+        own role.
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update user payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.AdminUpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update user role or status (Admin only)
+      tags:
+      - admin
+  /auth/forgot-password:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User email
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.ForgotPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+      summary: Request password reset link
+      tags:
+      - auth
+  /auth/google:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Google ID token
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.GoogleLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+      summary: Google OAuth Login
+      tags:
+      - auth
   /auth/login:
     post:
       consumes:
@@ -1207,6 +1902,81 @@ paths:
       summary: Register new user
       tags:
       - auth
+  /auth/resend-otp:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Email details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.ResendOTPRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+      summary: Resend OTP code
+      tags:
+      - auth
+  /auth/reset-password:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Token and new password
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.ResetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+      summary: Reset password using token
+      tags:
+      - auth
+  /auth/verify-email:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Email and OTP details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.VerifyEmailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+      summary: Verify email with OTP
+      tags:
+      - auth
   /cart:
     delete:
       produces:
@@ -1295,35 +2065,7 @@ paths:
       - Cart
   /categories:
     get:
-      description: Retrieve list of categories with optional filters and pagination
-      parameters:
-      - description: Filter by name
-        in: query
-        name: search
-        type: string
-      - description: Include soft deleted categories
-        in: query
-        name: include_deleted
-        type: boolean
-      - default: 1
-        description: Page number
-        in: query
-        name: page
-        type: integer
-      - default: 10
-        description: Page size
-        in: query
-        name: limit
-        type: integer
-      - description: Sort by field
-        in: query
-        name: sort_by
-        type: string
-      - default: asc
-        description: Sort direction (asc/desc)
-        in: query
-        name: sort_dir
-        type: string
+      description: Retrieve list of categories as a tree structure
       produces:
       - application/json
       responses:
@@ -1335,7 +2077,7 @@ paths:
             - properties:
                 data:
                   items:
-                    $ref: '#/definitions/ne-project_src_internal_models_entity.Category'
+                    $ref: '#/definitions/ne-project_src_internal_models_dto.CategoryTreeNode'
                   type: array
               type: object
         "400":
@@ -1349,70 +2091,7 @@ paths:
       summary: List Category
       tags:
       - categories
-    post:
-      consumes:
-      - application/json
-      description: Create a category
-      parameters:
-      - description: Category data
-        in: body
-        name: category
-        required: true
-        schema:
-          $ref: '#/definitions/ne-project_src_internal_models_dto.CreateCategoryRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            allOf:
-            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/ne-project_src_internal_models_entity.Category'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
-      summary: Create Single category
-      tags:
-      - categories
   /categories/{id}:
-    delete:
-      consumes:
-      - application/json
-      description: Delete a category by their id
-      parameters:
-      - description: Category ID (UUID)
-        format: uuid
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
-      summary: Delete Category
-      tags:
-      - categories
     get:
       description: Get data category by id
       parameters:
@@ -1432,7 +2111,7 @@ paths:
             - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/ne-project_src_internal_models_entity.Category'
+                  $ref: '#/definitions/ne-project_src_internal_models_dto.CategoryDetailResponse'
               type: object
         "400":
           description: Bad Request
@@ -1443,46 +2122,6 @@ paths:
           schema:
             $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
       summary: Get Single category
-      tags:
-      - categories
-    put:
-      consumes:
-      - application/json
-      description: Update a category by their id
-      parameters:
-      - description: Category ID (UUID)
-        format: uuid
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Category data
-        in: body
-        name: category
-        required: true
-        schema:
-          $ref: '#/definitions/ne-project_src_internal_models_dto.UpdateCategoryRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/ne-project_src_internal_models_entity.Category'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
-      summary: Update Category
       tags:
       - categories
   /health:
@@ -1601,6 +2240,71 @@ paths:
       summary: Confirm order received
       tags:
       - Order (Buyer)
+  /orders/{id}/pay:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Payment Details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.CreatePaymentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.PaymentResult'
+      summary: Create payment for order
+      tags:
+      - Payment
+  /orders/{id}/payment-status:
+    get:
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.PaymentStatus'
+      summary: Get payment status
+      tags:
+      - Payment
+  /payments/callback:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Callback Details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.PaymentCallbackRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            type: string
+      summary: Payment callback webhook
+      tags:
+      - Payment
   /products:
     get:
       consumes:

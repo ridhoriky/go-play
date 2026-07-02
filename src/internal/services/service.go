@@ -1,6 +1,8 @@
 package services
 
 import (
+	"os"
+
 	"ne-project/src/internal/config/appconfig"
 	"ne-project/src/internal/config/token"
 	"ne-project/src/internal/repositories"
@@ -17,8 +19,10 @@ import (
 	"ne-project/src/internal/services/transaction"
 	"ne-project/src/internal/services/user"
 	"ne-project/src/internal/services/wishlist"
+	"ne-project/src/internal/utils/mailer"
 
 	"github.com/redis/go-redis/v9"
+	"github.com/rs/zerolog"
 )
 
 type Services struct {
@@ -42,8 +46,19 @@ type Services struct {
 func NewServices(repositories *repositories.Repositories, tokenSvc *token.Token, rdb *redis.Client, cfg *appconfig.Config) *Services {
 	paymentSvc := payment.NewSimulatedPayment(repositories.Order)
 
+	logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
+	mailerSvc := mailer.NewMailer(
+		&logger,
+		cfg.SMTP.Host,
+		cfg.SMTP.Port,
+		cfg.SMTP.Username,
+		cfg.SMTP.Password,
+		cfg.SMTP.SenderName,
+		cfg.SMTP.SenderEmail,
+	)
+
 	return &Services{
-		Auth:         auth.NewAuthService(repositories.User, repositories.Auth, tokenSvc),
+		Auth:         auth.NewAuthService(repositories.User, repositories.Auth, tokenSvc, mailerSvc),
 		Cart:         cart.NewCartService(repositories.Cart, repositories.Product, repositories.Store, cfg),
 		Category:     category.NewCategoryService(repositories.Category),
 		Order:        order.NewOrderService(repositories.Order, repositories.Cart, repositories.Product, repositories.Store, paymentSvc),

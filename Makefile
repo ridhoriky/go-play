@@ -5,6 +5,12 @@ MAIN_PATH = ./src/cmd/server/main.go
 BUILD_DIR = ./bin
 CONFIG_FILE = config.yaml
 
+# Load environment variables from .env file if it exists
+ifneq (,$(wildcard .env))
+    include .env
+    export
+endif
+
 # DB Configuration (adjust as needed or use environment variables)
 DB_USER ?= postgres
 DB_PASS ?= mypassword
@@ -12,6 +18,10 @@ DB_HOST ?= localhost
 DB_PORT ?= 5432
 DB_NAME ?= kasir_db
 DB_URL = postgres://$(DB_USER):$(DB_PASS)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=disable
+
+SMTP_USERNAME ?=
+SMTP_PASSWORD ?=
+SMTP_SENDER_EMAIL ?=
 
 # ─── Targets ─────────────────────────────────────────────────────────────────
 
@@ -26,7 +36,7 @@ build:
 
 ## run: Run the application
 run:
-	@go run $(MAIN_PATH)
+	@SMTP_USERNAME="$(SMTP_USERNAME)" SMTP_PASSWORD="$(SMTP_PASSWORD)" SMTP_SENDER_EMAIL="$(SMTP_SENDER_EMAIL)" go run $(MAIN_PATH)
 
 ## test: Run tests
 test:

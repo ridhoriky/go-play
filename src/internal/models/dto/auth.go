@@ -14,6 +14,28 @@ type RegisterRequest struct {
 	Role     string `json:"role"     binding:"omitempty,oneof=admin user"`
 }
 
+type VerifyEmailRequest struct {
+	Email   string `json:"email"   binding:"required,email"`
+	OTPCode string `json:"otpCode" binding:"required,len=6"`
+}
+
+type ResendOTPRequest struct {
+	Email string `json:"email" binding:"required,email"`
+}
+
+type GoogleLoginRequest struct {
+	IDToken string `json:"idToken" binding:"required"`
+}
+
+type ForgotPasswordRequest struct {
+	Email string `json:"email" binding:"required,email"`
+}
+
+type ResetPasswordRequest struct {
+	Token       string `json:"token"       binding:"required"`
+	NewPassword string `json:"newPassword" binding:"required,min=6"`
+}
+
 type RefreshTokenRequest struct {
 	RefreshToken string `json:"refreshToken" binding:"required"`
 }

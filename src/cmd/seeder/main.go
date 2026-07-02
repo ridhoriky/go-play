@@ -99,9 +99,9 @@ func seedUsers(db *sqlx.DB, total int, passwordHash string) error {
 		case 2:
 			role = "seller"
 		}
-		users = append(users, fmt.Sprintf("('%s', 'user%d@example.com', '%s', 'User %d', '%s', true)", id, i, passwordHash, i, role))
+		users = append(users, fmt.Sprintf("('%s', 'user%d@example.com', '%s', 'User %d', '%s', true, true)", id, i, passwordHash, i, role))
 	}
-	return execBatch(db, "users", "id, email, password_hash, name, role, is_active", users, "id")
+	return execBatch(db, "users", "id, email, password_hash, name, role, is_active, is_verified", users, "id")
 }
 
 func seedStores(db *sqlx.DB, total int) error {

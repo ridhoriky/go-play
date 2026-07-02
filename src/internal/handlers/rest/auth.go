@@ -58,7 +58,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        request body dto.RegisterRequest true "User registration data"
-// @Success      200 {object} dto.RegisterResponse
+// @Success      201 {object} dto.RegisterResponse
 // @Failure      400 {object} dto.Error
 // @Failure      409 {object} dto.Error
 // @Failure      500 {object} dto.Error
@@ -144,4 +144,134 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 	}
 
 	helpers.ResponseSuccess(c, http.StatusOK, "Logout successful", nil)
+}
+
+// VerifyEmail godoc
+// @Summary      Verify email with OTP
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        request body dto.VerifyEmailRequest true "Email and OTP details"
+// @Success      200 {object} dto.APIResponse
+// @Failure      400 {object} dto.Error
+// @Router       /auth/verify-email [post]
+func (h *AuthHandler) VerifyEmail(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	var req dto.VerifyEmailRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
+		return
+	}
+
+	if err := h.authService.VerifyEmail(ctx, req.Email, req.OTPCode); err != nil {
+		helpers.ResponseError(c, err)
+		return
+	}
+
+	helpers.ResponseSuccess(c, http.StatusOK, "Email successfully verified.", nil)
+}
+
+// ResendOTP godoc
+// @Summary      Resend OTP code
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        request body dto.ResendOTPRequest true "Email details"
+// @Success      200 {object} dto.APIResponse
+// @Failure      400 {object} dto.Error
+// @Router       /auth/resend-otp [post]
+func (h *AuthHandler) ResendOTP(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	var req dto.ResendOTPRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
+		return
+	}
+
+	if err := h.authService.ResendOTP(ctx, req.Email); err != nil {
+		helpers.ResponseError(c, err)
+		return
+	}
+
+	helpers.ResponseSuccess(c, http.StatusOK, "Verification code resent successfully.", nil)
+}
+
+// GoogleLogin godoc
+// @Summary      Google OAuth Login
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        request body dto.GoogleLoginRequest true "Google ID token"
+// @Success      200 {object} dto.LoginResponse
+// @Failure      400 {object} dto.Error
+// @Router       /auth/google [post]
+func (h *AuthHandler) GoogleLogin(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	var req dto.GoogleLoginRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
+		return
+	}
+
+	loginResp, err := h.authService.LoginGoogle(ctx, req.IDToken, c.Request.UserAgent(), c.ClientIP())
+	if err != nil {
+		helpers.ResponseError(c, err)
+		return
+	}
+
+	helpers.ResponseSuccess(c, http.StatusOK, "Google login successful", loginResp)
+}
+
+// ForgotPassword godoc
+// @Summary      Request password reset link
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        request body dto.ForgotPasswordRequest true "User email"
+// @Success      200 {object} dto.APIResponse
+// @Router       /auth/forgot-password [post]
+func (h *AuthHandler) ForgotPassword(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	var req dto.ForgotPasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
+		return
+	}
+
+	if err := h.authService.ForgotPassword(ctx, req.Email); err != nil {
+		helpers.ResponseError(c, err)
+		return
+	}
+
+	helpers.ResponseSuccess(c, http.StatusOK, "If the email is registered, a password reset link has been sent.", nil)
+}
+
+// ResetPassword godoc
+// @Summary      Reset password using token
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        request body dto.ResetPasswordRequest true "Token and new password"
+// @Success      200 {object} dto.APIResponse
+// @Failure      400 {object} dto.Error
+// @Router       /auth/reset-password [post]
+func (h *AuthHandler) ResetPassword(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	var req dto.ResetPasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
+		return
+	}
+
+	if err := h.authService.ResetPassword(ctx, req.Token, req.NewPassword); err != nil {
+		helpers.ResponseError(c, err)
+		return
+	}
+
+	helpers.ResponseSuccess(c, http.StatusOK, "Password successfully updated. You can now log in.", nil)
 }

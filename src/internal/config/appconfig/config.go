@@ -7,6 +7,7 @@ import (
 	"ne-project/src/internal/config/database"
 	"ne-project/src/internal/config/logger"
 	"ne-project/src/internal/config/redis"
+	"ne-project/src/internal/config/smtp"
 	"ne-project/src/internal/config/token"
 	"ne-project/src/internal/handlers/rest/middleware"
 
@@ -21,6 +22,7 @@ type Config struct {
 	RateLimit middleware.RateLimiterOptions `yaml:"rate_limit"`
 	Redis     redis.RedisOptions            `yaml:"redis"`
 	Business  business.BusinessConfig       `yaml:"business"`
+	SMTP      smtp.SMTPConfig               `yaml:"smtp"`
 }
 
 type AppConfig struct {

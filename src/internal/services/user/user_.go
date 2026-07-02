@@ -120,12 +120,13 @@ func (s *userService) CreateUser(ctx context.Context, req *dto.CreateUserRequest
 	}
 
 	u := &entity.User{
-		ID:       uuid.New().String(),
-		Name:     req.Name,
-		Email:    req.Email,
-		Password: hashedPassword,
-		Role:     req.Role,
-		IsActive: true,
+		ID:         uuid.New().String(),
+		Name:       req.Name,
+		Email:      req.Email,
+		Password:   hashedPassword,
+		Role:       req.Role,
+		IsActive:   true,
+		IsVerified: true,
 	}
 
 	if err := s.userRepository.Create(ctx, u); err != nil {

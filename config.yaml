@@ -1,5 +1,5 @@
 app:
-  name: KasirApp
+  name: GreenMart
   port: 8080
   version: 1.0.0
   environment: development
@@ -13,9 +13,9 @@ database:
   host: localhost
   driver: postgres
   port: 5432
-  user: postgres
-  password: mypassword
-  name: kasir_db
+  user: "[DB_USER]"
+  password: "[DB_PASS]"
+  name: "[DB_NAME]"
   ssl_mode: disable
   max_open_conns: 25
   max_idle_conns: 5
@@ -52,3 +52,11 @@ business:
   min_stock_checkout: 1
   max_cart_items: 50
   order_expiry_hours: 24
+
+smtp:
+  host: "smtp.gmail.com"
+  port: 587
+  username: "[SMTP_USER]"
+  password: "[SMTP_PASS]"
+  sender_name: "GreenMart"
+  sender_email: "[EMAIL_FROM]"

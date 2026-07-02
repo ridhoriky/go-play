@@ -7,6 +7,10 @@ import (
 	"ne-project/src/internal/config/appconfig"
 )
 
+// @title           GreenMart API
+// @version         1.0.1.02072026
+// @description     API Server for GreenMart Marketplace.
+// @BasePath        /api/v1
 func main() {
 	// Load Configuration
 	cfg, err := appconfig.LoadConfig()
