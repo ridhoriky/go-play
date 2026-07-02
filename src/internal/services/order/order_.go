@@ -16,6 +16,7 @@ import (
 	"ne-project/src/internal/repositories/order"
 	"ne-project/src/internal/repositories/product"
 	"ne-project/src/internal/repositories/store"
+	"ne-project/src/internal/services/payment"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -26,6 +27,7 @@ type orderService struct {
 	cartRepo    cart.CartRepositoryItf
 	productRepo product.ProductRepositoryItf
 	storeRepo   store.StoreRepositoryItf
+	paymentSvc  payment.PaymentServiceItf
 }
 
 func NewOrderService(
@@ -33,12 +35,14 @@ func NewOrderService(
 	cartRepo cart.CartRepositoryItf,
 	productRepo product.ProductRepositoryItf,
 	storeRepo store.StoreRepositoryItf,
+	paymentSvc payment.PaymentServiceItf,
 ) OrderServiceItf {
 	return &orderService{
 		orderRepo:   orderRepo,
 		cartRepo:    cartRepo,
 		productRepo: productRepo,
 		storeRepo:   storeRepo,
+		paymentSvc:  paymentSvc,
 	}
 }
 
@@ -70,7 +74,16 @@ func (s *orderService) Checkout(ctx context.Context, buyerID string, req *dto.Ch
 
 	s.cleanupCartItems(ctx, req.CartIDs)
 
-	return s.buildCheckoutResponse(ctx, allOrders, allOrderItems)
+	paymentURLs := make(map[string]string)
+	for i := range allOrders {
+		res, err := s.paymentSvc.CreatePayment(ctx, allOrders[i].ID, req.PaymentMethod)
+		if err != nil {
+			return nil, err
+		}
+		paymentURLs[allOrders[i].ID] = res.PaymentURL
+	}
+
+	return s.buildCheckoutResponse(ctx, allOrders, allOrderItems, paymentURLs)
 }
 
 func (s *orderService) validateAndGroupCartItems(ctx context.Context, buyerID string, cartIDs []string) (map[string][]entity.Cart, error) {
@@ -162,7 +175,7 @@ func (s *orderService) buildOrdersAndItems(
 	return allOrders, allOrderItems, nil
 }
 
-func (s *orderService) buildCheckoutResponse(ctx context.Context, allOrders []entity.Order, allOrderItems []entity.OrderItem) ([]dto.OrderDetailResponse, error) {
+func (s *orderService) buildCheckoutResponse(ctx context.Context, allOrders []entity.Order, allOrderItems []entity.OrderItem, paymentURLs map[string]string) ([]dto.OrderDetailResponse, error) {
 	var createdOrders []dto.OrderDetailResponse
 
 	for i := range allOrders {
@@ -205,6 +218,7 @@ func (s *orderService) buildCheckoutResponse(ctx context.Context, allOrders []en
 			ShippingAddress: o.ShippingAddress,
 			ShippingCost:    o.ShippingCost,
 			PaymentMethod:   o.PaymentMethod,
+			PaymentURL:      func() *string { p := paymentURLs[o.ID]; return &p }(),
 			Notes:           o.Notes,
 		})
 	}
@@ -259,6 +273,12 @@ func (s *orderService) mapToOrderDetailResponse(ctx context.Context, o *entity.O
 		})
 	}
 
+	var paymentURL *string
+	if o.PaymentRef != nil && o.Status == "pending" {
+		url := "http://localhost:8080/api/v1/payments/callback?ref=" + *o.PaymentRef
+		paymentURL = &url
+	}
+
 	return &dto.OrderDetailResponse{
 		OrderResponse: dto.OrderResponse{
 			ID:          o.ID,
@@ -276,6 +296,7 @@ func (s *orderService) mapToOrderDetailResponse(ctx context.Context, o *entity.O
 		ShippingAddress: o.ShippingAddress,
 		ShippingCost:    o.ShippingCost,
 		PaymentMethod:   o.PaymentMethod,
+		PaymentURL:      paymentURL,
 		Notes:           o.Notes,
 	}, nil
 }

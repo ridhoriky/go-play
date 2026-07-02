@@ -11,6 +11,7 @@ type CheckoutRequest struct {
 	CartIDs         []string        `json:"cart_ids" validate:"required,min=1"`
 	ShippingAddress json.RawMessage `json:"shipping_address" validate:"required"`
 	Notes           string          `json:"notes"`
+	PaymentMethod   string          `json:"payment_method" validate:"required,oneof=bank_transfer e_wallet credit_card"`
 }
 
 type OrderResponse struct {
@@ -44,6 +45,7 @@ type OrderDetailResponse struct {
 	ShippingAddress json.RawMessage `json:"shipping_address"`
 	ShippingCost    decimal.Decimal `json:"shipping_cost"`
 	PaymentMethod   *string         `json:"payment_method"`
+	PaymentURL      *string         `json:"payment_url,omitempty"`
 	Notes           *string         `json:"notes"`
 }
 

@@ -181,6 +181,27 @@ func (r *orderRepository) GetByOrderNumber(ctx context.Context, orderNumber stri
 	return &o, items, nil
 }
 
+func (r *orderRepository) GetByPaymentRef(ctx context.Context, paymentRef string) (*entity.Order, []entity.OrderItem, error) {
+	var o entity.Order
+	err := r.db.QueryRowContext(ctx, getOrderByPaymentRefQuery, paymentRef).Scan(
+		&o.ID, &o.BuyerID, &o.StoreID, &o.OrderNumber, &o.TotalAmount, &o.Status, &o.ShippingAddress,
+		&o.ShippingCost, &o.PaymentMethod, &o.PaymentRef, &o.Notes, &o.CreatedAt, &o.UpdatedAt,
+	)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil, dto.NewError(http.StatusNotFound, "order not found for the given payment ref")
+	}
+	if err != nil {
+		return nil, nil, err
+	}
+
+	items, err := r.getOrderItems(ctx, o.ID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return &o, items, nil
+}
+
 func (r *orderRepository) getOrderItems(ctx context.Context, orderID string) ([]entity.OrderItem, error) {
 	var items []entity.OrderItem
 	rows, err := r.db.QueryContext(ctx, getOrderItemsByOrderIDQuery, orderID)

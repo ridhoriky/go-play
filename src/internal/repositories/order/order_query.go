@@ -32,6 +32,11 @@ const (
 		FROM orders WHERE order_number = $1
 	`
 
+	getOrderByPaymentRefQuery = `
+		SELECT id, buyer_id, store_id, order_number, total_amount, status, shipping_address, shipping_cost, payment_method, payment_ref, notes, created_at, updated_at
+		FROM orders WHERE payment_ref = $1
+	`
+
 	getOrderItemsByOrderIDQuery = `
 		SELECT id, order_id, product_id, product_name, product_image, quantity, price, subtotal, created_at
 		FROM order_items WHERE order_id = $1

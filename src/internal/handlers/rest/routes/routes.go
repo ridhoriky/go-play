@@ -27,6 +27,7 @@ type Handlers struct {
 	SellerProfile rest.SellerProfileHandler
 	Admin         rest.AdminHandler
 	AdminReport   rest.AdminReportHandler
+	Payment       rest.PaymentHandler
 }
 
 func NewHandlers(db *sqlx.DB, services *services.Services) *Handlers {
@@ -47,6 +48,7 @@ func NewHandlers(db *sqlx.DB, services *services.Services) *Handlers {
 		SellerProfile: *rest.NewSellerProfileHandler(services.User, services.Store),
 		Admin:         *rest.NewAdminHandler(services.Admin),
 		AdminReport:   *rest.NewAdminReportHandler(services.AdminReport),
+		Payment:       *rest.NewPaymentHandler(services.Payment),
 	}
 }
 
@@ -97,6 +99,14 @@ func (h *Handlers) registerPublicRoutes(r *gin.RouterGroup, tokenSvc *token.Toke
 	{
 		publicCategoryGroup.GET("", h.Category.GetAll)
 		publicCategoryGroup.GET("/:id", h.Category.GetByID)
+	}
+
+	// PUBLIC PAYMENT ROUTES
+	publicPaymentGroup := r.Group("/payments")
+	publicPaymentGroup.Use(mw.RateLimiter(), mw.SetComponent("payment"))
+	{
+		publicPaymentGroup.POST("/callback", h.Payment.PaymentCallback)
+		publicPaymentGroup.GET("/callback", h.Payment.PaymentCallback) // Supported for simulated redirects
 	}
 }
 
@@ -212,6 +222,8 @@ func (h *Handlers) registerBuyerRoutes(protected *gin.RouterGroup, mw *middlewar
 		buyerGroup.GET("/orders/:id", h.Order.GetBuyerOrderDetail)
 		buyerGroup.PATCH("/orders/:id/cancel", h.Order.CancelOrder)
 		buyerGroup.PATCH("/orders/:id/confirm", h.Order.ConfirmReceived)
+		buyerGroup.POST("/orders/:id/pay", h.Payment.CreatePayment)
+		buyerGroup.GET("/orders/:id/payment-status", h.Payment.GetPaymentStatus)
 
 		// Review Routes
 		buyerGroup.POST("/reviews", h.Review.CreateReview)

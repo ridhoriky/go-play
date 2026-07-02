@@ -9,6 +9,7 @@ import (
 	"ne-project/src/internal/services/cart"
 	"ne-project/src/internal/services/category"
 	"ne-project/src/internal/services/order"
+	"ne-project/src/internal/services/payment"
 	"ne-project/src/internal/services/product"
 	"ne-project/src/internal/services/report"
 	"ne-project/src/internal/services/review"
@@ -35,14 +36,17 @@ type Services struct {
 	Wishlist     wishlist.WishlistServiceItf
 	Admin        admin.AdminServiceItf
 	AdminReport  admin.AdminReportServiceItf
+	Payment      payment.PaymentServiceItf
 }
 
 func NewServices(repositories *repositories.Repositories, tokenSvc *token.Token, rdb *redis.Client, cfg *appconfig.Config) *Services {
+	paymentSvc := payment.NewSimulatedPayment(repositories.Order)
+
 	return &Services{
 		Auth:         auth.NewAuthService(repositories.User, repositories.Auth, tokenSvc),
 		Cart:         cart.NewCartService(repositories.Cart, repositories.Product, repositories.Store, cfg),
 		Category:     category.NewCategoryService(repositories.Category),
-		Order:        order.NewOrderService(repositories.Order, repositories.Cart, repositories.Product, repositories.Store),
+		Order:        order.NewOrderService(repositories.Order, repositories.Cart, repositories.Product, repositories.Store, paymentSvc),
 		Product:      product.NewProductService(repositories.Product, repositories.Wishlist, repositories.ProductImage, repositories.Order),
 		Transaction:  transaction.NewTransactionService(repositories.Transaction),
 		Report:       report.NewReportService(repositories.Report),
@@ -53,5 +57,6 @@ func NewServices(repositories *repositories.Repositories, tokenSvc *token.Token,
 		Wishlist:     wishlist.NewWishlistService(repositories.Wishlist, repositories.Product),
 		Admin:        admin.NewAdminService(repositories.Admin),
 		AdminReport:  admin.NewAdminReportService(repositories.Admin),
+		Payment:      paymentSvc,
 	}
 }
