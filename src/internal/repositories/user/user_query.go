@@ -14,21 +14,21 @@ const (
 	`
 
 	getUserByIDQuery = `
-	SELECT id, name, email, password_hash, role, is_active, is_verified, created_at, updated_at
+	SELECT id, name, email, password_hash, role, is_active, is_verified, phone, avatar_url, address, created_at, updated_at
 	FROM users
 	WHERE id = $1
 	`
 
 	getUserByEmailQuery = `
-	SELECT id, name, email, password_hash, role, is_active, is_verified, created_at, updated_at
+	SELECT id, name, email, password_hash, role, is_active, is_verified, phone, avatar_url, address, created_at, updated_at
 	FROM users
 	WHERE email = $1
 	`
 
 	updateUserQuery = `
 	UPDATE users
-	SET name = $1, email = $2, role = $3, is_verified = $4, is_active = $5, updated_at = NOW()
-	WHERE id = $6
+	SET name = $1, email = $2, password_hash = $3, role = $4, is_verified = $5, is_active = $6, phone = $7, avatar_url = $8, address = $9, updated_at = NOW()
+	WHERE id = $10
 	`
 
 	deleteUserQuery = `

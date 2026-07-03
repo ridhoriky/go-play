@@ -15,7 +15,7 @@ type DatabaseConfig struct {
 	Driver          string        `yaml:"driver" env:"DB_DRIVER" env-default:"postgres"`
 	Port            int           `yaml:"port" env:"DB_PORT" env-default:"5432"`
 	User            string        `yaml:"user" env:"DB_USER" env-default:"postgres"`
-	Password        string        `yaml:"password" env:"DB_PASSWORD" env-default:"mypassword"`
+	Password        string        `yaml:"password" env:"DB_PASS" env-default:"mypassword"`
 	Name            string        `yaml:"name" env:"DB_NAME" env-default:"kasir_db"`
 	SSLMode         string        `yaml:"ssl_mode" env:"DB_SSL_MODE" env-default:"disable"`
 	MaxOpenConns    int           `yaml:"max_open_conns" env:"DB_MAX_OPEN_CONNS" env-default:"25"`

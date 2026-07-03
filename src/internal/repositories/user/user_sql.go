@@ -115,7 +115,7 @@ func (r *userRepository) Create(ctx context.Context, user *entity.User) error {
 
 func (r *userRepository) GetByID(ctx context.Context, id string) (*entity.User, error) {
 	var u entity.User
-	err := r.db.QueryRowContext(ctx, getUserByIDQuery, id).Scan(&u.ID, &u.Name, &u.Email, &u.Password, &u.Role, &u.IsActive, &u.IsVerified, &u.CreatedAt, &u.UpdatedAt)
+	err := r.db.QueryRowContext(ctx, getUserByIDQuery, id).Scan(&u.ID, &u.Name, &u.Email, &u.Password, &u.Role, &u.IsActive, &u.IsVerified, &u.Phone, &u.AvatarURL, &u.Address, &u.CreatedAt, &u.UpdatedAt)
 	if errors.Is(err, sql.ErrNoRows) {
 		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg("err user id not found")
 		return nil, dto.NewError(http.StatusNotFound, preference.ErrUserNotFound)
@@ -131,7 +131,7 @@ func (r *userRepository) GetByID(ctx context.Context, id string) (*entity.User, 
 
 func (r *userRepository) GetByEmail(ctx context.Context, email string) (*entity.User, error) {
 	var u entity.User
-	err := r.db.QueryRowContext(ctx, getUserByEmailQuery, email).Scan(&u.ID, &u.Name, &u.Email, &u.Password, &u.Role, &u.IsActive, &u.IsVerified, &u.CreatedAt, &u.UpdatedAt)
+	err := r.db.QueryRowContext(ctx, getUserByEmailQuery, email).Scan(&u.ID, &u.Name, &u.Email, &u.Password, &u.Role, &u.IsActive, &u.IsVerified, &u.Phone, &u.AvatarURL, &u.Address, &u.CreatedAt, &u.UpdatedAt)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, sql.ErrNoRows
 	}
@@ -145,7 +145,7 @@ func (r *userRepository) GetByEmail(ctx context.Context, email string) (*entity.
 }
 
 func (r *userRepository) Update(ctx context.Context, id string, user *entity.User) error {
-	result, err := r.db.ExecContext(ctx, updateUserQuery, user.Name, user.Email, user.Role, user.IsVerified, user.IsActive, id)
+	result, err := r.db.ExecContext(ctx, updateUserQuery, user.Name, user.Email, user.Password, user.Role, user.IsVerified, user.IsActive, user.Phone, user.AvatarURL, user.Address, id)
 	if err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Str("id", id).Msg("err update user")
 		return err
