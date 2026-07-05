@@ -34,8 +34,12 @@ logger:
   compress: true # disabled by default
 
 token:
-  expired_token: 5m
-  expired_refresh_token: 15m
+  expired_token: 15m
+  expired_refresh_token: 168h
+  access_private_key_pem: ""
+  access_public_key_pem: ""
+  refresh_private_key_pem: ""
+  refresh_public_key_pem: ""
 
 rate_limit:
   limit: 1000
@@ -60,3 +64,6 @@ smtp:
   password: "[SMTP_PASS]"
   sender_name: "GreenMart"
   sender_email: "[EMAIL_FROM]"
+
+oauth:
+  google_client_id: "[GOOGLE_CLIENT_ID]"
