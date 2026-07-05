@@ -43,7 +43,7 @@ type Services struct {
 	Payment      payment.PaymentServiceItf
 }
 
-func NewServices(repositories *repositories.Repositories, tokenSvc *token.Token, rdb *redis.Client, cfg *appconfig.Config) *Services {
+func NewServices(repositories *repositories.Repositories, tokenSvc token.TokenServiceItf, rdb *redis.Client, cfg *appconfig.Config) *Services {
 	paymentSvc := payment.NewSimulatedPayment(repositories.Order)
 
 	logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
@@ -58,7 +58,7 @@ func NewServices(repositories *repositories.Repositories, tokenSvc *token.Token,
 	)
 
 	return &Services{
-		Auth:         auth.NewAuthService(repositories.User, repositories.Auth, tokenSvc, mailerSvc),
+		Auth:         auth.NewAuthService(repositories.User, repositories.Auth, tokenSvc, mailerSvc, cfg.OAuth.GoogleClientID, cfg.App.FrontendBaseURL),
 		Cart:         cart.NewCartService(repositories.Cart, repositories.Product, repositories.Store, cfg),
 		Category:     category.NewCategoryService(repositories.Category),
 		Order:        order.NewOrderService(repositories.Order, repositories.Cart, repositories.Product, repositories.Store, paymentSvc),

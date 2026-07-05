@@ -16,7 +16,7 @@ type App struct {
 	cfg      *appconfig.Config
 	log      *zerolog.Logger
 	res      *resource.Resources
-	tokenSvc *token.Token
+	tokenSvc token.TokenServiceItf
 }
 
 func NewApp(cfg *appconfig.Config) (*App, error) {
@@ -28,7 +28,7 @@ func NewApp(cfg *appconfig.Config) (*App, error) {
 		return nil, err
 	}
 
-	tokenSvc, err := token.InitToken(log, cfg.Token)
+	tokenSvc, err := token.NewTokenService(&cfg.Token)
 	if err != nil {
 		res.Close(log)
 		return nil, err

@@ -10,7 +10,7 @@ type LoginRequest struct {
 type RegisterRequest struct {
 	Name     string `json:"name"     binding:"required,min=1,max=100"`
 	Email    string `json:"email"    binding:"required,email"`
-	Password string `json:"password" binding:"required,min=6"`
+	Password string `json:"password" binding:"required,min=8"`
 	Role     string `json:"role"     binding:"omitempty,oneof=admin user"`
 }
 
@@ -36,22 +36,20 @@ type ResetPasswordRequest struct {
 	NewPassword string `json:"newPassword" binding:"required,min=6"`
 }
 
-type RefreshTokenRequest struct {
-	RefreshToken string `json:"refreshToken" binding:"required"`
-}
-
-type LogoutRequest struct {
-	RefreshToken string `json:"refreshToken" binding:"required"`
-}
-
 // ─── Responses ────────────────────────────────────────────────────────
 
+type AuthTokenResult struct {
+	AccessToken  string
+	RefreshToken string
+	ExpiresAt    int64
+	ExpiresRt    int64
+	User         *UserResponse
+}
+
 type AuthTokenResponse struct {
-	AccessToken  string        `json:"accessToken"`
-	RefreshToken string        `json:"refreshToken"`
-	ExpiresAt    int64         `json:"expiresAt"`
-	ExpiresRt    int64         `json:"expiresRt"`
-	User         *UserResponse `json:"user"`
+	AccessToken string        `json:"accessToken"`
+	ExpiresAt   int64         `json:"expiresAt"`
+	User        *UserResponse `json:"user"`
 }
 
 type LoginResponse struct {

@@ -2,7 +2,12 @@ package auth
 
 import (
 	"context"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
+	"crypto/x509"
 	"database/sql"
+	"encoding/pem"
 	"errors"
 	"net/http"
 	"testing"
@@ -185,18 +190,48 @@ func (m *mockAuthRepository) DeleteResetToken(ctx context.Context, token string)
 
 // ─── Setup helper ───────────────────────────────────────────────────────────
 
-func setupTestService(userRepo user.UserRepositoryItf, authRepo auth.AuthRepositoryItf) AuthServiceItf {
+// generateTestECKeyPEM generates a test ECDSA P-256 key pair and returns PEM-encoded private and public keys.
+func generateTestECKeyPEM(t testing.TB) (privPEM, pubPEM string) {
+	t.Helper()
+	privKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	if err != nil {
+		t.Fatalf("failed to generate test EC key: %v", err)
+	}
+	privBytes, err := x509.MarshalECPrivateKey(privKey)
+	if err != nil {
+		t.Fatalf("failed to marshal EC private key: %v", err)
+	}
+	pubBytes, err := x509.MarshalPKIXPublicKey(&privKey.PublicKey)
+	if err != nil {
+		t.Fatalf("failed to marshal EC public key: %v", err)
+	}
+	privPEM = string(pem.EncodeToMemory(&pem.Block{Type: "EC PRIVATE KEY", Bytes: privBytes}))
+	pubPEM = string(pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: pubBytes}))
+	return
+}
+
+func setupTestService(tb testing.TB, userRepo user.UserRepositoryItf, authRepo auth.AuthRepositoryItf) AuthServiceItf {
+	tb.Helper()
 	nopLogger := zerolog.Nop()
-	tokenSvc, _ := token.InitToken(&nopLogger, token.TokenOptions{
-		SecretAccessToken:   "my_secret_access_token_key_12345678",
-		SecretRefreshToken:  "my_secret_refresh_token_key_12345678",
-		ExpiredToken:        15 * time.Minute,
-		ExpiredRefreshToken: 7 * 24 * time.Hour,
+
+	accessPrivPEM, accessPubPEM := generateTestECKeyPEM(tb)
+	refreshPrivPEM, refreshPubPEM := generateTestECKeyPEM(tb)
+
+	tokenSvc, err := token.NewTokenService(&token.TokenOptions{
+		AccessPrivateKeyPEM:  accessPrivPEM,
+		AccessPublicKeyPEM:   accessPubPEM,
+		RefreshPrivateKeyPEM: refreshPrivPEM,
+		RefreshPublicKeyPEM:  refreshPubPEM,
+		ExpiredToken:         15 * time.Minute,
+		ExpiredRefreshToken:  7 * 24 * time.Hour,
 	})
+	if err != nil {
+		tb.Fatalf("setupTestService: failed to init token service: %v", err)
+	}
 
 	mailerSvc := mailer.NewMailer(&nopLogger, "", 587, "", "", "", "")
 
-	return NewAuthService(userRepo, authRepo, tokenSvc, mailerSvc)
+	return NewAuthService(userRepo, authRepo, tokenSvc, mailerSvc, "test-client-id", "https://test.example.com")
 }
 
 // ─── Test Cases: Login ───────────────────────────────────────────────────────
@@ -224,7 +259,7 @@ func TestLogin_Success(t *testing.T) {
 		},
 	}
 
-	svc := setupTestService(userRepo, authRepo)
+	svc := setupTestService(t, userRepo, authRepo)
 	resp, err := svc.Login(ctx, "budi@example.com", plainPassword, "Chrome", "127.0.0.1")
 
 	if err != nil {
@@ -246,7 +281,7 @@ func TestLogin_ErrorUserNotFound(t *testing.T) {
 	}
 	authRepo := &mockAuthRepository{}
 
-	svc := setupTestService(userRepo, authRepo)
+	svc := setupTestService(t, userRepo, authRepo)
 	_, err := svc.Login(ctx, "nonexistent@example.com", plainPassword, "Chrome", "127.0.0.1")
 
 	if err == nil {
@@ -276,7 +311,7 @@ func TestLogin_ErrorInactiveAccount(t *testing.T) {
 	}
 	authRepo := &mockAuthRepository{}
 
-	svc := setupTestService(userRepo, authRepo)
+	svc := setupTestService(t, userRepo, authRepo)
 	_, err := svc.Login(ctx, "budi@example.com", plainPassword, "Chrome", "127.0.0.1")
 
 	if err == nil {
@@ -306,7 +341,7 @@ func TestLogin_ErrorUnverifiedEmail(t *testing.T) {
 	}
 	authRepo := &mockAuthRepository{}
 
-	svc := setupTestService(userRepo, authRepo)
+	svc := setupTestService(t, userRepo, authRepo)
 	_, err := svc.Login(ctx, "budi@example.com", plainPassword, "Chrome", "127.0.0.1")
 
 	if err == nil {
@@ -341,7 +376,7 @@ func TestLogin_ErrorWrongPassword(t *testing.T) {
 	}
 	authRepo := &mockAuthRepository{}
 
-	svc := setupTestService(userRepo, authRepo)
+	svc := setupTestService(t, userRepo, authRepo)
 	_, err := svc.Login(ctx, "budi@example.com", "WrongPwd123!", "Chrome", "127.0.0.1")
 
 	if err == nil {
@@ -378,7 +413,7 @@ func TestRegister_Success(t *testing.T) {
 		},
 	}
 
-	svc := setupTestService(userRepo, authRepo)
+	svc := setupTestService(t, userRepo, authRepo)
 	req := &dto.RegisterRequest{
 		Name:     "Budi",
 		Email:    "budi@example.com",
@@ -406,7 +441,7 @@ func TestRegister_ErrorEmailAlreadyRegistered(t *testing.T) {
 	}
 	authRepo := &mockAuthRepository{}
 
-	svc := setupTestService(userRepo, authRepo)
+	svc := setupTestService(t, userRepo, authRepo)
 	req := &dto.RegisterRequest{
 		Name:     "Budi",
 		Email:    "budi@example.com",
@@ -428,7 +463,7 @@ func TestRegister_ErrorWeakPassword(t *testing.T) {
 	userRepo := &mockUserRepository{}
 	authRepo := &mockAuthRepository{}
 
-	svc := setupTestService(userRepo, authRepo)
+	svc := setupTestService(t, userRepo, authRepo)
 	req := &dto.RegisterRequest{
 		Name:     "Budi",
 		Email:    "budi@example.com",
@@ -473,7 +508,7 @@ func TestVerifyEmail_Success(t *testing.T) {
 		},
 	}
 
-	svc := setupTestService(userRepo, authRepo)
+	svc := setupTestService(t, userRepo, authRepo)
 	err := svc.VerifyEmail(ctx, "budi@example.com", "123456")
 
 	if err != nil {
@@ -496,7 +531,7 @@ func TestVerifyEmail_ErrorOTPExpired(t *testing.T) {
 		},
 	}
 
-	svc := setupTestService(userRepo, authRepo)
+	svc := setupTestService(t, userRepo, authRepo)
 	err := svc.VerifyEmail(ctx, "budi@example.com", "123456")
 
 	if err == nil {
@@ -516,7 +551,7 @@ func TestVerifyEmail_ErrorWrongOTP_RemainingAttempts(t *testing.T) {
 	}
 	userRepo := &mockUserRepository{}
 
-	svc := setupTestService(userRepo, authRepo)
+	svc := setupTestService(t, userRepo, authRepo)
 	err := svc.VerifyEmail(ctx, "budi@example.com", "wrongcode")
 
 	if err == nil {
@@ -551,7 +586,7 @@ func TestVerifyEmail_ErrorWrongOTP_TooManyAttempts(t *testing.T) {
 	}
 	userRepo := &mockUserRepository{}
 
-	svc := setupTestService(userRepo, authRepo)
+	svc := setupTestService(t, userRepo, authRepo)
 	err := svc.VerifyEmail(ctx, "budi@example.com", "wrongcode")
 
 	if err == nil {
@@ -591,7 +626,7 @@ func TestResendOTP_Success(t *testing.T) {
 		},
 	}
 
-	svc := setupTestService(userRepo, authRepo)
+	svc := setupTestService(t, userRepo, authRepo)
 	err := svc.ResendOTP(ctx, "budi@example.com")
 
 	if err != nil {
@@ -611,7 +646,7 @@ func TestResendOTP_ErrorAlreadyVerified(t *testing.T) {
 	}
 	authRepo := &mockAuthRepository{}
 
-	svc := setupTestService(userRepo, authRepo)
+	svc := setupTestService(t, userRepo, authRepo)
 	err := svc.ResendOTP(ctx, "budi@example.com")
 
 	if err == nil {
@@ -636,7 +671,7 @@ func TestResendOTP_ErrorCooldownActive(t *testing.T) {
 		},
 	}
 
-	svc := setupTestService(userRepo, authRepo)
+	svc := setupTestService(t, userRepo, authRepo)
 	err := svc.ResendOTP(ctx, "budi@example.com")
 
 	if err == nil {
@@ -665,7 +700,7 @@ func TestForgotPassword_Success(t *testing.T) {
 		},
 	}
 
-	svc := setupTestService(userRepo, authRepo)
+	svc := setupTestService(t, userRepo, authRepo)
 	err := svc.ForgotPassword(ctx, "budi@example.com")
 
 	if err != nil {
@@ -685,7 +720,7 @@ func TestForgotPassword_SuccessSimulationNonExistent(t *testing.T) {
 	}
 	authRepo := &mockAuthRepository{}
 
-	svc := setupTestService(userRepo, authRepo)
+	svc := setupTestService(t, userRepo, authRepo)
 	err := svc.ForgotPassword(ctx, "unknown@example.com")
 
 	if err != nil {
@@ -721,7 +756,7 @@ func TestResetPassword_Success(t *testing.T) {
 		},
 	}
 
-	svc := setupTestService(userRepo, authRepo)
+	svc := setupTestService(t, userRepo, authRepo)
 	err := svc.ResetPassword(ctx, "my-reset-token", "NewPassword123!")
 
 	if err != nil {
@@ -744,10 +779,320 @@ func TestResetPassword_ErrorInvalidToken(t *testing.T) {
 		},
 	}
 
-	svc := setupTestService(userRepo, authRepo)
+	svc := setupTestService(t, userRepo, authRepo)
 	err := svc.ResetPassword(ctx, "invalid-token", "NewPassword123!")
 
 	if err == nil {
 		t.Error("expected error, got nil")
+	}
+}
+
+// ─── Test Cases: Refresh Token ──────────────────────────────────────────────
+
+func TestRefreshToken_Success(t *testing.T) {
+	ctx := t.Context()
+	plainPassword := "Secret123!"
+	hashedPwd, _ := hash.HashPassword(plainPassword)
+	testUser := &entity.User{
+		ID:         "user-1",
+		Email:      "budi@example.com",
+		Password:   hashedPwd,
+		IsActive:   true,
+		IsVerified: true,
+		Role:       "user",
+	}
+
+	accessPrivPEM, accessPubPEM := generateTestECKeyPEM(t)
+	refreshPrivPEM, refreshPubPEM := generateTestECKeyPEM(t)
+	tokenSvc, _ := token.NewTokenService(&token.TokenOptions{
+		AccessPrivateKeyPEM:  accessPrivPEM,
+		AccessPublicKeyPEM:   accessPubPEM,
+		RefreshPrivateKeyPEM: refreshPrivPEM,
+		RefreshPublicKeyPEM:  refreshPubPEM,
+		ExpiredToken:         15 * time.Minute,
+		ExpiredRefreshToken:  7 * 24 * time.Hour,
+	})
+
+	tokens, _ := tokenSvc.CreateTokens(testUser)
+	hashedToken := tokenSvc.HashToken(tokens.RefreshToken)
+
+	userRepo := &mockUserRepository{
+		GetByIDFunc: func(ctx context.Context, id string) (*entity.User, error) {
+			return testUser, nil
+		},
+	}
+
+	authRepo := &mockAuthRepository{
+		GetRefreshTokenByHashFunc: func(ctx context.Context, tokenHash string) (*entity.RefreshToken, error) {
+			if tokenHash == hashedToken {
+				return &entity.RefreshToken{
+					ID:        tokenHash,
+					UserID:    testUser.ID,
+					TokenHash: tokenHash,
+					ExpiresAt: time.Now().Add(1 * time.Hour),
+					CreatedAt: time.Now(),
+					RevokedAt: nil,
+				}, nil
+			}
+			return nil, auth.ErrRefreshTokenNotFound
+		},
+		RevokeRefreshTokenFunc: func(ctx context.Context, tokenHash string) error {
+			return nil
+		},
+		SaveRefreshTokenFunc: func(ctx context.Context, tokenHash string, userID string, userAgent string, ipAddress string, expiresAt time.Time) error {
+			return nil
+		},
+	}
+
+	nopLogger := zerolog.Nop()
+	mailerSvc := mailer.NewMailer(&nopLogger, "", 587, "", "", "", "")
+	svc := NewAuthService(userRepo, authRepo, tokenSvc, mailerSvc, "test-client-id", "https://test.example.com")
+
+	resp, err := svc.RefreshToken(ctx, tokens.RefreshToken, "Chrome", "127.0.0.1")
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+	}
+	if resp == nil || resp.AccessToken == "" || resp.RefreshToken == "" {
+		t.Error("expected new access and refresh tokens")
+	}
+}
+
+func TestRefreshToken_ErrorExpired(t *testing.T) {
+	ctx := t.Context()
+	testUser := &entity.User{
+		ID:         "user-1",
+		Email:      "budi@example.com",
+		IsActive:   true,
+		IsVerified: true,
+		Role:       "user",
+	}
+
+	accessPrivPEM, accessPubPEM := generateTestECKeyPEM(t)
+	refreshPrivPEM, refreshPubPEM := generateTestECKeyPEM(t)
+	tokenSvc, _ := token.NewTokenService(&token.TokenOptions{
+		AccessPrivateKeyPEM:  accessPrivPEM,
+		AccessPublicKeyPEM:   accessPubPEM,
+		RefreshPrivateKeyPEM: refreshPrivPEM,
+		RefreshPublicKeyPEM:  refreshPubPEM,
+		ExpiredToken:         15 * time.Minute,
+		ExpiredRefreshToken:  -1 * time.Second,
+	})
+
+	tokens, _ := tokenSvc.CreateTokens(testUser)
+
+	userRepo := &mockUserRepository{}
+	authRepo := &mockAuthRepository{}
+
+	nopLogger := zerolog.Nop()
+	mailerSvc := mailer.NewMailer(&nopLogger, "", 587, "", "", "", "")
+	svc := NewAuthService(userRepo, authRepo, tokenSvc, mailerSvc, "test-client-id", "https://test.example.com")
+
+	_, err := svc.RefreshToken(ctx, tokens.RefreshToken, "Chrome", "127.0.0.1")
+	if err == nil {
+		t.Error("expected error for expired token, got nil")
+	}
+}
+
+func TestRefreshToken_ErrorReuse(t *testing.T) {
+	ctx := t.Context()
+	testUser := &entity.User{
+		ID:         "user-1",
+		Email:      "budi@example.com",
+		IsActive:   true,
+		IsVerified: true,
+		Role:       "user",
+	}
+
+	accessPrivPEM, accessPubPEM := generateTestECKeyPEM(t)
+	refreshPrivPEM, refreshPubPEM := generateTestECKeyPEM(t)
+	tokenSvc, _ := token.NewTokenService(&token.TokenOptions{
+		AccessPrivateKeyPEM:  accessPrivPEM,
+		AccessPublicKeyPEM:   accessPubPEM,
+		RefreshPrivateKeyPEM: refreshPrivPEM,
+		RefreshPublicKeyPEM:  refreshPubPEM,
+		ExpiredToken:         15 * time.Minute,
+		ExpiredRefreshToken:  7 * 24 * time.Hour,
+	})
+
+	tokens, _ := tokenSvc.CreateTokens(testUser)
+	hashedToken := tokenSvc.HashToken(tokens.RefreshToken)
+
+	userRepo := &mockUserRepository{}
+
+	revokeAllCalled := false
+	revokedTime := time.Now().Add(-10 * time.Minute)
+	authRepo := &mockAuthRepository{
+		GetRefreshTokenByHashFunc: func(ctx context.Context, tokenHash string) (*entity.RefreshToken, error) {
+			if tokenHash == hashedToken {
+				return &entity.RefreshToken{
+					ID:        tokenHash,
+					UserID:    testUser.ID,
+					TokenHash: tokenHash,
+					ExpiresAt: time.Now().Add(1 * time.Hour),
+					CreatedAt: time.Now().Add(-1 * time.Hour),
+					RevokedAt: &revokedTime,
+				}, nil
+			}
+			return nil, auth.ErrRefreshTokenNotFound
+		},
+		RevokeAllUserTokensFunc: func(ctx context.Context, userID string) error {
+			if userID == testUser.ID {
+				revokeAllCalled = true
+			}
+			return nil
+		},
+	}
+
+	nopLogger := zerolog.Nop()
+	mailerSvc := mailer.NewMailer(&nopLogger, "", 587, "", "", "", "")
+	svc := NewAuthService(userRepo, authRepo, tokenSvc, mailerSvc, "test-client-id", "https://test.example.com")
+
+	_, err := svc.RefreshToken(ctx, tokens.RefreshToken, "Chrome", "127.0.0.1")
+	if err == nil {
+		t.Error("expected error due to reuse, got nil")
+	}
+	if !revokeAllCalled {
+		t.Error("expected RevokeAllUserTokens to be called upon reuse detection")
+	}
+}
+
+func TestRefreshToken_ErrorInactiveAccount(t *testing.T) {
+	ctx := t.Context()
+	testUser := &entity.User{
+		ID:         "user-1",
+		Email:      "budi@example.com",
+		IsActive:   false, // disabled
+		IsVerified: true,
+		Role:       "user",
+	}
+
+	accessPrivPEM, accessPubPEM := generateTestECKeyPEM(t)
+	refreshPrivPEM, refreshPubPEM := generateTestECKeyPEM(t)
+	tokenSvc, _ := token.NewTokenService(&token.TokenOptions{
+		AccessPrivateKeyPEM:  accessPrivPEM,
+		AccessPublicKeyPEM:   accessPubPEM,
+		RefreshPrivateKeyPEM: refreshPrivPEM,
+		RefreshPublicKeyPEM:  refreshPubPEM,
+		ExpiredToken:         15 * time.Minute,
+		ExpiredRefreshToken:  7 * 24 * time.Hour,
+	})
+
+	tokens, _ := tokenSvc.CreateTokens(testUser)
+
+	userRepo := &mockUserRepository{
+		GetByIDFunc: func(ctx context.Context, id string) (*entity.User, error) {
+			return testUser, nil
+		},
+	}
+
+	authRepo := &mockAuthRepository{
+		GetRefreshTokenByHashFunc: func(ctx context.Context, tokenHash string) (*entity.RefreshToken, error) {
+			return &entity.RefreshToken{
+				ID:        tokenHash,
+				UserID:    testUser.ID,
+				TokenHash: tokenHash,
+				ExpiresAt: time.Now().Add(1 * time.Hour),
+				CreatedAt: time.Now(),
+				RevokedAt: nil,
+			}, nil
+		},
+		RevokeRefreshTokenFunc: func(ctx context.Context, tokenHash string) error {
+			return nil
+		},
+	}
+
+	nopLogger := zerolog.Nop()
+	mailerSvc := mailer.NewMailer(&nopLogger, "", 587, "", "", "", "")
+	svc := NewAuthService(userRepo, authRepo, tokenSvc, mailerSvc, "test-client-id", "https://test.example.com")
+
+	_, err := svc.RefreshToken(ctx, tokens.RefreshToken, "Chrome", "127.0.0.1")
+	if err == nil {
+		t.Error("expected error for inactive user, got nil")
+	}
+}
+
+// ─── Test Cases: Logout ──────────────────────────────────────────────────────
+
+func TestLogout_Success(t *testing.T) {
+	ctx := t.Context()
+	testUser := &entity.User{
+		ID:         "user-1",
+		Email:      "budi@example.com",
+		IsActive:   true,
+		IsVerified: true,
+		Role:       "user",
+	}
+
+	accessPrivPEM, accessPubPEM := generateTestECKeyPEM(t)
+	refreshPrivPEM, refreshPubPEM := generateTestECKeyPEM(t)
+	tokenSvc, _ := token.NewTokenService(&token.TokenOptions{
+		AccessPrivateKeyPEM:  accessPrivPEM,
+		AccessPublicKeyPEM:   accessPubPEM,
+		RefreshPrivateKeyPEM: refreshPrivPEM,
+		RefreshPublicKeyPEM:  refreshPubPEM,
+		ExpiredToken:         15 * time.Minute,
+		ExpiredRefreshToken:  7 * 24 * time.Hour,
+	})
+
+	tokens, _ := tokenSvc.CreateTokens(testUser)
+	hashedToken := tokenSvc.HashToken(tokens.RefreshToken)
+
+	userRepo := &mockUserRepository{}
+	revokeCalled := false
+	authRepo := &mockAuthRepository{
+		RevokeRefreshTokenFunc: func(ctx context.Context, tokenHash string) error {
+			if tokenHash == hashedToken {
+				revokeCalled = true
+			}
+			return nil
+		},
+	}
+
+	nopLogger := zerolog.Nop()
+	mailerSvc := mailer.NewMailer(&nopLogger, "", 587, "", "", "", "")
+	svc := NewAuthService(userRepo, authRepo, tokenSvc, mailerSvc, "test-client-id", "https://test.example.com")
+
+	err := svc.Logout(ctx, testUser.ID, tokens.RefreshToken)
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+	}
+	if !revokeCalled {
+		t.Error("expected RevokeRefreshToken to be called during logout")
+	}
+}
+
+func TestLogout_ErrorUserMismatch(t *testing.T) {
+	ctx := t.Context()
+	testUser := &entity.User{
+		ID:         "user-1",
+		Email:      "budi@example.com",
+		IsActive:   true,
+		IsVerified: true,
+		Role:       "user",
+	}
+
+	accessPrivPEM, accessPubPEM := generateTestECKeyPEM(t)
+	refreshPrivPEM, refreshPubPEM := generateTestECKeyPEM(t)
+	tokenSvc, _ := token.NewTokenService(&token.TokenOptions{
+		AccessPrivateKeyPEM:  accessPrivPEM,
+		AccessPublicKeyPEM:   accessPubPEM,
+		RefreshPrivateKeyPEM: refreshPrivPEM,
+		RefreshPublicKeyPEM:  refreshPubPEM,
+		ExpiredToken:         15 * time.Minute,
+		ExpiredRefreshToken:  7 * 24 * time.Hour,
+	})
+
+	tokens, _ := tokenSvc.CreateTokens(testUser)
+
+	userRepo := &mockUserRepository{}
+	authRepo := &mockAuthRepository{}
+
+	nopLogger := zerolog.Nop()
+	mailerSvc := mailer.NewMailer(&nopLogger, "", 587, "", "", "", "")
+	svc := NewAuthService(userRepo, authRepo, tokenSvc, mailerSvc, "test-client-id", "https://test.example.com")
+
+	err := svc.Logout(ctx, "user-2", tokens.RefreshToken)
+	if err == nil {
+		t.Error("expected error due to user mismatch, got nil")
 	}
 }

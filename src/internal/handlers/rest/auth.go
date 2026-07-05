@@ -2,6 +2,7 @@ package rest
 
 import (
 	"net/http"
+	"time"
 
 	"ne-project/src/internal/handlers/helpers"
 	"ne-project/src/internal/models/dto"
@@ -12,18 +13,47 @@ import (
 )
 
 type AuthHandler struct {
-	authService auth.AuthServiceItf
+	authService  auth.AuthServiceItf
+	cookieDomain string
+	cookieSecure bool
 }
 
-func NewAuthHandler(authService auth.AuthServiceItf) *AuthHandler {
+//nolint:gosec // These are cookie settings, not hardcoded credentials
+const (
+	refreshTokenCookieName = "refresh_token"
+	refreshTokenCookiePath = "/api/v1/auth"
+)
+
+func NewAuthHandler(authService auth.AuthServiceItf, cookieDomain string, cookieSecure bool) *AuthHandler {
 	return &AuthHandler{
-		authService: authService,
+		authService:  authService,
+		cookieDomain: cookieDomain,
+		cookieSecure: cookieSecure,
 	}
+}
+
+func (h *AuthHandler) setRefreshTokenCookie(c *gin.Context, refreshToken string, expiresRt int64) {
+	maxAge := max(int(time.Until(time.Unix(expiresRt, 0)).Seconds()), 0)
+	c.SetSameSite(http.SameSiteStrictMode)
+	c.SetCookie(
+		refreshTokenCookieName,
+		refreshToken,
+		maxAge,
+		refreshTokenCookiePath,
+		h.cookieDomain,
+		h.cookieSecure,
+		true, // HttpOnly
+	)
+}
+
+func (h *AuthHandler) clearRefreshTokenCookie(c *gin.Context) {
+	c.SetSameSite(http.SameSiteStrictMode)
+	c.SetCookie(refreshTokenCookieName, "", -1, refreshTokenCookiePath, h.cookieDomain, h.cookieSecure, true)
 }
 
 // Login godoc
 // @Summary      User login
-// @Description  Authenticate user with email and password, returns access and refresh tokens
+// @Description  Authenticate user with email and password.
 // @Tags         auth
 // @Accept       json
 // @Produce      json
@@ -42,10 +72,21 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	loginResp, err := h.authService.Login(ctx, req.Email, req.Password, c.Request.UserAgent(), c.ClientIP())
+	result, err := h.authService.Login(ctx, req.Email, req.Password, c.Request.UserAgent(), c.ClientIP())
 	if err != nil {
 		helpers.ResponseError(c, err)
 		return
+	}
+
+	h.setRefreshTokenCookie(c, result.RefreshToken, result.ExpiresRt)
+
+	loginResp := dto.LoginResponse{
+		AuthTokenResponse: dto.AuthTokenResponse{
+			AccessToken: result.AccessToken,
+			ExpiresAt:   result.ExpiresAt,
+			User:        result.User,
+		},
+		Message: "Login successful",
 	}
 
 	helpers.ResponseSuccess(c, http.StatusOK, "Login successful", loginResp)
@@ -83,29 +124,35 @@ func (h *AuthHandler) Register(c *gin.Context) {
 
 // RefreshToken godoc
 // @Summary      Refresh access token
-// @Description  Generate new access token using refresh token
+// @Description  Generate new access token using the refresh token stored in HttpOnly cookie.
 // @Tags         auth
-// @Accept       json
 // @Produce      json
-// @Param        request body dto.RefreshTokenRequest true "Refresh token"
 // @Success      200 {object} dto.AuthTokenResponse
-// @Failure      400 {object} dto.Error
 // @Failure      401 {object} dto.Error
 // @Failure      500 {object} dto.Error
 // @Router       /auth/refresh [post]
 func (h *AuthHandler) RefreshToken(c *gin.Context) {
 	ctx := c.Request.Context()
 
-	var req dto.RefreshTokenRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
+	refreshToken, err := c.Cookie(refreshTokenCookieName)
+	if err != nil || refreshToken == "" {
+		helpers.ResponseError(c, dto.NewError(http.StatusUnauthorized, preference.ErrInvalidRefreshToken))
 		return
 	}
 
-	tokenResp, err := h.authService.RefreshToken(ctx, req.RefreshToken, c.Request.UserAgent(), c.ClientIP())
+	result, err := h.authService.RefreshToken(ctx, refreshToken, c.Request.UserAgent(), c.ClientIP())
 	if err != nil {
+		h.clearRefreshTokenCookie(c)
 		helpers.ResponseError(c, err)
 		return
+	}
+
+	h.setRefreshTokenCookie(c, result.RefreshToken, result.ExpiresRt)
+
+	tokenResp := dto.AuthTokenResponse{
+		AccessToken: result.AccessToken,
+		ExpiresAt:   result.ExpiresAt,
+		User:        result.User,
 	}
 
 	helpers.ResponseSuccess(c, http.StatusOK, "Token refreshed successfully", tokenResp)
@@ -113,24 +160,15 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 
 // Logout godoc
 // @Summary      User logout
-// @Description  Invalidate refresh token and logout user
+// @Description  Revoke refresh token and clear the HttpOnly cookie
 // @Tags         auth
-// @Accept       json
 // @Produce      json
-// @Param        request body dto.LogoutRequest true "Refresh token"
 // @Success      200 {object} dto.APIResponse
-// @Failure      400 {object} dto.Error
 // @Failure      401 {object} dto.Error
 // @Failure      500 {object} dto.Error
 // @Router       /auth/logout [post]
 func (h *AuthHandler) Logout(c *gin.Context) {
 	ctx := c.Request.Context()
-
-	var req dto.LogoutRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
-		return
-	}
 
 	userID, exists := c.Get("user_id")
 	if !exists {
@@ -138,11 +176,19 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 		return
 	}
 
-	if err := h.authService.Logout(ctx, userID.(string), req.RefreshToken); err != nil {
+	refreshToken, err := c.Cookie(refreshTokenCookieName)
+	if err != nil || refreshToken == "" {
+		h.clearRefreshTokenCookie(c)
+		helpers.ResponseSuccess(c, http.StatusOK, "Logout successful", nil)
+		return
+	}
+
+	if err := h.authService.Logout(ctx, userID.(string), refreshToken); err != nil {
 		helpers.ResponseError(c, err)
 		return
 	}
 
+	h.clearRefreshTokenCookie(c)
 	helpers.ResponseSuccess(c, http.StatusOK, "Logout successful", nil)
 }
 
@@ -200,6 +246,7 @@ func (h *AuthHandler) ResendOTP(c *gin.Context) {
 
 // GoogleLogin godoc
 // @Summary      Google OAuth Login
+// @Description  Authenticate using Google ID Token. Returns access token in body; refresh token is set as HttpOnly cookie.
 // @Tags         auth
 // @Accept       json
 // @Produce      json
@@ -216,10 +263,21 @@ func (h *AuthHandler) GoogleLogin(c *gin.Context) {
 		return
 	}
 
-	loginResp, err := h.authService.LoginGoogle(ctx, req.IDToken, c.Request.UserAgent(), c.ClientIP())
+	result, err := h.authService.LoginGoogle(ctx, req.IDToken, c.Request.UserAgent(), c.ClientIP())
 	if err != nil {
 		helpers.ResponseError(c, err)
 		return
+	}
+
+	h.setRefreshTokenCookie(c, result.RefreshToken, result.ExpiresRt)
+
+	loginResp := dto.LoginResponse{
+		AuthTokenResponse: dto.AuthTokenResponse{
+			AccessToken: result.AccessToken,
+			ExpiresAt:   result.ExpiresAt,
+			User:        result.User,
+		},
+		Message: "Google login successful",
 	}
 
 	helpers.ResponseSuccess(c, http.StatusOK, "Google login successful", loginResp)

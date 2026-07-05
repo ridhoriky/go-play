@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"ne-project/src/internal/config/appconfig"
 	"ne-project/src/internal/config/token"
 	"ne-project/src/internal/handlers/rest"
 	"ne-project/src/internal/handlers/rest/middleware"
@@ -30,9 +31,9 @@ type Handlers struct {
 	Payment       rest.PaymentHandler
 }
 
-func NewHandlers(db *sqlx.DB, services *services.Services) *Handlers {
+func NewHandlers(db *sqlx.DB, services *services.Services, cfg *appconfig.Config) *Handlers {
 	return &Handlers{
-		Auth:          *rest.NewAuthHandler(services.Auth),
+		Auth:          *rest.NewAuthHandler(services.Auth, cfg.Token.CookieDomain, cfg.Token.CookieSecure),
 		Category:      *rest.NewCategoryHandler(services.Category),
 		Product:       *rest.NewProductHandler(services.Product, services.Store),
 		Transaction:   *rest.NewTransactionHandler(services.Transaction),
@@ -52,12 +53,12 @@ func NewHandlers(db *sqlx.DB, services *services.Services) *Handlers {
 	}
 }
 
-func (h *Handlers) RegisterRoutes(r *gin.RouterGroup, tokenSvc *token.Token, mw *middleware.Middleware) {
+func (h *Handlers) RegisterRoutes(r *gin.RouterGroup, tokenSvc token.TokenServiceItf, mw *middleware.Middleware) {
 	h.registerPublicRoutes(r, tokenSvc, mw)
 	h.registerProtectedRoutes(r, tokenSvc, mw)
 }
 
-func (h *Handlers) registerPublicRoutes(r *gin.RouterGroup, tokenSvc *token.Token, mw *middleware.Middleware) {
+func (h *Handlers) registerPublicRoutes(r *gin.RouterGroup, tokenSvc token.TokenServiceItf, mw *middleware.Middleware) {
 	// SYSTEM ROUTES
 	systemGroup := r.Group("/system")
 	systemGroup.Use(mw.SetComponent("system"))
@@ -115,7 +116,7 @@ func (h *Handlers) registerPublicRoutes(r *gin.RouterGroup, tokenSvc *token.Toke
 	}
 }
 
-func (h *Handlers) registerProtectedRoutes(r *gin.RouterGroup, tokenSvc *token.Token, mw *middleware.Middleware) {
+func (h *Handlers) registerProtectedRoutes(r *gin.RouterGroup, tokenSvc token.TokenServiceItf, mw *middleware.Middleware) {
 	protected := r.Group("")
 	protected.Use(mw.JWTAuth(tokenSvc), mw.RateLimiter())
 

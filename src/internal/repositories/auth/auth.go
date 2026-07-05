@@ -33,12 +33,13 @@ type authRepository struct {
 }
 
 type refreshTokenData struct {
-	TokenHash string    `json:"token_hash"`
-	UserID    string    `json:"user_id"`
-	UserAgent string    `json:"user_agent"`
-	IPAddress string    `json:"ip_address"`
-	ExpiresAt time.Time `json:"expires_at"`
-	CreatedAt time.Time `json:"created_at"`
+	TokenHash string     `json:"token_hash"`
+	UserID    string     `json:"user_id"`
+	UserAgent string     `json:"user_agent"`
+	IPAddress string     `json:"ip_address"`
+	ExpiresAt time.Time  `json:"expires_at"`
+	CreatedAt time.Time  `json:"created_at"`
+	RevokedAt *time.Time `json:"revoked_at,omitempty"`
 }
 
 const (

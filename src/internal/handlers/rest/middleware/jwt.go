@@ -13,7 +13,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-func (m *Middleware) JWTAuth(tokenSvc *token.Token) gin.HandlerFunc {
+func (m *Middleware) JWTAuth(tokenSvc token.TokenServiceItf) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if strings.TrimSpace(authHeader) == "" {
@@ -40,7 +40,6 @@ func (m *Middleware) JWTAuth(tokenSvc *token.Token) gin.HandlerFunc {
 		c.Set("user_role", claims.Role)
 		c.Set("user_name", claims.Name)
 
-		// Enrich context logger with user data
 		ctx := c.Request.Context()
 		logger := zerolog.Ctx(ctx).With().
 			Str("user_id", claims.UserID).
@@ -48,10 +47,11 @@ func (m *Middleware) JWTAuth(tokenSvc *token.Token) gin.HandlerFunc {
 			Logger()
 		c.Request = c.Request.WithContext(logger.WithContext(ctx))
 
+		c.Next()
 	}
 }
 
-func (m *Middleware) OptionalJWTAuth(tokenSvc *token.Token) gin.HandlerFunc {
+func (m *Middleware) OptionalJWTAuth(tokenSvc token.TokenServiceItf) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if strings.TrimSpace(authHeader) == "" {

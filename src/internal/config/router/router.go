@@ -17,12 +17,12 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 )
 
-func SetupRouter(log *zerolog.Logger, cfg *appconfig.Config, res *resource.Resources, tokenSvc *token.Token) *gin.Engine {
+func SetupRouter(log *zerolog.Logger, cfg *appconfig.Config, res *resource.Resources, tokenSvc token.TokenServiceItf) *gin.Engine {
 
 	mw := middleware.InitMiddleware(log, tokenSvc, &cfg.RateLimit)
 	repo := repositories.NewRepository(res.DB, res.Redis)
 	service := services.NewServices(repo, tokenSvc, res.Redis, cfg)
-	handlers := routes.NewHandlers(res.DB, service)
+	handlers := routes.NewHandlers(res.DB, service, cfg)
 
 	r := gin.New()
 	r.Use(mw.Logger(), mw.CORS(), mw.Recovery(), otelgin.Middleware("kasir-app"))

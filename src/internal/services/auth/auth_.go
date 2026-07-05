@@ -20,6 +20,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
+	"google.golang.org/api/idtoken"
 )
 
 func generateNumericOTP() string {
@@ -27,7 +28,7 @@ func generateNumericOTP() string {
 	return fmt.Sprintf("%06d", n.Int64())
 }
 
-func (s *authService) Login(ctx context.Context, email string, password string, userAgent string, ipAddr string) (*dto.LoginResponse, error) {
+func (s *authService) Login(ctx context.Context, email string, password string, userAgent string, ipAddr string) (*dto.AuthTokenResult, error) {
 	user, err := s.userRepository.GetByEmail(ctx, email)
 	if err != nil || user == nil {
 		zerolog.Ctx(ctx).Warn().Str("email", email).Msg("User not found during login")
@@ -62,23 +63,20 @@ func (s *authService) Login(ctx context.Context, email string, password string, 
 		return nil, dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
 	}
 
-	return &dto.LoginResponse{
-		AuthTokenResponse: dto.AuthTokenResponse{
-			AccessToken:  tokens.AccessToken,
-			RefreshToken: tokens.RefreshToken,
-			ExpiresAt:    tokens.ExpiresAt,
-			ExpiresRt:    tokens.ExpiresRt,
-			User: &dto.UserResponse{
-				ID:        user.ID,
-				Name:      user.Name,
-				Email:     user.Email,
-				Role:      user.Role,
-				IsActive:  user.IsActive,
-				CreatedAt: user.CreatedAt,
-				UpdatedAt: user.UpdatedAt,
-			},
+	return &dto.AuthTokenResult{
+		AccessToken:  tokens.AccessToken,
+		RefreshToken: tokens.RefreshToken,
+		ExpiresAt:    tokens.ExpiresAt,
+		ExpiresRt:    tokens.ExpiresRt,
+		User: &dto.UserResponse{
+			ID:        user.ID,
+			Name:      user.Name,
+			Email:     user.Email,
+			Role:      user.Role,
+			IsActive:  user.IsActive,
+			CreatedAt: user.CreatedAt,
+			UpdatedAt: user.UpdatedAt,
 		},
-		Message: "Login successful",
 	}, nil
 }
 
@@ -91,11 +89,7 @@ func (s *authService) Register(ctx context.Context, req *dto.RegisterRequest) (*
 		return nil, dto.NewError(http.StatusBadRequest, preference.ErrUserEmailRequired)
 	}
 
-	if len(req.Password) < 8 {
-		return nil, dto.NewError(http.StatusBadRequest, preference.ErrInvalidPassword)
-	}
-
-	// Check for at least one uppercase letter, one number, and one special character
+	// Validate password complexity
 	if err := validatePassword(req.Password); err != nil {
 		return nil, err
 	}
@@ -160,9 +154,9 @@ func (s *authService) Register(ctx context.Context, req *dto.RegisterRequest) (*
 	}, nil
 }
 
-func (s *authService) RefreshToken(ctx context.Context, refreshToken string, userAgent string, ipAddr string) (*dto.AuthTokenResponse, error) {
+func (s *authService) RefreshToken(ctx context.Context, refreshToken string, userAgent string, ipAddr string) (*dto.AuthTokenResult, error) {
 	if refreshToken == "" {
-		return nil, dto.NewError(http.StatusBadRequest, preference.ErrInvalidRefreshToken)
+		return nil, dto.NewError(http.StatusUnauthorized, preference.ErrInvalidRefreshToken)
 	}
 
 	claims, err := s.tokenService.ValidateRefreshToken(refreshToken)
@@ -177,13 +171,24 @@ func (s *authService) RefreshToken(ctx context.Context, refreshToken string, use
 		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to get refresh token")
 		return nil, dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
 	}
-	if storedToken == nil || storedToken.RevokedAt != nil || storedToken.ExpiresAt.Before(time.Now()) {
+	if storedToken == nil || storedToken.ExpiresAt.Before(time.Now()) {
+		return nil, dto.NewError(http.StatusUnauthorized, preference.ErrInvalidRefreshToken)
+	}
+	if storedToken.RevokedAt != nil {
+		_ = s.authRepository.RevokeAllUserTokens(ctx, storedToken.UserID)
+		zerolog.Ctx(ctx).Warn().Str("user_id", storedToken.UserID).Msg("Refresh token reuse detected! All user sessions revoked.")
 		return nil, dto.NewError(http.StatusUnauthorized, preference.ErrInvalidRefreshToken)
 	}
 
 	user, err := s.userRepository.GetByID(ctx, claims.UserID)
 	if err != nil {
-		return nil, err
+		return nil, dto.NewError(http.StatusUnauthorized, preference.ErrInvalidRefreshToken)
+	}
+
+	if !user.IsActive {
+		zerolog.Ctx(ctx).Warn().Str("user_id", user.ID).Msg("Refresh token used for disabled account")
+		_ = s.authRepository.RevokeRefreshToken(ctx, hashedToken)
+		return nil, dto.NewError(http.StatusUnauthorized, preference.ErrInvalidCredentials)
 	}
 
 	newTokens, err := s.tokenService.CreateTokens(user)
@@ -196,7 +201,7 @@ func (s *authService) RefreshToken(ctx context.Context, refreshToken string, use
 		return nil, err
 	}
 
-	return &dto.AuthTokenResponse{
+	return &dto.AuthTokenResult{
 		AccessToken:  newTokens.AccessToken,
 		RefreshToken: newTokens.RefreshToken,
 		ExpiresAt:    newTokens.ExpiresAt,
@@ -215,24 +220,28 @@ func (s *authService) RefreshToken(ctx context.Context, refreshToken string, use
 
 func (s *authService) Logout(ctx context.Context, userID string, refreshToken string) error {
 	if refreshToken == "" {
-		return dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
+		zerolog.Ctx(ctx).Info().Str("user_id", userID).Msg("Logout with missing refresh token — treating as success")
+		return nil
 	}
 
 	claims, err := s.tokenService.ValidateRefreshToken(refreshToken)
 	if err != nil {
-		zerolog.Ctx(ctx).Warn().Err(err).Msg("Invalid refresh token on logout")
-		return dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
+		zerolog.Ctx(ctx).Warn().Err(err).Str("user_id", userID).Msg("Logout with expired/invalid refresh token — treating as success")
+		return nil
 	}
 
 	if claims.UserID != userID {
-		return dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
+		zerolog.Ctx(ctx).Warn().
+			Str("user_id", userID).
+			Str("token_user_id", claims.UserID).
+			Msg("Logout token user mismatch")
+		return dto.NewError(http.StatusUnauthorized, preference.ErrInvalidCredentials)
 	}
 
 	hashedToken := s.tokenService.HashToken(refreshToken)
 	if err := s.authRepository.RevokeRefreshToken(ctx, hashedToken); err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to revoke refresh token on logout")
 		return dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
-
 	}
 
 	zerolog.Ctx(ctx).Info().Str("user_id", userID).Msg("User logged out")
@@ -240,12 +249,16 @@ func (s *authService) Logout(ctx context.Context, userID string, refreshToken st
 }
 
 func (s *authService) rotateRefreshToken(ctx context.Context, oldHash, newRefreshToken string, expiresRt int64, userID, userAgent, ipAddr string) error {
-	err := s.authRepository.RevokeRefreshToken(ctx, oldHash)
-	if err != nil {
-		return err
+	if err := s.authRepository.RevokeRefreshToken(ctx, oldHash); err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to revoke old refresh token during rotation")
+		return dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
 	}
 	newHash := s.tokenService.HashToken(newRefreshToken)
-	return s.authRepository.SaveRefreshToken(ctx, newHash, userID, userAgent, ipAddr, time.Unix(expiresRt, 0))
+	if err := s.authRepository.SaveRefreshToken(ctx, newHash, userID, userAgent, ipAddr, time.Unix(expiresRt, 0)); err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to save new refresh token during rotation")
+		return dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
+	}
+	return nil
 }
 
 func validatePassword(password string) error {
@@ -353,23 +366,24 @@ func (s *authService) ResendOTP(ctx context.Context, email string) error {
 	return nil
 }
 
-func (s *authService) LoginGoogle(ctx context.Context, idToken string, userAgent string, ipAddr string) (*dto.LoginResponse, error) {
-	var name, email string
-
+func (s *authService) LoginGoogle(ctx context.Context, idToken string, userAgent string, ipAddr string) (*dto.AuthTokenResult, error) {
 	if idToken == "" {
 		return nil, dto.NewError(http.StatusBadRequest, "idToken is required")
 	}
 
-	if strings.HasPrefix(idToken, "mock-") || strings.Contains(idToken, "mock") {
-		email = "google-user@greenmart.com"
-		name = "Google User"
-		if strings.Contains(idToken, "budi") {
-			email = "budi@greenmart.com"
-			name = "Budi Santoso"
-		}
-	} else {
-		zerolog.Ctx(ctx).Info().Str("token", idToken).Msg("Google token verification requested (simulated)")
-		email = "google-user@greenmart.com"
+	payload, err := idtoken.Validate(ctx, idToken, s.googleClientID)
+	if err != nil {
+		zerolog.Ctx(ctx).Warn().Err(err).Msg("Invalid Google ID Token")
+		return nil, dto.NewError(http.StatusUnauthorized, "Invalid Google ID Token")
+	}
+
+	email, ok := payload.Claims["email"].(string)
+	if !ok || email == "" {
+		return nil, dto.NewError(http.StatusBadRequest, "Email not found in Google ID Token")
+	}
+
+	name, ok := payload.Claims["name"].(string)
+	if !ok || name == "" {
 		name = "Google User"
 	}
 
@@ -403,32 +417,31 @@ func (s *authService) LoginGoogle(ctx context.Context, idToken string, userAgent
 
 	tokens, err := s.tokenService.CreateTokens(user)
 	if err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to generate tokens for Google login")
 		return nil, dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
 	}
 
 	hashedToken := s.tokenService.HashToken(tokens.RefreshToken)
 	expiresAt := time.Unix(tokens.ExpiresRt, 0)
 	if err := s.authRepository.SaveRefreshToken(ctx, hashedToken, user.ID, userAgent, ipAddr, expiresAt); err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to persist refresh token for Google login")
 		return nil, dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
 	}
 
-	return &dto.LoginResponse{
-		AuthTokenResponse: dto.AuthTokenResponse{
-			AccessToken:  tokens.AccessToken,
-			RefreshToken: tokens.RefreshToken,
-			ExpiresAt:    tokens.ExpiresAt,
-			ExpiresRt:    tokens.ExpiresRt,
-			User: &dto.UserResponse{
-				ID:        user.ID,
-				Name:      user.Name,
-				Email:     user.Email,
-				Role:      user.Role,
-				IsActive:  user.IsActive,
-				CreatedAt: user.CreatedAt,
-				UpdatedAt: user.UpdatedAt,
-			},
+	return &dto.AuthTokenResult{
+		AccessToken:  tokens.AccessToken,
+		RefreshToken: tokens.RefreshToken,
+		ExpiresAt:    tokens.ExpiresAt,
+		ExpiresRt:    tokens.ExpiresRt,
+		User: &dto.UserResponse{
+			ID:        user.ID,
+			Name:      user.Name,
+			Email:     user.Email,
+			Role:      user.Role,
+			IsActive:  user.IsActive,
+			CreatedAt: user.CreatedAt,
+			UpdatedAt: user.UpdatedAt,
 		},
-		Message: "Google login successful",
 	}, nil
 }
 
@@ -447,7 +460,7 @@ func (s *authService) ForgotPassword(ctx context.Context, email string) error {
 		return dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
 	}
 
-	resetLink := "https://greenmart.com/reset-password?token=" + token
+	resetLink := s.frontendBaseURL + "/reset-password?token=" + token
 	emailSubject := "[GreenMart] Password Reset Link"
 	emailBody := fmt.Sprintf(`
 		<p>Hello %s,</p>

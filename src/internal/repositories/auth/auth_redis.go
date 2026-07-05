@@ -83,25 +83,48 @@ func (r *authRepository) GetRefreshTokenByHash(ctx context.Context, tokenHash st
 		IPAddress: data.IPAddress,
 		ExpiresAt: data.ExpiresAt,
 		CreatedAt: data.CreatedAt,
-		RevokedAt: nil,
+		RevokedAt: data.RevokedAt,
 	}, nil
 }
 
 func (r *authRepository) RevokeRefreshToken(ctx context.Context, tokenHash string) error {
-	storedToken, err := r.GetRefreshTokenByHash(ctx, tokenHash)
-	if err == nil && storedToken != nil {
-		userTokensKey := "user_tokens:" + storedToken.UserID
-		_ = r.rdb.SRem(ctx, userTokensKey, tokenHash).Err()
-	}
-
-	result, err := r.rdb.Del(ctx, r.key(tokenHash)).Result()
+	jsonData, err := r.rdb.Get(ctx, r.key(tokenHash)).Bytes()
 	if err != nil {
-		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to revoke refresh token from Redis")
+		if errors.Is(err, redis.Nil) {
+			zerolog.Ctx(ctx).Warn().Str("token_hash", tokenHash).Msg("No refresh token found to revoke")
+			return nil
+		}
+		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to get refresh token for revocation")
 		return err
 	}
 
-	if result == 0 {
-		zerolog.Ctx(ctx).Warn().Str("token_hash", tokenHash).Msg("No refresh token found to revoke")
+	var data refreshTokenData
+	err = json.Unmarshal(jsonData, &data)
+	if err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to unmarshal refresh token data for revocation")
+		return err
+	}
+
+	userTokensKey := "user_tokens:" + data.UserID
+	_ = r.rdb.SRem(ctx, userTokensKey, tokenHash).Err()
+
+	now := time.Now()
+	data.RevokedAt = &now
+
+	updatedJSON, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	ttl := time.Until(data.ExpiresAt)
+	if ttl <= 0 {
+		return r.rdb.Del(ctx, r.key(tokenHash)).Err()
+	}
+
+	err = r.rdb.Set(ctx, r.key(tokenHash), updatedJSON, ttl).Err()
+	if err != nil {
+		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to update revoked refresh token in Redis")
+		return err
 	}
 
 	return nil
