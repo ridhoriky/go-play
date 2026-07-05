@@ -1,4 +1,6 @@
 .env*
 /mydocs
 /dist
-
+/keys/
+/bin/
+/logs/
