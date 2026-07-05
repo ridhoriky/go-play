@@ -38,16 +38,28 @@ A high-performance, structured RESTful API built with Go for a cashier managemen
 ## ⚙️ Setup & Configuration
 
 1. **Clone the repository**
-2. **Configure `config.yaml`**:
-   Adjust the database and server settings to match your local environment.
+2. **Create environment file**:
+   ```bash
+   cp .env.example .env
+   ```
 
-3. **Install Dependencies**:
+3. **Generate JWT ES256 Keys**:
+   We use ECDSA (ES256) for secure token signing. Generate your private and public key pairs by running:
+   ```bash
+   make generate-keys
+   ```
+   Copy the output PEM keys from the terminal and paste them into your `.env` file (e.g. `JWT_ACCESS_PRIVATE_KEY`, `JWT_ACCESS_PUBLIC_KEY`, etc.).
+
+4. **Configure `config.yaml`**:
+   Adjust the database, server, and token settings to match your local environment.
+
+5. **Install Dependencies**:
 
    ```bash
    make tidy
    ```
 
-4. **Run Migrations**:
+6. **Run Migrations**:
 
    ```bash
    make migrate-up
