@@ -107,3 +107,9 @@ lefthook-run:
 ## lefthook-uninstall: Remove Lefthook hooks
 lefthook-uninstall:
 	@lefthook uninstall
+
+## generate-keys: Generate ECDSA P-256 key pairs for JWT (ES256)
+generate-keys:
+	@chmod +x scripts/generate-jwt-keys.sh
+	@./scripts/generate-jwt-keys.sh
+

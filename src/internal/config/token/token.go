@@ -1,25 +1,24 @@
 package token
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
-	"errors"
-	"net/http"
-	"strings"
+	"crypto/ecdsa"
+	"fmt"
 	"time"
 
 	"ne-project/src/internal/models/entity"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
-	"github.com/rs/zerolog"
 )
 
 type TokenOptions struct {
-	SecretAccessToken   string        `yaml:"secret_token" env:"JWT_SECRET_ACCESS_TOKEN" env-default:"secret_access_token"`
-	SecretRefreshToken  string        `yaml:"secret_refresh_token" env:"JWT_SECRET_REFRESH_TOKEN" env-default:"secret_refresh_token"`
-	ExpiredToken        time.Duration `yaml:"expired_token" env:"JWT_EXPIRED_ACCESS_TOKEN" env-default:"15m"`
-	ExpiredRefreshToken time.Duration `yaml:"expired_refresh_token" env:"JWT_EXPIRED_REFRESH_TOKEN" env-default:"168h"`
+	AccessPrivateKeyPEM  string        `yaml:"access_private_key_pem" env:"JWT_ACCESS_PRIVATE_KEY"`
+	AccessPublicKeyPEM   string        `yaml:"access_public_key_pem" env:"JWT_ACCESS_PUBLIC_KEY"`
+	RefreshPrivateKeyPEM string        `yaml:"refresh_private_key_pem" env:"JWT_REFRESH_PRIVATE_KEY"`
+	RefreshPublicKeyPEM  string        `yaml:"refresh_public_key_pem" env:"JWT_REFRESH_PUBLIC_KEY"`
+	ExpiredToken         time.Duration `yaml:"expired_token" env:"JWT_EXPIRED_ACCESS_TOKEN" env-default:"15m"`
+	ExpiredRefreshToken  time.Duration `yaml:"expired_refresh_token" env:"JWT_EXPIRED_REFRESH_TOKEN" env-default:"168h"`
+	CookieDomain         string        `yaml:"cookie_domain" env:"JWT_COOKIE_DOMAIN" env-default:""`
+	CookieSecure         bool          `yaml:"cookie_secure" env:"JWT_COOKIE_SECURE" env-default:"true"`
 }
 
 type TokenDetails struct {
@@ -45,149 +44,39 @@ type RefreshTokenClaims struct {
 	jwt.RegisteredClaims
 }
 
-type Token struct {
-	log                 zerolog.Logger
-	secretAccessToken   []byte
-	secretRefreshToken  []byte
+type TokenServiceItf interface {
+	CreateTokens(user *entity.User) (*TokenDetails, error)
+	ValidateAccessToken(tokenString string) (*AccessTokenClaims, error)
+	ValidateRefreshToken(tokenString string) (*RefreshTokenClaims, error)
+	HashToken(token string) string
+}
+
+type tokenService struct {
+	accessPrivateKey    *ecdsa.PrivateKey
+	accessPublicKey     *ecdsa.PublicKey
+	refreshPrivateKey   *ecdsa.PrivateKey
+	refreshPublicKey    *ecdsa.PublicKey
 	expiredToken        time.Duration
 	expiredRefreshToken time.Duration
 }
 
-func InitToken(log *zerolog.Logger, opt TokenOptions) (*Token, error) {
-	if len(strings.TrimSpace(opt.SecretAccessToken)) == 0 || len(strings.TrimSpace(opt.SecretRefreshToken)) == 0 {
-		return nil, errors.New("JWT secrets must be provided and cannot be empty")
+func NewTokenService(opt *TokenOptions) (TokenServiceItf, error) {
+	accessPriv, accessPub, err := parseECKeyPair(opt.AccessPrivateKeyPEM, opt.AccessPublicKeyPEM)
+	if err != nil {
+		return nil, fmt.Errorf("access token keys: %w", err)
 	}
-	return &Token{
-		log:                 *log,
-		secretAccessToken:   []byte(strings.TrimSpace(opt.SecretAccessToken)),
-		secretRefreshToken:  []byte(strings.TrimSpace(opt.SecretRefreshToken)),
+
+	refreshPriv, refreshPub, err := parseECKeyPair(opt.RefreshPrivateKeyPEM, opt.RefreshPublicKeyPEM)
+	if err != nil {
+		return nil, fmt.Errorf("refresh token keys: %w", err)
+	}
+
+	return &tokenService{
+		accessPrivateKey:    accessPriv,
+		accessPublicKey:     accessPub,
+		refreshPrivateKey:   refreshPriv,
+		refreshPublicKey:    refreshPub,
 		expiredToken:        opt.ExpiredToken,
 		expiredRefreshToken: opt.ExpiredRefreshToken,
 	}, nil
-
-}
-
-func (a *Token) CreateTokens(user *entity.User) (*TokenDetails, error) {
-	now := time.Now()
-	td := &TokenDetails{
-		ExpiresAt: time.Now().Add(a.expiredToken).Unix(),
-		ExpiresRt: time.Now().Add(a.expiredRefreshToken).Unix(),
-	}
-
-	accessUUID := uuid.NewString()
-	refreshUUID := uuid.NewString()
-
-	accessClaims := AccessTokenClaims{
-		Authorized: true,
-		UserID:     user.ID,
-		Name:       user.Name,
-		Role:       user.Role,
-		AccessUUID: accessUUID,
-		RegisteredClaims: jwt.RegisteredClaims{
-			Subject:   user.ID,
-			ExpiresAt: jwt.NewNumericDate(time.Unix(td.ExpiresAt, 0)),
-			IssuedAt:  jwt.NewNumericDate(now),
-		},
-	}
-
-	refreshClaims := RefreshTokenClaims{
-		TokenType:   "refresh",
-		RefreshUUID: refreshUUID,
-		UserID:      user.ID,
-		RegisteredClaims: jwt.RegisteredClaims{
-			Subject:   user.ID,
-			ExpiresAt: jwt.NewNumericDate(time.Unix(td.ExpiresRt, 0)),
-			IssuedAt:  jwt.NewNumericDate(now),
-		},
-	}
-
-	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims)
-	accessString, err := accessToken.SignedString(a.secretAccessToken)
-	if err != nil {
-		return nil, err
-	}
-
-	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims)
-	refreshString, err := refreshToken.SignedString(a.secretRefreshToken)
-	if err != nil {
-		return nil, err
-	}
-
-	td.AccessToken = accessString
-	td.RefreshToken = refreshString
-
-	return td, nil
-}
-
-func (a *Token) ValidateAccessToken(tokenString string) (*AccessTokenClaims, error) {
-	token, err := jwt.ParseWithClaims(tokenString, &AccessTokenClaims{}, func(token *jwt.Token) (any, error) {
-		return a.secretAccessToken, nil
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	claims, ok := token.Claims.(*AccessTokenClaims)
-	if !ok || !token.Valid {
-		return nil, errors.New("invalid access token")
-	}
-
-	return claims, nil
-}
-
-func (a *Token) ValidateRefreshToken(tokenString string) (*RefreshTokenClaims, error) {
-	token, err := jwt.ParseWithClaims(tokenString, &RefreshTokenClaims{}, func(token *jwt.Token) (any, error) {
-		return a.secretRefreshToken, nil
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	claims, ok := token.Claims.(*RefreshTokenClaims)
-	if !ok || !token.Valid {
-		return nil, errors.New("invalid refresh token")
-	}
-
-	if claims.TokenType != "refresh" {
-		return nil, errors.New("invalid refresh token")
-	}
-
-	return claims, nil
-}
-
-func (a *Token) HashToken(token string) string {
-	h := sha256.Sum256([]byte(token))
-	return hex.EncodeToString(h[:])
-}
-
-func (a *Token) ExtractTokenFromHeader(r *http.Request) (string, error) {
-	authHeader := r.Header.Get("Authorization")
-	if strings.TrimSpace(authHeader) == "" {
-		return "", errors.New("authorization header missing")
-	}
-
-	parts := strings.SplitN(authHeader, " ", 2)
-	if len(parts) != 2 || strings.TrimSpace(parts[0]) != "Bearer" {
-		return "", errors.New("authorization header format must be Bearer {token}")
-	}
-
-	return strings.TrimSpace(parts[1]), nil
-}
-
-func (a *Token) ValidateToken(r *http.Request) error {
-	tokenString, err := a.ExtractTokenFromHeader(r)
-	if err != nil {
-		return err
-	}
-
-	_, err = a.ValidateAccessToken(tokenString)
-	return err
-}
-
-func (a *Token) ValidateRefreshTokenFromRequest(r *http.Request, token string) error {
-	if token == "" {
-		return errors.New("refresh token is required")
-	}
-	_, err := a.ValidateRefreshToken(token)
-	return err
 }
