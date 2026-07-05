@@ -19,8 +19,11 @@ import (
 )
 
 func parseECKeyPair(privPEM, pubPEM string) (*ecdsa.PrivateKey, *ecdsa.PublicKey, error) {
-	privPEM = strings.TrimSpace(privPEM)
-	pubPEM = strings.TrimSpace(pubPEM)
+	privPEM = strings.Trim(strings.TrimSpace(privPEM), "\"'")
+	pubPEM = strings.Trim(strings.TrimSpace(pubPEM), "\"'")
+
+	privPEM = strings.ReplaceAll(privPEM, "\\n", "\n")
+	pubPEM = strings.ReplaceAll(pubPEM, "\\n", "\n")
 
 	if privPEM == "" || pubPEM == "" {
 		return nil, nil, errors.New("private and public key PEM must both be provided")
