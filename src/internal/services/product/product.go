@@ -14,6 +14,7 @@ import (
 type ProductServiceItf interface {
 	GetAllProducts(ctx context.Context, userID string, req *dto.GetProductsQuery) (*dto.ProductListResponse, error)
 	GetProductByID(ctx context.Context, id string, userID string) (*dto.ProductDetailResponse, error)
+	GetProductBySlug(ctx context.Context, slug string, userID string) (*dto.ProductDetailResponse, error)
 	CreateProduct(ctx context.Context, storeID string, product *dto.CreateProductRequest) (*entity.Product, error)
 	UpdateProduct(ctx context.Context, id string, storeID string, product *dto.UpdateProductRequest) (*entity.Product, error)
 	DeleteProduct(ctx context.Context, id string, storeID string) error

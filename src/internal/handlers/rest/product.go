@@ -101,27 +101,26 @@ func (h *ProductHandler) Create(c *gin.Context) {
 	helpers.ResponseSuccess(c, http.StatusCreated, "Product created successfully", createdProduct)
 }
 
-// GetProductByID godoc
+// GetProductBySlug godoc
 // @Summary      Get Single product
-// @Description  Get data product by id
+// @Description  Get data product by slug
 // @Tags         products
 // @Produce      json
-// @Param 		 id   path 		string true "Product ID (UUID)" format(uuid)
+// @Param 		 slug   path 		string true "Product Slug"
 // @Success      200  {object}  dto.APIResponse{data=dto.ProductDetailResponse}
 // @Failure      400  {object} 	dto.APIResponse
 // @Failure      404  {object}  dto.APIResponse
-// @Router       /products/{id} [get]
-func (h *ProductHandler) GetByID(c *gin.Context) {
+// @Router       /products/{slug} [get]
+func (h *ProductHandler) GetBySlug(c *gin.Context) {
 	ctx := c.Request.Context()
 
-	id, err := uuid.Parse(c.Param("id"))
-
-	if err != nil {
-		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidProductID))
+	slug := c.Param("slug")
+	if slug == "" {
+		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, "invalid product slug"))
 		return
 	}
 	userID := c.GetString("user_id")
-	product, err := h.productService.GetProductByID(ctx, id.String(), userID)
+	product, err := h.productService.GetProductBySlug(ctx, slug, userID)
 	if err != nil {
 		helpers.ResponseError(c, err)
 		return

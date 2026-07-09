@@ -41,7 +41,7 @@ type GetProductsQuery struct {
 	Page     int             `form:"page"        binding:"omitempty,min=1"`
 	Limit    int             `form:"limit"       binding:"omitempty,min=1,max=100"`
 	Q        string          `form:"q"           binding:"omitempty,max=100"`
-	Category string          `form:"category"    binding:"omitempty,uuid"`
+	Category string          `form:"category"    binding:"omitempty"`
 	Store    string          `form:"store"       binding:"omitempty,uuid"`
 	MinPrice decimal.Decimal `form:"min_price"   binding:"omitempty,min=0"`
 	MaxPrice decimal.Decimal `form:"max_price"   binding:"omitempty,min=0"`

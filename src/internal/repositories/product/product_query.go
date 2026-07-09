@@ -15,7 +15,7 @@ const (
 		p.total_sold,
 		p.is_active,
 		coalesce(c.name, '') as category_name,
-		coalesce(s.name, '') as store_name,
+		coalesce(s.store_name, '') as store_name,
 		coalesce(s.slug, '') as store_slug,
 		coalesce(s.is_verified, false) as store_is_verified,
 		coalesce((SELECT url FROM product_images WHERE product_id = p.id AND is_primary = true LIMIT 1), '') as primary_image,
@@ -62,7 +62,7 @@ const (
 		p.created_at,
 		p.updated_at,
 		COALESCE(c.name, '') as category_name,
-		s.name as store_name,
+		s.store_name as store_name,
 		s.slug as store_slug,
 		COALESCE(s.is_verified, false) as store_is_verified,
 		COALESCE(s.logo_url, '') as store_logo_url,
@@ -87,6 +87,33 @@ const (
 		p.total_sold,
 		p.is_active
 	FROM products p
+	WHERE p.slug = $1 AND p.deleted_at IS NULL`
+
+	getProductDetailBySlugQuery = `
+	SELECT 
+		p.id, 
+		p.store_id,
+		p.category_id,
+		p.name, 
+		p.slug,
+		p.description,
+		p.price, 
+		p.stock, 
+		p.rating_avg,
+		p.total_sold,
+		p.is_active,
+		p.created_at,
+		p.updated_at,
+		COALESCE(c.name, '') as category_name,
+		s.store_name as store_name,
+		s.slug as store_slug,
+		COALESCE(s.is_verified, false) as store_is_verified,
+		COALESCE(s.logo_url, '') as store_logo_url,
+		s.rating_avg as store_rating_avg,
+		(SELECT COUNT(*) FROM reviews r WHERE r.product_id = p.id) as total_reviews
+	FROM products p
+	LEFT JOIN categories c ON p.category_id = c.id
+	JOIN stores s ON p.store_id = s.id
 	WHERE p.slug = $1 AND p.deleted_at IS NULL`
 
 	insertBulkProductQuery = `

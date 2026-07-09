@@ -95,8 +95,8 @@ func (h *Handlers) registerPublicRoutes(r *gin.RouterGroup, tokenSvc token.Token
 	publicProductGroup.Use(mw.RateLimiter(), mw.SetComponent("product"), mw.OptionalJWTAuth(tokenSvc))
 	{
 		publicProductGroup.GET("", h.Product.GetAll)
-		publicProductGroup.GET("/:id", h.Product.GetByID)
-		publicProductGroup.GET("/:id/reviews", h.Review.GetProductReviews)
+		publicProductGroup.GET("/:slug", h.Product.GetBySlug)
+		publicProductGroup.GET("/:slug/reviews", h.Review.GetProductReviews)
 	}
 
 	// PUBLIC CATEGORY ROUTES

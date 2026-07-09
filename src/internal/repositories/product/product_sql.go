@@ -13,6 +13,7 @@ import (
 	"ne-project/src/internal/models/entity"
 	"ne-project/src/internal/preference"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 )
 
@@ -99,8 +100,6 @@ func buildProductSort(filter *dto.GetProductsQuery, args *[]any) string {
 	}
 
 	if filter.Sort == "" && filter.Q != "" {
-		// When searching without explicit sort, sort by search rank
-		// Add weight for verified stores
 		sortBy = fmt.Sprintf("ts_rank(p.search_vector, plainto_tsquery('english', $%d)) + CASE WHEN s.is_verified THEN 0.2 ELSE 0.0 END", len(*args)+1)
 		*args = append(*args, filter.Q)
 		sortDir = "DESC"
@@ -124,7 +123,11 @@ func buildProductFilters(filter *dto.GetProductsQuery) (string, []any) {
 
 	// category
 	if filter.Category != "" {
-		query += fmt.Sprintf(" AND p.category_id = $%d", argPos)
+		if _, err := uuid.Parse(filter.Category); err == nil {
+			query += fmt.Sprintf(" AND p.category_id = $%d", argPos)
+		} else {
+			query += fmt.Sprintf(" AND (c.name ILIKE $%d OR LOWER(c.name) = LOWER($%d) OR REPLACE(LOWER(c.name), ' & ', '-') = LOWER($%d) OR REPLACE(LOWER(c.name), ' ', '-') = LOWER($%d) OR LOWER(c.name) ILIKE '%%' || LOWER($%d) || '%%')", argPos, argPos, argPos, argPos, argPos)
+		}
 		args = append(args, filter.Category)
 		argPos++
 	}
@@ -154,6 +157,7 @@ func buildProductFilters(filter *dto.GetProductsQuery) (string, []any) {
 	if filter.Rating > 0 {
 		query += fmt.Sprintf(" AND p.rating_avg >= $%d", argPos)
 		args = append(args, filter.Rating)
+		argPos++
 	}
 
 	// stock filter
@@ -290,6 +294,48 @@ func (r *productRepository) GetBySlug(ctx context.Context, slug string) (*entity
 		)
 
 	if errors.Is(err, sql.ErrNoRows) {
+		return nil, dto.NewError(http.StatusNotFound, preference.ErrProductNotFound)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &p, nil
+}
+
+func (r *productRepository) GetDetailBySlug(ctx context.Context, slug string) (*entity.ProductDetail, error) {
+	query := getProductDetailBySlugQuery
+
+	var p entity.ProductDetail
+
+	err := r.db.
+		QueryRowContext(ctx, query, slug).
+		Scan(
+			&p.ID,
+			&p.StoreID,
+			&p.CategoryID,
+			&p.Name,
+			&p.Slug,
+			&p.Description,
+			&p.Price,
+			&p.Stock,
+			&p.RatingAvg,
+			&p.TotalSold,
+			&p.IsActive,
+			&p.CreatedAt,
+			&p.UpdatedAt,
+			&p.CategoryName,
+			&p.StoreName,
+			&p.StoreSlug,
+			&p.StoreIsVerified,
+			&p.StoreLogoURL,
+			&p.StoreRatingAvg,
+			&p.TotalReviews,
+		)
+
+	if errors.Is(err, sql.ErrNoRows) {
+		zerolog.Ctx(ctx).Error().Err(err).Str("slug", slug).Msg(preference.ErrProductNotFound)
 		return nil, dto.NewError(http.StatusNotFound, preference.ErrProductNotFound)
 	}
 

@@ -197,6 +197,68 @@ func (s *productService) GetProductByID(ctx context.Context, id string, userID s
 
 }
 
+func (s *productService) GetProductBySlug(ctx context.Context, slug string, userID string) (*dto.ProductDetailResponse, error) {
+	product, err := s.productRepository.GetDetailBySlug(ctx, slug)
+	if err != nil {
+		return nil, err
+	}
+
+	images, err := s.productImageRepository.GetByProductID(ctx, product.ID)
+	if err != nil {
+		// Log error but continue to return product details even if images fail
+		zerolog.Ctx(ctx).Error().Err(err).Str("productID", product.ID).Msg("failed to get product images")
+	}
+
+	var imageResponses []dto.ProductImageResponse
+	for _, img := range images {
+		imageResponses = append(imageResponses, dto.ProductImageResponse{
+			ID:        img.ID,
+			URL:       img.URL,
+			AltText:   img.AltText,
+			SortOrder: img.SortOrder,
+			IsPrimary: img.IsPrimary,
+			CreatedAt: img.CreatedAt,
+		})
+	}
+
+	isInWishlist := false
+	if userID != "" {
+		inWishlist, err := s.wishlistRepository.IsInWishlist(ctx, userID, product.ID)
+		if err == nil {
+			isInWishlist = inWishlist
+		}
+	}
+
+	return &dto.ProductDetailResponse{
+		ID: product.ID,
+		Store: dto.ProductStoreSummary{
+			ID:         product.StoreID,
+			Name:       product.StoreName,
+			Slug:       product.StoreSlug,
+			IsVerified: product.StoreIsVerified,
+			LogoURL:    product.StoreLogoURL,
+			RatingAvg:  product.StoreRatingAvg,
+		},
+		Name:        product.Name,
+		Slug:        product.Slug,
+		Description: product.Description,
+		Price:       product.Price,
+		Stock:       product.Stock,
+		Category: dto.CategorySummary{
+			ID:   product.CategoryID,
+			Name: product.CategoryName,
+		},
+		RatingAvg:    product.RatingAvg,
+		TotalReviews: product.TotalReviews,
+		TotalSold:    product.TotalSold,
+		IsActive:     product.IsActive,
+		IsInWishlist: isInWishlist,
+		Images:       imageResponses,
+		CreatedAt:    product.CreatedAt,
+		UpdatedAt:    product.UpdatedAt,
+	}, nil
+}
+
 func (s *productService) UpdateProduct(ctx context.Context, id string, storeID string, req *dto.UpdateProductRequest) (*entity.Product, error) {
 	existingProductDetail, err := s.productRepository.GetByID(ctx, id)
 	if err != nil {
