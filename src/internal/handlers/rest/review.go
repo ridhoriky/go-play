@@ -51,14 +51,17 @@ func (h *ReviewHandler) CreateReview(c *gin.Context) {
 // @Summary Get product reviews
 // @Tags Review
 // @Produce json
-// @Param id path string true "Product ID"
+// @Param slug path string true "Product Slug"
 // @Param page query int false "Page number"
 // @Param limit query int false "Limit per page"
 // @Success 200 {object} dto.ReviewListResponse
-// @Router /products/{id}/reviews [get]
+// @Router       /products/{slug}/reviews [get]
 func (h *ReviewHandler) GetProductReviews(c *gin.Context) {
 	ctx := c.Request.Context()
 	productID := c.Param("id")
+	if productID == "" {
+		productID = c.Param("slug")
+	}
 
 	var query dto.GetReviewsQuery
 	if err := c.ShouldBindQuery(&query); err != nil {

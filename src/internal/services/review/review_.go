@@ -118,6 +118,15 @@ func (s *reviewService) GetProductReviews(ctx context.Context, productID string,
 		params.Limit = 10
 	}
 
+	// Resolve productID if it's a slug (not a valid UUID)
+	if _, err := uuid.Parse(productID); err != nil {
+		p, err := s.productRepo.GetBySlug(ctx, productID)
+		if err != nil {
+			return nil, err
+		}
+		productID = p.ID
+	}
+
 	reviews, total, err := s.reviewRepo.GetByProductID(ctx, productID, &params)
 	if err != nil {
 		return nil, err
