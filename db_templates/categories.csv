@@ -1,0 +1,11 @@
+id,name,description,parent_id,sort_order,image_url
+019f3fc7-021b-7ed4-86b0-1d06079b6b22,Fruits,Fresh and sweet fruit selection from local farmers,,0,https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=500
+019f3fc7-04f8-7fac-881c-4d069df2cd6e,Vegetables,Fresh vegetables harvested daily direct from the farm,,1,https://images.unsplash.com/photo-1540420773420-3366772f4999?w=500
+019f3fc7-07d5-7cd6-91bf-4998dd168342,Rice & Grains,Premium quality kitchen staples and grains,,2,https://images.unsplash.com/photo-1516684732162-798a0062be99?w=500
+019f3fc7-0ab2-7093-9b76-296985717e08,Spices & Herbs,Aromatic herbs and spices grown by local farmers,,3,https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=500
+019f3fc7-0d8f-764f-92b1-b489d02be2fb,Tubers & Roots,Fresh tubers and root crops straight from the field,,4,https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=500
+019f3fc7-106c-78d3-a4de-e78c0464150d,Organic Fruits,Organic certified pesticide-free fruits,019f3fc7-021b-7ed4-86b0-1d06079b6b22,0,https://images.unsplash.com/photo-1619566636858-adf3ef46400b?w=500
+019f3fc7-1349-7b3b-971e-393a41336fa3,Exotic Fruits,Rare and tropical fruit varieties,019f3fc7-021b-7ed4-86b0-1d06079b6b22,1,https://images.unsplash.com/photo-1519996529931-28324d5a630e?w=500
+019f3fc7-1626-7cf2-ae92-83ba6a0bd723,Leafy Greens,Fresh leafy vegetables rich in nutrients,019f3fc7-04f8-7fac-881c-4d069df2cd6e,0,https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=500
+019f3fc7-1903-717b-b2e3-52ab8dc21eaa,Root Vegetables,Nutritious root vegetables for everyday cooking,019f3fc7-04f8-7fac-881c-4d069df2cd6e,1,https://images.unsplash.com/photo-1447175008436-054170c2e979?w=500
+019f3fc7-1be0-7aac-9724-6d67fa2c3dbd,Organic Vegetables,Certified organic vegetables grown without pesticides,019f3fc7-04f8-7fac-881c-4d069df2cd6e,2,https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=500
