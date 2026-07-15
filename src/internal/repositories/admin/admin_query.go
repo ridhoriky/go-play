@@ -62,7 +62,7 @@ const (
 	queryGetPlatformSummary = `
 		SELECT
 			(SELECT COUNT(*) FROM users WHERE deleted_at IS NULL) AS total_users,
-			(SELECT COUNT(*) FROM users WHERE role = 'buyer' AND deleted_at IS NULL) AS total_buyers,
+			(SELECT COUNT(*) FROM users WHERE role = 'user' AND deleted_at IS NULL) AS total_buyers,
 			(SELECT COUNT(*) FROM users WHERE role = 'seller' AND deleted_at IS NULL) AS total_sellers,
 			(SELECT COUNT(*) FROM users WHERE role = 'admin' AND deleted_at IS NULL) AS total_admins,
 			(SELECT COUNT(*) FROM stores WHERE deleted_at IS NULL) AS total_stores,

@@ -45,7 +45,7 @@ definitions:
         type: boolean
       role:
         enum:
-        - buyer
+        - user
         - seller
         - admin
         type: string
@@ -56,10 +56,6 @@ definitions:
         type: string
       expiresAt:
         type: integer
-      expiresRt:
-        type: integer
-      refreshToken:
-        type: string
       user:
         $ref: '#/definitions/ne-project_src_internal_models_dto.UserResponse'
     type: object
@@ -398,21 +394,10 @@ definitions:
         type: string
       expiresAt:
         type: integer
-      expiresRt:
-        type: integer
       message:
-        type: string
-      refreshToken:
         type: string
       user:
         $ref: '#/definitions/ne-project_src_internal_models_dto.UserResponse'
-    type: object
-  ne-project_src_internal_models_dto.LogoutRequest:
-    properties:
-      refreshToken:
-        type: string
-    required:
-    - refreshToken
     type: object
   ne-project_src_internal_models_dto.OrderDetailResponse:
     properties:
@@ -699,13 +684,6 @@ definitions:
       version:
         type: string
     type: object
-  ne-project_src_internal_models_dto.RefreshTokenRequest:
-    properties:
-      refreshToken:
-        type: string
-    required:
-    - refreshToken
-    type: object
   ne-project_src_internal_models_dto.RegisterRequest:
     properties:
       email:
@@ -715,7 +693,7 @@ definitions:
         minLength: 1
         type: string
       password:
-        minLength: 6
+        minLength: 8
         type: string
       role:
         enum:
@@ -1289,7 +1267,7 @@ info:
   contact: {}
   description: API Server for GreenMart Marketplace.
   title: GreenMart API
-  version: "1.0"
+  version: 1.0.1.02072026
 paths:
   /admin/categories:
     post:
@@ -1575,7 +1553,7 @@ paths:
         in: query
         name: search
         type: string
-      - description: Filter by role (admin, seller, buyer, user)
+      - description: Filter by role (admin, seller, user)
         in: query
         name: role
         type: string
@@ -1744,6 +1722,8 @@ paths:
     post:
       consumes:
       - application/json
+      description: Authenticate using Google ID Token. Returns access token in body;
+        refresh token is set as HttpOnly cookie.
       parameters:
       - description: Google ID token
         in: body
@@ -1769,8 +1749,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Authenticate user with email and password, returns access and refresh
-        tokens
+      description: Authenticate user with email and password.
       parameters:
       - description: Login credentials
         in: body
@@ -1802,16 +1781,7 @@ paths:
       - auth
   /auth/logout:
     post:
-      consumes:
-      - application/json
-      description: Invalidate refresh token and logout user
-      parameters:
-      - description: Refresh token
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/ne-project_src_internal_models_dto.LogoutRequest'
+      description: Revoke refresh token and clear the HttpOnly cookie
       produces:
       - application/json
       responses:
@@ -1819,10 +1789,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
         "401":
           description: Unauthorized
           schema:
@@ -1836,16 +1802,8 @@ paths:
       - auth
   /auth/refresh:
     post:
-      consumes:
-      - application/json
-      description: Generate new access token using refresh token
-      parameters:
-      - description: Refresh token
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/ne-project_src_internal_models_dto.RefreshTokenRequest'
+      description: Generate new access token using the refresh token stored in HttpOnly
+        cookie.
       produces:
       - application/json
       responses:
@@ -1853,10 +1811,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/ne-project_src_internal_models_dto.AuthTokenResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
         "401":
           description: Unauthorized
           schema:
@@ -1883,8 +1837,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "201":
+          description: Created
           schema:
             $ref: '#/definitions/ne-project_src_internal_models_dto.RegisterResponse'
         "400":
@@ -2440,38 +2394,6 @@ paths:
       summary: Delete Product
       tags:
       - products
-    get:
-      description: Get data product by id
-      parameters:
-      - description: Product ID (UUID)
-        format: uuid
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/ne-project_src_internal_models_dto.ProductDetailResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
-      summary: Get Single product
-      tags:
-      - products
     put:
       consumes:
       - application/json
@@ -2512,12 +2434,44 @@ paths:
       summary: Update Product
       tags:
       - products
-  /products/{id}/reviews:
+  /products/{slug}:
+    get:
+      description: Get data product by slug
+      parameters:
+      - description: Product Slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/ne-project_src_internal_models_dto.ProductDetailResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+      summary: Get Single product
+      tags:
+      - products
+  /products/{slug}/reviews:
     get:
       parameters:
-      - description: Product ID
+      - description: Product Slug
         in: path
-        name: id
+        name: slug
         required: true
         type: string
       - description: Page number

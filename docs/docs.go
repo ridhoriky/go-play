@@ -472,7 +472,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Filter by role (admin, seller, buyer, user)",
+                        "description": "Filter by role (admin, seller, user)",
                         "name": "role",
                         "in": "query"
                     },
@@ -715,6 +715,7 @@ const docTemplate = `{
         },
         "/auth/google": {
             "post": {
+                "description": "Authenticate using Google ID Token. Returns access token in body; refresh token is set as HttpOnly cookie.",
                 "consumes": [
                     "application/json"
                 ],
@@ -754,7 +755,7 @@ const docTemplate = `{
         },
         "/auth/login": {
             "post": {
-                "description": "Authenticate user with email and password, returns access and refresh tokens",
+                "description": "Authenticate user with email and password.",
                 "consumes": [
                     "application/json"
                 ],
@@ -806,10 +807,7 @@ const docTemplate = `{
         },
         "/auth/logout": {
             "post": {
-                "description": "Invalidate refresh token and logout user",
-                "consumes": [
-                    "application/json"
-                ],
+                "description": "Revoke refresh token and clear the HttpOnly cookie",
                 "produces": [
                     "application/json"
                 ],
@@ -817,28 +815,11 @@ const docTemplate = `{
                     "auth"
                 ],
                 "summary": "User logout",
-                "parameters": [
-                    {
-                        "description": "Refresh token",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.LogoutRequest"
-                        }
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
                         }
                     },
                     "401": {
@@ -858,10 +839,7 @@ const docTemplate = `{
         },
         "/auth/refresh": {
             "post": {
-                "description": "Generate new access token using refresh token",
-                "consumes": [
-                    "application/json"
-                ],
+                "description": "Generate new access token using the refresh token stored in HttpOnly cookie.",
                 "produces": [
                     "application/json"
                 ],
@@ -869,28 +847,11 @@ const docTemplate = `{
                     "auth"
                 ],
                 "summary": "Refresh access token",
-                "parameters": [
-                    {
-                        "description": "Refresh token",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.RefreshTokenRequest"
-                        }
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/ne-project_src_internal_models_dto.AuthTokenResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
                         }
                     },
                     "401": {
@@ -933,8 +894,8 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/ne-project_src_internal_models_dto.RegisterResponse"
                         }
@@ -1821,58 +1782,6 @@ const docTemplate = `{
             }
         },
         "/products/{id}": {
-            "get": {
-                "description": "Get data product by id",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "products"
-                ],
-                "summary": "Get Single product",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "format": "uuid",
-                        "description": "Product ID (UUID)",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/ne-project_src_internal_models_dto.ProductDetailResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
-                        }
-                    }
-                }
-            },
             "put": {
                 "description": "Update a product by their id",
                 "consumes": [
@@ -1981,7 +1890,60 @@ const docTemplate = `{
                 }
             }
         },
-        "/products/{id}/reviews": {
+        "/products/{slug}": {
+            "get": {
+                "description": "Get data product by slug",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "products"
+                ],
+                "summary": "Get Single product",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Product Slug",
+                        "name": "slug",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/ne-project_src_internal_models_dto.ProductDetailResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/products/{slug}/reviews": {
             "get": {
                 "produces": [
                     "application/json"
@@ -1993,8 +1955,8 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Product ID",
-                        "name": "id",
+                        "description": "Product Slug",
+                        "name": "slug",
                         "in": "path",
                         "required": true
                     },
@@ -3851,7 +3813,7 @@ const docTemplate = `{
                 "role": {
                     "type": "string",
                     "enum": [
-                        "buyer",
+                        "user",
                         "seller",
                         "admin"
                     ]
@@ -3866,12 +3828,6 @@ const docTemplate = `{
                 },
                 "expiresAt": {
                     "type": "integer"
-                },
-                "expiresRt": {
-                    "type": "integer"
-                },
-                "refreshToken": {
-                    "type": "string"
                 },
                 "user": {
                     "$ref": "#/definitions/ne-project_src_internal_models_dto.UserResponse"
@@ -4371,28 +4327,11 @@ const docTemplate = `{
                 "expiresAt": {
                     "type": "integer"
                 },
-                "expiresRt": {
-                    "type": "integer"
-                },
                 "message": {
-                    "type": "string"
-                },
-                "refreshToken": {
                     "type": "string"
                 },
                 "user": {
                     "$ref": "#/definitions/ne-project_src_internal_models_dto.UserResponse"
-                }
-            }
-        },
-        "ne-project_src_internal_models_dto.LogoutRequest": {
-            "type": "object",
-            "required": [
-                "refreshToken"
-            ],
-            "properties": {
-                "refreshToken": {
-                    "type": "string"
                 }
             }
         },
@@ -4828,17 +4767,6 @@ const docTemplate = `{
                 }
             }
         },
-        "ne-project_src_internal_models_dto.RefreshTokenRequest": {
-            "type": "object",
-            "required": [
-                "refreshToken"
-            ],
-            "properties": {
-                "refreshToken": {
-                    "type": "string"
-                }
-            }
-        },
         "ne-project_src_internal_models_dto.RegisterRequest": {
             "type": "object",
             "required": [
@@ -4857,7 +4785,7 @@ const docTemplate = `{
                 },
                 "password": {
                     "type": "string",
-                    "minLength": 6
+                    "minLength": 8
                 },
                 "role": {
                     "type": "string",
@@ -5713,7 +5641,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "1.0",
+	Version:          "1.0.1.02072026",
 	Host:             "",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},

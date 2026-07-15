@@ -45,7 +45,7 @@ func (s *AdminService) UpdateUser(ctx context.Context, currentUserID string, tar
 
 	if req.Role != nil {
 		role := *req.Role
-		if role != "admin" && role != "seller" && role != "buyer" {
+		if role != "admin" && role != "seller" && role != "user" {
 			return errors.New("invalid role")
 		}
 	}

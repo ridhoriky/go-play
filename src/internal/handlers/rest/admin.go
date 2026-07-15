@@ -29,7 +29,7 @@ func NewAdminHandler(adminService admin.AdminServiceItf) *AdminHandler {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        search query string false "Search by name or email"
-// @Param        role query string false "Filter by role (admin, seller, buyer, user)"
+// @Param        role query string false "Filter by role (admin, seller, user)"
 // @Param        is_active query boolean false "Filter by active status"
 // @Param        page query int false "Page number" default(1)
 // @Param        limit query int false "Items per page" default(10)

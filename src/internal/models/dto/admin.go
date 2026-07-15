@@ -4,7 +4,7 @@ import "time"
 
 type AdminUserListParams struct {
 	Search    string
-	Role      string // admin, seller, buyer
+	Role      string // admin, seller, user
 	IsActive  *bool
 	Page      int
 	Limit     int
@@ -25,7 +25,7 @@ type AdminUserResponse struct {
 }
 
 type AdminUpdateUserRequest struct {
-	Role     *string `json:"role" binding:"omitempty,oneof=buyer seller admin"`
+	Role     *string `json:"role" binding:"omitempty,oneof=user seller admin"`
 	IsActive *bool   `json:"is_active" binding:"omitempty"`
 }
 

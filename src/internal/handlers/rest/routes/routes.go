@@ -144,7 +144,7 @@ func (h *Handlers) registerCommonProtectedRoutes(protected *gin.RouterGroup, mw 
 	routerTransactions := protected.Group("/transactions")
 	routerTransactions.Use(mw.SetComponent("transaction"))
 	{
-		routerTransactions.POST("", mw.RequireRole("buyer", "admin"), h.Transaction.Checkout)
+		routerTransactions.POST("", mw.RequireRole("user", "seller", "admin"), h.Transaction.Checkout)
 		routerTransactions.GET("/:id", h.Transaction.GetByID)
 		routerTransactions.PATCH("/:id", mw.RequireRole("seller", "admin"), h.Transaction.UpdateTransactionStatus)
 	}
@@ -174,7 +174,7 @@ func (h *Handlers) registerSellerRoutes(protected *gin.RouterGroup, mw *middlewa
 	routerSellerStores := protected.Group("/seller/stores")
 	routerSellerStores.Use(mw.SetComponent("store"))
 	{
-		routerSellerStores.POST("", mw.RequireRole("buyer", "seller", "admin"), h.Store.CreateStore)
+		routerSellerStores.POST("", mw.RequireRole("user", "seller", "admin"), h.Store.CreateStore)
 		routerSellerStores.GET("/me", mw.RequireRole("seller", "admin"), h.Store.GetMyStore)
 		routerSellerStores.PUT("/me", mw.RequireRole("seller", "admin"), h.Store.UpdateStore)
 	}
@@ -214,7 +214,7 @@ func (h *Handlers) registerSellerRoutes(protected *gin.RouterGroup, mw *middlewa
 func (h *Handlers) registerBuyerRoutes(protected *gin.RouterGroup, mw *middleware.Middleware) {
 	// Buyer group
 	buyerGroup := protected.Group("")
-	buyerGroup.Use(mw.RequireRole("buyer", "seller"))
+	buyerGroup.Use(mw.RequireRole("user", "seller"))
 	{
 		// Cart Routes
 		buyerGroup.POST("/cart", h.Cart.AddToCart)
