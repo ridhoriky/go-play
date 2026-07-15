@@ -67,7 +67,8 @@ const (
 		COALESCE(s.is_verified, false) as store_is_verified,
 		COALESCE(s.logo_url, '') as store_logo_url,
 		s.rating_avg as store_rating_avg,
-		(SELECT COUNT(*) FROM reviews r WHERE r.product_id = p.id) as total_reviews
+		(SELECT COUNT(*) FROM reviews r WHERE r.product_id = p.id) as total_reviews,
+		COALESCE((SELECT url FROM product_images WHERE product_id = p.id AND is_primary = true LIMIT 1), '') as primary_image
 	FROM products p
 	LEFT JOIN categories c ON p.category_id = c.id
 	JOIN stores s ON p.store_id = s.id
@@ -110,7 +111,8 @@ const (
 		COALESCE(s.is_verified, false) as store_is_verified,
 		COALESCE(s.logo_url, '') as store_logo_url,
 		s.rating_avg as store_rating_avg,
-		(SELECT COUNT(*) FROM reviews r WHERE r.product_id = p.id) as total_reviews
+		(SELECT COUNT(*) FROM reviews r WHERE r.product_id = p.id) as total_reviews,
+		COALESCE((SELECT url FROM product_images WHERE product_id = p.id AND is_primary = true LIMIT 1), '') as primary_image
 	FROM products p
 	LEFT JOIN categories c ON p.category_id = c.id
 	JOIN stores s ON p.store_id = s.id

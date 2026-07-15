@@ -130,6 +130,7 @@ func (s *wishlistService) GetWishlist(ctx context.Context, buyerID string, param
 					TotalSold:    prodDetail.TotalSold,
 					IsActive:     prodDetail.IsActive,
 					IsInWishlist: true,
+					PrimaryImage: prodDetail.PrimaryImage,
 					CreatedAt:    prodDetail.CreatedAt,
 					UpdatedAt:    prodDetail.UpdatedAt,
 				},

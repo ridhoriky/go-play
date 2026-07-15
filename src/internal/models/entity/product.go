@@ -41,4 +41,5 @@ type ProductDetail struct {
 	StoreLogoURL    string  `db:"store_logo_url" json:"store_logo_url"`
 	StoreRatingAvg  float64 `db:"store_rating_avg" json:"store_rating_avg"`
 	TotalReviews    int     `db:"total_reviews" json:"total_reviews"`
+	PrimaryImage    string  `db:"primary_image" json:"primary_image"`
 }

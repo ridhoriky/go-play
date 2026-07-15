@@ -87,7 +87,7 @@ func (s *cartService) AddToCart(ctx context.Context, buyerID string, req *dto.Ad
 
 	return &dto.CartItemResponse{
 		ID:       cartID,
-		Product:  s.mapProductToResponse(&prodDetail.Product, prodDetail.CategoryName),
+		Product:  s.mapProductToResponse(prodDetail, prodDetail.CategoryName),
 		Quantity: finalQuantity,
 		Subtotal: subtotal,
 		Store:    s.mapStoreToResponse(st),
@@ -166,7 +166,7 @@ func (s *cartService) GetCart(ctx context.Context, buyerID string) (*dto.CartRes
 
 		items = append(items, dto.CartItemResponse{
 			ID:       c.ID,
-			Product:  s.mapProductToResponse(&prodDetail.Product, prodDetail.CategoryName),
+			Product:  s.mapProductToResponse(prodDetail, prodDetail.CategoryName),
 			Quantity: c.Quantity,
 			Subtotal: subtotal,
 			Store:    s.mapStoreToResponse(st),
@@ -230,7 +230,7 @@ func (s *cartService) ClearCart(ctx context.Context, buyerID string) error {
 	return s.cartRepo.DeleteByBuyerID(ctx, buyerID)
 }
 
-func (s *cartService) mapProductToResponse(prod *entity.Product, categoryName string) dto.ProductResponse {
+func (s *cartService) mapProductToResponse(prod *entity.ProductDetail, categoryName string) dto.ProductResponse {
 	return dto.ProductResponse{
 		ID:           prod.ID,
 		StoreID:      prod.StoreID,
@@ -244,6 +244,7 @@ func (s *cartService) mapProductToResponse(prod *entity.Product, categoryName st
 		RatingAvg:    prod.RatingAvg,
 		TotalSold:    prod.TotalSold,
 		IsActive:     prod.IsActive,
+		PrimaryImage: prod.PrimaryImage,
 		CreatedAt:    prod.CreatedAt,
 		UpdatedAt:    prod.UpdatedAt,
 	}

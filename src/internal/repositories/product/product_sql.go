@@ -124,9 +124,28 @@ func buildProductFilters(filter *dto.GetProductsQuery) (string, []any) {
 	// category
 	if filter.Category != "" {
 		if _, err := uuid.Parse(filter.Category); err == nil {
-			query += fmt.Sprintf(" AND p.category_id = $%d", argPos)
+			query += fmt.Sprintf(` AND p.category_id IN (
+				WITH RECURSIVE category_tree AS (
+					SELECT id FROM categories WHERE id = $%d AND deleted_at IS NULL
+					UNION ALL
+					SELECT c.id FROM categories c
+					JOIN category_tree ct ON c.parent_id = ct.id
+					WHERE c.deleted_at IS NULL
+				)
+				SELECT id FROM category_tree
+			)`, argPos)
 		} else {
-			query += fmt.Sprintf(" AND (c.name ILIKE $%d OR LOWER(c.name) = LOWER($%d) OR REPLACE(LOWER(c.name), ' & ', '-') = LOWER($%d) OR REPLACE(LOWER(c.name), ' ', '-') = LOWER($%d) OR LOWER(c.name) ILIKE '%%' || LOWER($%d) || '%%')", argPos, argPos, argPos, argPos, argPos)
+			query += fmt.Sprintf(` AND p.category_id IN (
+				WITH RECURSIVE category_tree AS (
+					SELECT id FROM categories 
+					WHERE (name ILIKE $%d OR LOWER(name) = LOWER($%d) OR REPLACE(LOWER(name), ' & ', '-') = LOWER($%d) OR REPLACE(LOWER(name), ' ', '-') = LOWER($%d) OR LOWER(name) ILIKE '%%' || LOWER($%d) || '%%') AND deleted_at IS NULL
+					UNION ALL
+					SELECT c.id FROM categories c
+					JOIN category_tree ct ON c.parent_id = ct.id
+					WHERE c.deleted_at IS NULL
+				)
+				SELECT id FROM category_tree
+			)`, argPos, argPos, argPos, argPos, argPos)
 		}
 		args = append(args, filter.Category)
 		argPos++
@@ -258,6 +277,7 @@ func (r *productRepository) GetByID(ctx context.Context, id string) (*entity.Pro
 			&p.StoreLogoURL,
 			&p.StoreRatingAvg,
 			&p.TotalReviews,
+			&p.PrimaryImage,
 		)
 
 	if errors.Is(err, sql.ErrNoRows) {
@@ -332,6 +352,7 @@ func (r *productRepository) GetDetailBySlug(ctx context.Context, slug string) (*
 			&p.StoreLogoURL,
 			&p.StoreRatingAvg,
 			&p.TotalReviews,
+			&p.PrimaryImage,
 		)
 
 	if errors.Is(err, sql.ErrNoRows) {
