@@ -28,6 +28,17 @@ func generateNumericOTP() string {
 	return fmt.Sprintf("%06d", n.Int64())
 }
 
+func (s *authService) getStoreID(ctx context.Context, userID string) string {
+	if s.storeRepository == nil {
+		return ""
+	}
+	st, err := s.storeRepository.GetByUserID(ctx, userID)
+	if err != nil || st == nil {
+		return ""
+	}
+	return st.ID
+}
+
 func (s *authService) Login(ctx context.Context, email string, password string, userAgent string, ipAddr string) (*dto.AuthTokenResult, error) {
 	user, err := s.userRepository.GetByEmail(ctx, email)
 	if err != nil || user == nil {
@@ -50,7 +61,8 @@ func (s *authService) Login(ctx context.Context, email string, password string, 
 		return nil, dto.NewError(http.StatusUnauthorized, preference.ErrInvalidCredentials)
 	}
 
-	tokens, err := s.tokenService.CreateTokens(user)
+	storeID := s.getStoreID(ctx, user.ID)
+	tokens, err := s.tokenService.CreateTokens(user, storeID)
 	if err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to generate tokens")
 		return nil, dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
@@ -191,7 +203,8 @@ func (s *authService) RefreshToken(ctx context.Context, refreshToken string, use
 		return nil, dto.NewError(http.StatusUnauthorized, preference.ErrInvalidCredentials)
 	}
 
-	newTokens, err := s.tokenService.CreateTokens(user)
+	storeID := s.getStoreID(ctx, user.ID)
+	newTokens, err := s.tokenService.CreateTokens(user, storeID)
 	if err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to generate refreshed tokens")
 		return nil, dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)
@@ -415,7 +428,8 @@ func (s *authService) LoginGoogle(ctx context.Context, idToken string, userAgent
 		_ = s.userRepository.Update(ctx, user.ID, user)
 	}
 
-	tokens, err := s.tokenService.CreateTokens(user)
+	storeID := s.getStoreID(ctx, user.ID)
+	tokens, err := s.tokenService.CreateTokens(user, storeID)
 	if err != nil {
 		zerolog.Ctx(ctx).Error().Err(err).Msg("Failed to generate tokens for Google login")
 		return nil, dto.NewError(http.StatusInternalServerError, preference.ErrInternalServer)

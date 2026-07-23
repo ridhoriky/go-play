@@ -72,7 +72,7 @@ func parseECKeyPair(privPEM, pubPEM string) (*ecdsa.PrivateKey, *ecdsa.PublicKey
 	return privateKey, ecPub, nil
 }
 
-func (s *tokenService) CreateTokens(user *entity.User) (*TokenDetails, error) {
+func (s *tokenService) CreateTokens(user *entity.User, storeID ...string) (*TokenDetails, error) {
 	now := time.Now()
 	td := &TokenDetails{
 		ExpiresAt: now.Add(s.expiredToken).Unix(),
@@ -82,9 +82,15 @@ func (s *tokenService) CreateTokens(user *entity.User) (*TokenDetails, error) {
 	accessUUID := uuid.NewString()
 	refreshUUID := uuid.NewString()
 
+	var stID string
+	if len(storeID) > 0 {
+		stID = storeID[0]
+	}
+
 	accessClaims := AccessTokenClaims{
 		Authorized: true,
 		UserID:     user.ID,
+		StoreID:    stID,
 		Name:       user.Name,
 		Role:       user.Role,
 		AccessUUID: accessUUID,

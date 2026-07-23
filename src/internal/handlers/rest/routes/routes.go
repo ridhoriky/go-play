@@ -197,7 +197,7 @@ func (h *Handlers) registerSellerRoutes(protected *gin.RouterGroup, mw *middlewa
 	}
 
 	sellerGroup := protected.Group("/seller")
-	sellerGroup.Use(mw.RequireRole("seller"))
+	sellerGroup.Use(mw.RequireRole("seller"), mw.RequireSellerStore())
 	{
 		sellerGroup.GET("/profile", h.SellerProfile.GetSellerProfile)
 		sellerGroup.PUT("/profile", h.SellerProfile.UpdateSellerProfile)

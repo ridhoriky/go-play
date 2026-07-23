@@ -58,7 +58,7 @@ func NewServices(repositories *repositories.Repositories, tokenSvc token.TokenSe
 	)
 
 	return &Services{
-		Auth:         auth.NewAuthService(repositories.User, repositories.Auth, tokenSvc, mailerSvc, cfg.OAuth.GoogleClientID, cfg.App.FrontendBaseURL),
+		Auth:         auth.NewAuthService(repositories.User, repositories.Auth, repositories.Store, tokenSvc, mailerSvc, cfg.OAuth.GoogleClientID, cfg.App.FrontendBaseURL),
 		Cart:         cart.NewCartService(repositories.Cart, repositories.Product, repositories.Store, cfg),
 		Category:     category.NewCategoryService(repositories.Category),
 		Order:        order.NewOrderService(repositories.Order, repositories.Cart, repositories.Product, repositories.Store, paymentSvc),

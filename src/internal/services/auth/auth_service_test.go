@@ -231,7 +231,7 @@ func setupTestService(tb testing.TB, userRepo user.UserRepositoryItf, authRepo a
 
 	mailerSvc := mailer.NewMailer(&nopLogger, "", 587, "", "", "", "")
 
-	return NewAuthService(userRepo, authRepo, tokenSvc, mailerSvc, "test-client-id", "https://test.example.com")
+	return NewAuthService(userRepo, authRepo, nil, tokenSvc, mailerSvc, "test-client-id", "https://test.example.com")
 }
 
 // ─── Test Cases: Login ───────────────────────────────────────────────────────
@@ -846,7 +846,7 @@ func TestRefreshToken_Success(t *testing.T) {
 
 	nopLogger := zerolog.Nop()
 	mailerSvc := mailer.NewMailer(&nopLogger, "", 587, "", "", "", "")
-	svc := NewAuthService(userRepo, authRepo, tokenSvc, mailerSvc, "test-client-id", "https://test.example.com")
+	svc := NewAuthService(userRepo, authRepo, nil, tokenSvc, mailerSvc, "test-client-id", "https://test.example.com")
 
 	resp, err := svc.RefreshToken(ctx, tokens.RefreshToken, "Chrome", "127.0.0.1")
 	if err != nil {
@@ -885,7 +885,7 @@ func TestRefreshToken_ErrorExpired(t *testing.T) {
 
 	nopLogger := zerolog.Nop()
 	mailerSvc := mailer.NewMailer(&nopLogger, "", 587, "", "", "", "")
-	svc := NewAuthService(userRepo, authRepo, tokenSvc, mailerSvc, "test-client-id", "https://test.example.com")
+	svc := NewAuthService(userRepo, authRepo, nil, tokenSvc, mailerSvc, "test-client-id", "https://test.example.com")
 
 	_, err := svc.RefreshToken(ctx, tokens.RefreshToken, "Chrome", "127.0.0.1")
 	if err == nil {
@@ -945,7 +945,7 @@ func TestRefreshToken_ErrorReuse(t *testing.T) {
 
 	nopLogger := zerolog.Nop()
 	mailerSvc := mailer.NewMailer(&nopLogger, "", 587, "", "", "", "")
-	svc := NewAuthService(userRepo, authRepo, tokenSvc, mailerSvc, "test-client-id", "https://test.example.com")
+	svc := NewAuthService(userRepo, authRepo, nil, tokenSvc, mailerSvc, "test-client-id", "https://test.example.com")
 
 	_, err := svc.RefreshToken(ctx, tokens.RefreshToken, "Chrome", "127.0.0.1")
 	if err == nil {
@@ -1003,7 +1003,7 @@ func TestRefreshToken_ErrorInactiveAccount(t *testing.T) {
 
 	nopLogger := zerolog.Nop()
 	mailerSvc := mailer.NewMailer(&nopLogger, "", 587, "", "", "", "")
-	svc := NewAuthService(userRepo, authRepo, tokenSvc, mailerSvc, "test-client-id", "https://test.example.com")
+	svc := NewAuthService(userRepo, authRepo, nil, tokenSvc, mailerSvc, "test-client-id", "https://test.example.com")
 
 	_, err := svc.RefreshToken(ctx, tokens.RefreshToken, "Chrome", "127.0.0.1")
 	if err == nil {
@@ -1050,7 +1050,7 @@ func TestLogout_Success(t *testing.T) {
 
 	nopLogger := zerolog.Nop()
 	mailerSvc := mailer.NewMailer(&nopLogger, "", 587, "", "", "", "")
-	svc := NewAuthService(userRepo, authRepo, tokenSvc, mailerSvc, "test-client-id", "https://test.example.com")
+	svc := NewAuthService(userRepo, authRepo, nil, tokenSvc, mailerSvc, "test-client-id", "https://test.example.com")
 
 	err := svc.Logout(ctx, testUser.ID, tokens.RefreshToken)
 	if err != nil {
@@ -1089,7 +1089,7 @@ func TestLogout_ErrorUserMismatch(t *testing.T) {
 
 	nopLogger := zerolog.Nop()
 	mailerSvc := mailer.NewMailer(&nopLogger, "", 587, "", "", "", "")
-	svc := NewAuthService(userRepo, authRepo, tokenSvc, mailerSvc, "test-client-id", "https://test.example.com")
+	svc := NewAuthService(userRepo, authRepo, nil, tokenSvc, mailerSvc, "test-client-id", "https://test.example.com")
 
 	err := svc.Logout(ctx, "user-2", tokens.RefreshToken)
 	if err == nil {

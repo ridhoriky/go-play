@@ -39,6 +39,7 @@ func (m *Middleware) JWTAuth(tokenSvc token.TokenServiceItf) gin.HandlerFunc {
 		c.Set("user_id", claims.UserID)
 		c.Set("user_role", claims.Role)
 		c.Set("user_name", claims.Name)
+		c.Set("store_id", claims.StoreID)
 
 		ctx := c.Request.Context()
 		logger := zerolog.Ctx(ctx).With().
@@ -74,6 +75,7 @@ func (m *Middleware) OptionalJWTAuth(tokenSvc token.TokenServiceItf) gin.Handler
 		c.Set("user_id", claims.UserID)
 		c.Set("user_role", claims.Role)
 		c.Set("user_name", claims.Name)
+		c.Set("store_id", claims.StoreID)
 
 		// Enrich context logger with user data
 		ctx := c.Request.Context()

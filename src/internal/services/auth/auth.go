@@ -6,6 +6,7 @@ import (
 	"ne-project/src/internal/config/token"
 	"ne-project/src/internal/models/dto"
 	"ne-project/src/internal/repositories/auth"
+	"ne-project/src/internal/repositories/store"
 	"ne-project/src/internal/repositories/user"
 	"ne-project/src/internal/utils/mailer"
 )
@@ -25,6 +26,7 @@ type AuthServiceItf interface {
 type authService struct {
 	userRepository  user.UserRepositoryItf
 	authRepository  auth.AuthRepositoryItf
+	storeRepository store.StoreRepositoryItf
 	tokenService    token.TokenServiceItf
 	mailer          *mailer.Mailer
 	googleClientID  string
@@ -34,6 +36,7 @@ type authService struct {
 func NewAuthService(
 	userRepository user.UserRepositoryItf,
 	authRepository auth.AuthRepositoryItf,
+	storeRepository store.StoreRepositoryItf,
 	tokenService token.TokenServiceItf,
 	mailer *mailer.Mailer,
 	googleClientID string,
@@ -42,6 +45,7 @@ func NewAuthService(
 	return &authService{
 		userRepository:  userRepository,
 		authRepository:  authRepository,
+		storeRepository: storeRepository,
 		tokenService:    tokenService,
 		mailer:          mailer,
 		googleClientID:  googleClientID,

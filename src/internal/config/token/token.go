@@ -31,6 +31,7 @@ type TokenDetails struct {
 type AccessTokenClaims struct {
 	Authorized bool   `json:"authorized"`
 	UserID     string `json:"user_id"`
+	StoreID    string `json:"store_id,omitempty"`
 	Name       string `json:"name"`
 	Role       string `json:"role"`
 	AccessUUID string `json:"access_uuid"`
@@ -45,7 +46,7 @@ type RefreshTokenClaims struct {
 }
 
 type TokenServiceItf interface {
-	CreateTokens(user *entity.User) (*TokenDetails, error)
+	CreateTokens(user *entity.User, storeID ...string) (*TokenDetails, error)
 	ValidateAccessToken(tokenString string) (*AccessTokenClaims, error)
 	ValidateRefreshToken(tokenString string) (*RefreshTokenClaims, error)
 	HashToken(token string) string
