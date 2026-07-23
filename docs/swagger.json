@@ -66,53 +66,6 @@
                 }
             }
         },
-        "/admin/categories/tree": {
-            "get": {
-                "description": "Get full category tree hierarchy",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "categories"
-                ],
-                "summary": "Get Category Tree",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/ne-project_src_internal_models_dto.CategoryTreeNode"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/admin/categories/{id}": {
             "put": {
                 "description": "Update a category by their id",
@@ -1211,6 +1164,53 @@
                 }
             }
         },
+        "/categories/tree": {
+            "get": {
+                "description": "Get full category tree hierarchy",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "categories"
+                ],
+                "summary": "Get Category Tree",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/ne-project_src_internal_models_dto.CategoryTreeNode"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/categories/{id}": {
             "get": {
                 "description": "Get data category by id",
@@ -1636,62 +1636,6 @@
                                     "properties": {
                                         "data": {
                                             "$ref": "#/definitions/ne-project_src_internal_models_dto.ProductListResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Create a product",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "products"
-                ],
-                "summary": "Create Single product",
-                "parameters": [
-                    {
-                        "description": "Product data",
-                        "name": "product",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/ne-project_src_internal_models_dto.CreateProductRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/ne-project_src_internal_models_entity.Product"
                                         }
                                     }
                                 }
@@ -2321,6 +2265,67 @@
                                     }
                                 }
                             ]
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a product",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "seller-products"
+                ],
+                "summary": "Create Single product",
+                "parameters": [
+                    {
+                        "description": "Product data",
+                        "name": "product",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.CreateProductRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/ne-project_src_internal_models_entity.Product"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.APIResponse"
                         }
                     }
                 }
@@ -3469,8 +3474,120 @@
                 }
             }
         },
+        "/users/me": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get current logged in user's profile",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Get current user profile",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_entity.User"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update current logged in user's profile",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Update current user profile",
+                "parameters": [
+                    {
+                        "description": "Updated user information",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.UpdateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_entity.User"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/users/{id}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get a single user by their unique ID",
                 "consumes": [
                     "application/json"
@@ -3504,6 +3621,12 @@
                             "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
                         }
                     },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -3519,6 +3642,11 @@
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Update user information by their unique ID",
                 "consumes": [
                     "application/json"
@@ -3557,6 +3685,12 @@
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/ne-project_src_internal_models_dto.Error"
                         }
@@ -4531,6 +4665,9 @@
                 "paid_at": {
                     "type": "string"
                 },
+                "payment_method": {
+                    "type": "string"
+                },
                 "payment_ref": {
                     "type": "string"
                 },
@@ -5081,6 +5218,9 @@
                 },
                 "store_name": {
                     "type": "string"
+                },
+                "total_products": {
+                    "type": "integer"
                 },
                 "total_sales": {
                     "type": "integer"

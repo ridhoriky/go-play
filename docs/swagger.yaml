@@ -533,6 +533,8 @@ definitions:
         type: string
       paid_at:
         type: string
+      payment_method:
+        type: string
       payment_ref:
         type: string
       status:
@@ -897,6 +899,8 @@ definitions:
         type: string
       store_name:
         type: string
+      total_products:
+        type: integer
       total_sales:
         type: integer
       updated_at:
@@ -1372,34 +1376,6 @@ paths:
           schema:
             $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
       summary: Update Category
-      tags:
-      - categories
-  /admin/categories/tree:
-    get:
-      description: Get full category tree hierarchy
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/ne-project_src_internal_models_dto.CategoryTreeNode'
-                  type: array
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
-      summary: Get Category Tree
       tags:
       - categories
   /admin/sellers:
@@ -2078,6 +2054,34 @@ paths:
       summary: Get Single category
       tags:
       - categories
+  /categories/tree:
+    get:
+      description: Get full category tree hierarchy
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/ne-project_src_internal_models_dto.CategoryTreeNode'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+      summary: Get Category Tree
+      tags:
+      - categories
   /health:
     get:
       consumes:
@@ -2328,40 +2332,6 @@ paths:
           schema:
             $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
       summary: List Product
-      tags:
-      - products
-    post:
-      consumes:
-      - application/json
-      description: Create a product
-      parameters:
-      - description: Product data
-        in: body
-        name: product
-        required: true
-        schema:
-          $ref: '#/definitions/ne-project_src_internal_models_dto.CreateProductRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            allOf:
-            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/ne-project_src_internal_models_entity.Product'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
-      summary: Create Single product
       tags:
       - products
   /products/{id}:
@@ -2747,6 +2717,42 @@ paths:
                   $ref: '#/definitions/ne-project_src_internal_models_dto.ProductListResponse'
               type: object
       summary: List My Product
+      tags:
+      - seller-products
+    post:
+      consumes:
+      - application/json
+      description: Create a product
+      parameters:
+      - description: Product data
+        in: body
+        name: product
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.CreateProductRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/ne-project_src_internal_models_entity.Product'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Create Single product
       tags:
       - seller-products
   /seller/products/{id}:
@@ -3523,6 +3529,10 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
         "404":
           description: Not Found
           schema:
@@ -3531,6 +3541,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+      security:
+      - BearerAuth: []
       summary: Get user by ID
       tags:
       - Users
@@ -3561,6 +3573,10 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
         "404":
           description: Not Found
           schema:
@@ -3569,7 +3585,77 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+      security:
+      - BearerAuth: []
       summary: Update an existing user
+      tags:
+      - Users
+  /users/me:
+    get:
+      consumes:
+      - application/json
+      description: Get current logged in user's profile
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_entity.User'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+      security:
+      - BearerAuth: []
+      summary: Get current user profile
+      tags:
+      - Users
+    put:
+      consumes:
+      - application/json
+      description: Update current logged in user's profile
+      parameters:
+      - description: Updated user information
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/ne-project_src_internal_models_dto.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_entity.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ne-project_src_internal_models_dto.Error'
+      security:
+      - BearerAuth: []
+      summary: Update current user profile
       tags:
       - Users
   /wishlist:
