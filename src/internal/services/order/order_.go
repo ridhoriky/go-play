@@ -138,12 +138,18 @@ func (s *orderService) buildOrdersAndItems(
 			subtotal := prodDetail.Price.Mul(decimal.NewFromInt(int64(cItem.Quantity)))
 			totalAmount = totalAmount.Add(subtotal)
 
+			var pImg *string
+			if prodDetail.PrimaryImage != "" {
+				img := prodDetail.PrimaryImage
+				pImg = &img
+			}
+
 			orderItems = append(orderItems, entity.OrderItem{
 				ID:           uuid.New().String(),
 				OrderID:      orderID,
 				ProductID:    prodDetail.ID,
 				ProductName:  prodDetail.Name,
-				ProductImage: nil, // Add logic if product images exist
+				ProductImage: pImg,
 				Quantity:     cItem.Quantity,
 				Price:        prodDetail.Price,
 				Subtotal:     subtotal,

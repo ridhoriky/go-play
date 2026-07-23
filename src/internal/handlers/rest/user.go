@@ -52,6 +52,71 @@ func (h *UserHandler) GetAllUser(c *gin.Context) {
 	helpers.ResponseSuccess(c, http.StatusOK, "Success", users)
 }
 
+// GetMyProfile godoc
+// @Summary Get current user profile
+// @Description Get current logged in user's profile
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Success 200 {object} entity.User
+// @Failure 401 {object} dto.Error
+// @Failure 404 {object} dto.Error
+// @Failure 500 {object} dto.Error
+// @Security BearerAuth
+// @Router /users/me [get]
+func (h *UserHandler) GetMyProfile(c *gin.Context) {
+	ctx := c.Request.Context()
+	userID := c.GetString("user_id")
+	if userID == "" {
+		helpers.ResponseError(c, dto.NewError(http.StatusUnauthorized, preference.ErrUnauthorized))
+		return
+	}
+
+	user, err := h.userService.GetUserByID(ctx, userID)
+	if err != nil {
+		helpers.ResponseError(c, err)
+		return
+	}
+	helpers.ResponseSuccess(c, http.StatusOK, "Success", user)
+}
+
+// UpdateMyProfile godoc
+// @Summary Update current user profile
+// @Description Update current logged in user's profile
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param user body dto.UpdateUserRequest true "Updated user information"
+// @Success 200 {object} entity.User
+// @Failure 400 {object} dto.Error
+// @Failure 401 {object} dto.Error
+// @Failure 404 {object} dto.Error
+// @Failure 500 {object} dto.Error
+// @Security BearerAuth
+// @Router /users/me [put]
+func (h *UserHandler) UpdateMyProfile(c *gin.Context) {
+	ctx := c.Request.Context()
+	userID := c.GetString("user_id")
+	if userID == "" {
+		helpers.ResponseError(c, dto.NewError(http.StatusUnauthorized, preference.ErrUnauthorized))
+		return
+	}
+
+	var req dto.UpdateUserRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidReqBody))
+		return
+	}
+
+	updatedUser, err := h.userService.UpdateUser(ctx, userID, &req)
+	if err != nil {
+		helpers.ResponseError(c, err)
+		return
+	}
+
+	helpers.ResponseSuccess(c, http.StatusOK, "User profile updated successfully", updatedUser)
+}
+
 // GetUserByID godoc
 // @Summary Get user by ID
 // @Description Get a single user by their unique ID
@@ -61,18 +126,27 @@ func (h *UserHandler) GetAllUser(c *gin.Context) {
 // @Param id path string true "User ID"
 // @Success 200 {object} entity.User
 // @Failure 400 {object} dto.Error
+// @Failure 403 {object} dto.Error
 // @Failure 404 {object} dto.Error
 // @Failure 500 {object} dto.Error
+// @Security BearerAuth
 // @Router /users/{id} [get]
 func (h *UserHandler) GetUserByID(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	id, err := uuid.Parse(c.Param("id"))
-
 	if err != nil {
 		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidUserID))
 		return
 	}
+
+	reqUserID := c.GetString("user_id")
+	reqUserRole := c.GetString("user_role")
+	if reqUserRole != "admin" && reqUserID != id.String() {
+		helpers.ResponseError(c, dto.NewError(http.StatusForbidden, preference.ErrForbidden))
+		return
+	}
+
 	user, err := h.userService.GetUserByID(ctx, id.String())
 	if err != nil {
 		helpers.ResponseError(c, err)
@@ -120,8 +194,10 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 // @Param user body dto.UpdateUserRequest true "Updated user information"
 // @Success 200 {object} entity.User
 // @Failure 400 {object} dto.Error
+// @Failure 403 {object} dto.Error
 // @Failure 404 {object} dto.Error
 // @Failure 500 {object} dto.Error
+// @Security BearerAuth
 // @Router /users/{id} [put]
 func (h *UserHandler) UpdateUser(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -129,6 +205,13 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		helpers.ResponseError(c, dto.NewError(http.StatusBadRequest, preference.ErrInvalidUserID))
+		return
+	}
+
+	reqUserID := c.GetString("user_id")
+	reqUserRole := c.GetString("user_role")
+	if reqUserRole != "admin" && reqUserID != id.String() {
+		helpers.ResponseError(c, dto.NewError(http.StatusForbidden, preference.ErrForbidden))
 		return
 	}
 

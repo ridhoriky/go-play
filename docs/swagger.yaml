@@ -52,9 +52,9 @@ definitions:
     type: object
   ne-project_src_internal_models_dto.AuthTokenResponse:
     properties:
-      accessToken:
+      access_token:
         type: string
-      expiresAt:
+      expires_at:
         type: integer
       user:
         $ref: '#/definitions/ne-project_src_internal_models_dto.UserResponse'
@@ -357,10 +357,10 @@ definitions:
     type: object
   ne-project_src_internal_models_dto.GoogleLoginRequest:
     properties:
-      idToken:
+      id_token:
         type: string
     required:
-    - idToken
+    - id_token
     type: object
   ne-project_src_internal_models_dto.HealthCheckResponse:
     properties:
@@ -390,9 +390,9 @@ definitions:
     type: object
   ne-project_src_internal_models_dto.LoginResponse:
     properties:
-      accessToken:
+      access_token:
         type: string
-      expiresAt:
+      expires_at:
         type: integer
       message:
         type: string
@@ -721,13 +721,13 @@ definitions:
     type: object
   ne-project_src_internal_models_dto.ResetPasswordRequest:
     properties:
-      newPassword:
+      new_password:
         minLength: 6
         type: string
       token:
         type: string
     required:
-    - newPassword
+    - new_password
     - token
     type: object
   ne-project_src_internal_models_dto.ReviewListResponse:
@@ -1145,11 +1145,11 @@ definitions:
     properties:
       email:
         type: string
-      otpCode:
+      otp_code:
         type: string
     required:
     - email
-    - otpCode
+    - otp_code
     type: object
   ne-project_src_internal_models_dto.WishlistItemResponse:
     properties:

@@ -22,10 +22,10 @@ type TokenOptions struct {
 }
 
 type TokenDetails struct {
-	AccessToken  string `json:"accessToken"`
-	RefreshToken string `json:"refreshToken"`
-	ExpiresAt    int64  `json:"expiresAt"`
-	ExpiresRt    int64  `json:"expiresRt"`
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+	ExpiresAt    int64  `json:"expires_at"`
+	ExpiresRt    int64  `json:"expires_rt"`
 }
 
 type AccessTokenClaims struct {

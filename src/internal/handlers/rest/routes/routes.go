@@ -161,6 +161,8 @@ func (h *Handlers) registerCommonProtectedRoutes(protected *gin.RouterGroup, mw 
 	routerUsers := protected.Group("/users")
 	routerUsers.Use(mw.SetComponent("user"))
 	{
+		routerUsers.GET("/me", h.User.GetMyProfile)
+		routerUsers.PUT("/me", h.User.UpdateMyProfile)
 		routerUsers.GET("", h.User.GetAllUser)
 		routerUsers.POST("", h.User.CreateUser)
 		routerUsers.GET("/:id", h.User.GetUserByID)

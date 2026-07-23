@@ -3823,10 +3823,10 @@ const docTemplate = `{
         "ne-project_src_internal_models_dto.AuthTokenResponse": {
             "type": "object",
             "properties": {
-                "accessToken": {
+                "access_token": {
                     "type": "string"
                 },
-                "expiresAt": {
+                "expires_at": {
                     "type": "integer"
                 },
                 "user": {
@@ -4273,10 +4273,10 @@ const docTemplate = `{
         "ne-project_src_internal_models_dto.GoogleLoginRequest": {
             "type": "object",
             "required": [
-                "idToken"
+                "id_token"
             ],
             "properties": {
-                "idToken": {
+                "id_token": {
                     "type": "string"
                 }
             }
@@ -4321,10 +4321,10 @@ const docTemplate = `{
         "ne-project_src_internal_models_dto.LoginResponse": {
             "type": "object",
             "properties": {
-                "accessToken": {
+                "access_token": {
                     "type": "string"
                 },
-                "expiresAt": {
+                "expires_at": {
                     "type": "integer"
                 },
                 "message": {
@@ -4821,11 +4821,11 @@ const docTemplate = `{
         "ne-project_src_internal_models_dto.ResetPasswordRequest": {
             "type": "object",
             "required": [
-                "newPassword",
+                "new_password",
                 "token"
             ],
             "properties": {
-                "newPassword": {
+                "new_password": {
                     "type": "string",
                     "minLength": 6
                 },
@@ -5454,13 +5454,13 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "email",
-                "otpCode"
+                "otp_code"
             ],
             "properties": {
                 "email": {
                     "type": "string"
                 },
-                "otpCode": {
+                "otp_code": {
                     "type": "string"
                 }
             }

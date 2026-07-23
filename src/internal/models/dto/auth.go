@@ -15,8 +15,8 @@ type RegisterRequest struct {
 }
 
 type VerifyEmailRequest struct {
-	Email   string `json:"email"   binding:"required,email"`
-	OTPCode string `json:"otpCode" binding:"required,len=6"`
+	Email   string `json:"email"    binding:"required,email"`
+	OTPCode string `json:"otp_code" binding:"required,len=6"`
 }
 
 type ResendOTPRequest struct {
@@ -24,7 +24,7 @@ type ResendOTPRequest struct {
 }
 
 type GoogleLoginRequest struct {
-	IDToken string `json:"idToken" binding:"required"`
+	IDToken string `json:"id_token" binding:"required"`
 }
 
 type ForgotPasswordRequest struct {
@@ -32,8 +32,8 @@ type ForgotPasswordRequest struct {
 }
 
 type ResetPasswordRequest struct {
-	Token       string `json:"token"       binding:"required"`
-	NewPassword string `json:"newPassword" binding:"required,min=6"`
+	Token       string `json:"token"        binding:"required"`
+	NewPassword string `json:"new_password" binding:"required,min=6"`
 }
 
 // ─── Responses ────────────────────────────────────────────────────────
@@ -47,8 +47,8 @@ type AuthTokenResult struct {
 }
 
 type AuthTokenResponse struct {
-	AccessToken string        `json:"accessToken"`
-	ExpiresAt   int64         `json:"expiresAt"`
+	AccessToken string        `json:"access_token"`
+	ExpiresAt   int64         `json:"expires_at"`
 	User        *UserResponse `json:"user"`
 }
 
