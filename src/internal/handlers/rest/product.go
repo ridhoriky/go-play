@@ -68,14 +68,15 @@ func (h *ProductHandler) GetAll(c *gin.Context) {
 // CreateProduct godoc
 // @Summary      Create Single product
 // @Description  Create a product
-// @Tags         products
+// @Tags         seller-products
 // @Accept       json
 // @Produce      json
+// @Security     BearerAuth
 // @Param		 product	body		dto.CreateProductRequest		true	"Product data"
 // @Success      201		{object}  	dto.APIResponse{data=entity.Product}
 // @Failure      400  		{object} 	dto.APIResponse
 // @Failure      404  		{object}  	dto.APIResponse
-// @Router       /products [post]
+// @Router       /seller/products [post]
 func (h *ProductHandler) Create(c *gin.Context) {
 	ctx := c.Request.Context()
 	userID := c.GetString("user_id")

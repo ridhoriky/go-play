@@ -170,7 +170,7 @@ func (h *CategoryHandler) Delete(c *gin.Context) {
 // @Success      200  {object}  dto.APIResponse{data=[]dto.CategoryTreeNode}
 // @Failure      400  {object} 	dto.APIResponse
 // @Failure      500  {object}  dto.APIResponse
-// @Router       /admin/categories/tree [get]
+// @Router       /categories/tree [get]
 func (h *CategoryHandler) GetCategoryTree(c *gin.Context) {
 	ctx := c.Request.Context()
 	tree, err := h.categoryService.GetCategoryTree(ctx)

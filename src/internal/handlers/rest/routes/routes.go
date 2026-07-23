@@ -104,6 +104,7 @@ func (h *Handlers) registerPublicRoutes(r *gin.RouterGroup, tokenSvc token.Token
 	publicCategoryGroup.Use(mw.RateLimiter(), mw.SetComponent("category"))
 	{
 		publicCategoryGroup.GET("", h.Category.GetAll)
+		publicCategoryGroup.GET("/tree", h.Category.GetCategoryTree)
 		publicCategoryGroup.GET("/:id", h.Category.GetByID)
 	}
 
@@ -186,6 +187,7 @@ func (h *Handlers) registerSellerRoutes(protected *gin.RouterGroup, mw *middlewa
 	routerSellerProducts.Use(mw.SetComponent("product"), mw.RequireRole("seller", "admin"))
 	{
 		routerSellerProducts.GET("", h.Product.GetMyProducts)
+		routerSellerProducts.POST("", h.Product.Create)
 		routerSellerProducts.GET("/:id", h.Product.GetSellerProductDetail)
 		routerSellerProducts.PUT("/:id", h.Product.UpdateSellerProduct)
 		routerSellerProducts.DELETE("/:id", h.Product.DeleteSellerProduct)
