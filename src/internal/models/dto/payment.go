@@ -11,10 +11,11 @@ type PaymentResult struct {
 }
 
 type PaymentStatus struct {
-	OrderID    string     `json:"order_id"`
-	Status     string     `json:"status"`
-	PaidAt     *time.Time `json:"paid_at"`
-	PaymentRef string     `json:"payment_ref"`
+	OrderID       string     `json:"order_id"`
+	Status        string     `json:"status"`
+	PaidAt        *time.Time `json:"paid_at"`
+	PaymentRef    string     `json:"payment_ref"`
+	PaymentMethod *string    `json:"payment_method,omitempty"`
 }
 
 type PaymentCallbackRequest struct {

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"ne-project/src/internal/models/dto"
+	"ne-project/src/internal/models/entity"
 	"ne-project/src/internal/repositories/order"
 
 	"github.com/rs/zerolog"
@@ -87,10 +88,29 @@ func (s *simulatedPayment) HandleCallback(ctx context.Context, ref string, statu
 	return nil
 }
 
+func (s *simulatedPayment) autoSyncPaid(ctx context.Context, orderID string, o *entity.Order) {
+	if err := s.orderRepo.UpdateStatus(ctx, orderID, "paid"); err != nil {
+		return
+	}
+	updatedOrder, _, err := s.orderRepo.GetByID(ctx, orderID)
+	if err != nil {
+		o.Status = "paid"
+		o.UpdatedAt = time.Now()
+		return
+	}
+	*o = *updatedOrder
+}
+
 func (s *simulatedPayment) GetPaymentStatus(ctx context.Context, orderID string) (*dto.PaymentStatus, error) {
 	o, _, err := s.orderRepo.GetByID(ctx, orderID)
 	if err != nil {
 		return nil, err
+	}
+
+	// Auto-sync for local dev / simulated payment:
+	// If order status is pending and has a payment ref, update status to paid during polling
+	if o.Status == "pending" && o.PaymentRef != nil && *o.PaymentRef != "" {
+		s.autoSyncPaid(ctx, orderID, o)
 	}
 
 	var paidAt *time.Time
@@ -105,9 +125,10 @@ func (s *simulatedPayment) GetPaymentStatus(ctx context.Context, orderID string)
 	}
 
 	return &dto.PaymentStatus{
-		OrderID:    o.ID,
-		Status:     o.Status,
-		PaidAt:     paidAt,
-		PaymentRef: ref,
+		OrderID:       o.ID,
+		Status:        o.Status,
+		PaidAt:        paidAt,
+		PaymentRef:    ref,
+		PaymentMethod: o.PaymentMethod,
 	}, nil
 }
