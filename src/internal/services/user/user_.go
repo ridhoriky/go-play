@@ -176,9 +176,15 @@ func (s *userService) UpdateUser(ctx context.Context, id string, user *dto.Updat
 	if err := s.userRepository.Update(ctx, id, existingUser); err != nil {
 		return nil, err
 	}
+
+	key := fmt.Sprintf(userCacheKey, id)
+	_ = s.rdb.Del(ctx, key)
+
 	return existingUser, nil
 }
 
 func (s *userService) DeleteUser(ctx context.Context, id string) error {
+	key := fmt.Sprintf(userCacheKey, id)
+	_ = s.rdb.Del(ctx, key)
 	return s.userRepository.Delete(ctx, id)
 }

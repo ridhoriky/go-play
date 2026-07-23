@@ -27,20 +27,27 @@ func generateSlug(name string) string {
 	return slug
 }
 
-func mapToResponse(s *entity.Store) *dto.StoreResponse {
+func (s *storeService) mapToResponse(ctx context.Context, st *entity.Store) *dto.StoreResponse {
+	var totalProducts int
+	stats, err := s.storeRepo.GetStoreStats(ctx, st.ID)
+	if err == nil && stats != nil {
+		totalProducts = stats.TotalProducts
+	}
+
 	return &dto.StoreResponse{
-		ID:          s.ID,
-		UserID:      s.UserID,
-		StoreName:   s.StoreName,
-		Slug:        s.Slug,
-		Description: s.Description,
-		LogoURL:     s.LogoURL,
-		BannerURL:   s.BannerURL,
-		IsVerified:  s.IsVerified,
-		RatingAvg:   s.RatingAvg,
-		TotalSales:  s.TotalSales,
-		CreatedAt:   s.CreatedAt,
-		UpdatedAt:   s.UpdatedAt,
+		ID:            st.ID,
+		UserID:        st.UserID,
+		StoreName:     st.StoreName,
+		Slug:          st.Slug,
+		Description:   st.Description,
+		LogoURL:       st.LogoURL,
+		BannerURL:     st.BannerURL,
+		IsVerified:    st.IsVerified,
+		RatingAvg:     st.RatingAvg,
+		TotalSales:    st.TotalSales,
+		TotalProducts: totalProducts,
+		CreatedAt:     st.CreatedAt,
+		UpdatedAt:     st.UpdatedAt,
 	}
 }
 
@@ -86,22 +93,22 @@ func (s *storeService) CreateStore(ctx context.Context, userID string, req *dto.
 		_ = s.userRepo.Update(ctx, userID, u)
 	}
 
-	return mapToResponse(newStore), nil
+	return s.mapToResponse(ctx, newStore), nil
 }
 
 func (s *storeService) GetMyStore(ctx context.Context, userID string) (*dto.StoreResponse, error) {
-	store, err := s.storeRepo.GetByUserID(ctx, userID)
+	st, err := s.storeRepo.GetByUserID(ctx, userID)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, dto.NewError(http.StatusNotFound, "Store not found")
 	}
 	if err != nil {
 		return nil, err
 	}
-	return mapToResponse(store), nil
+	return s.mapToResponse(ctx, st), nil
 }
 
 func (s *storeService) UpdateStore(ctx context.Context, userID string, req *dto.UpdateStoreRequest) (*dto.StoreResponse, error) {
-	store, err := s.storeRepo.GetByUserID(ctx, userID)
+	st, err := s.storeRepo.GetByUserID(ctx, userID)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, dto.NewError(http.StatusNotFound, "Store not found")
 	}
@@ -109,31 +116,31 @@ func (s *storeService) UpdateStore(ctx context.Context, userID string, req *dto.
 		return nil, err
 	}
 
-	store.StoreName = req.StoreName
-	store.Description = req.Description
-	store.LogoURL = req.LogoURL
-	store.BannerURL = req.BannerURL
+	st.StoreName = req.StoreName
+	st.Description = req.Description
+	st.LogoURL = req.LogoURL
+	st.BannerURL = req.BannerURL
 
-	if err = s.storeRepo.Update(ctx, store); err != nil {
+	if err = s.storeRepo.Update(ctx, st); err != nil {
 		return nil, err
 	}
 
-	updated, err := s.storeRepo.GetByID(ctx, store.ID)
+	updated, err := s.storeRepo.GetByID(ctx, st.ID)
 	if err != nil {
 		return nil, err
 	}
-	return mapToResponse(updated), nil
+	return s.mapToResponse(ctx, updated), nil
 }
 
 func (s *storeService) GetStoreBySlug(ctx context.Context, slug string) (*dto.StoreResponse, error) {
-	store, err := s.storeRepo.GetBySlug(ctx, slug)
+	st, err := s.storeRepo.GetBySlug(ctx, slug)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, dto.NewError(http.StatusNotFound, "Store not found")
 	}
 	if err != nil {
 		return nil, err
 	}
-	return mapToResponse(store), nil
+	return s.mapToResponse(ctx, st), nil
 }
 
 func (s *storeService) ListStores(ctx context.Context, params *dto.GetStoresQuery) (*dto.StoreListResponse, error) {
@@ -152,7 +159,7 @@ func (s *storeService) ListStores(ctx context.Context, params *dto.GetStoresQuer
 	var res []dto.StoreResponse
 	for i := range stores {
 		st := stores[i]
-		res = append(res, *mapToResponse(&st))
+		res = append(res, *s.mapToResponse(ctx, &st))
 	}
 
 	totalPages := int(math.Ceil(float64(total) / float64(params.Limit)))

@@ -15,18 +15,19 @@ type UpdateStoreRequest struct {
 }
 
 type StoreResponse struct {
-	ID          string    `json:"id"`
-	UserID      string    `json:"user_id"`
-	StoreName   string    `json:"store_name"`
-	Slug        string    `json:"slug"`
-	Description string    `json:"description"`
-	LogoURL     string    `json:"logo_url"`
-	BannerURL   string    `json:"banner_url"`
-	IsVerified  bool      `json:"is_verified"`
-	RatingAvg   float64   `json:"rating_avg"`
-	TotalSales  int       `json:"total_sales"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID            string    `json:"id"`
+	UserID        string    `json:"user_id"`
+	StoreName     string    `json:"store_name"`
+	Slug          string    `json:"slug"`
+	Description   string    `json:"description"`
+	LogoURL       string    `json:"logo_url"`
+	BannerURL     string    `json:"banner_url"`
+	IsVerified    bool      `json:"is_verified"`
+	RatingAvg     float64   `json:"rating_avg"`
+	TotalSales    int       `json:"total_sales"`
+	TotalProducts int       `json:"total_products"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
 }
 
 type GetStoresQuery struct {
