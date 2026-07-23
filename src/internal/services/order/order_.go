@@ -238,23 +238,29 @@ func (s *orderService) cleanupCartItems(ctx context.Context, cartIDs []string) {
 }
 
 func (s *orderService) GetOrderDetail(ctx context.Context, buyerID string, orderID string) (*dto.OrderDetailResponse, error) {
+	if buyerID == "" {
+		return nil, dto.NewError(http.StatusUnauthorized, "unauthorized")
+	}
 	o, items, err := s.orderRepo.GetByID(ctx, orderID)
 	if err != nil {
 		return nil, err
 	}
 	if o.BuyerID != buyerID {
-		return nil, dto.NewError(http.StatusNotFound, "order not found")
+		return nil, dto.NewError(http.StatusForbidden, "you do not have permission to access this order")
 	}
 	return s.mapToOrderDetailResponse(ctx, o, items)
 }
 
 func (s *orderService) GetSellerOrderDetail(ctx context.Context, storeID string, orderID string) (*dto.OrderDetailResponse, error) {
+	if storeID == "" {
+		return nil, dto.NewError(http.StatusForbidden, "seller store not found or unauthorized")
+	}
 	o, items, err := s.orderRepo.GetByID(ctx, orderID)
 	if err != nil {
 		return nil, err
 	}
 	if o.StoreID != storeID {
-		return nil, dto.NewError(http.StatusNotFound, "order not found")
+		return nil, dto.NewError(http.StatusForbidden, "you do not have permission to access this order")
 	}
 	return s.mapToOrderDetailResponse(ctx, o, items)
 }
@@ -415,12 +421,15 @@ func (s *orderService) ConfirmReceived(ctx context.Context, buyerID string, orde
 }
 
 func (s *orderService) UpdateOrderStatus(ctx context.Context, storeID string, orderID string, status string) error {
+	if storeID == "" {
+		return dto.NewError(http.StatusForbidden, "seller store not found or unauthorized")
+	}
 	o, items, err := s.orderRepo.GetByID(ctx, orderID)
 	if err != nil {
 		return err
 	}
 	if o.StoreID != storeID {
-		return dto.NewError(http.StatusNotFound, "order not found")
+		return dto.NewError(http.StatusForbidden, "you do not have permission to modify this order")
 	}
 
 	if o.Status == "delivered" || o.Status == "canceled" {
