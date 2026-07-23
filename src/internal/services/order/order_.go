@@ -387,7 +387,7 @@ func (s *orderService) CancelOrder(ctx context.Context, buyerID string, orderID 
 		return dto.NewError(http.StatusNotFound, "order not found")
 	}
 
-	if o.Status != "pending" && o.Status != "paid" {
+	if o.Status != "pending" {
 		return dto.NewError(http.StatusBadRequest, "order cannot be canceled at this stage")
 	}
 
@@ -415,7 +415,7 @@ func (s *orderService) ConfirmReceived(ctx context.Context, buyerID string, orde
 }
 
 func (s *orderService) UpdateOrderStatus(ctx context.Context, storeID string, orderID string, status string) error {
-	o, _, err := s.orderRepo.GetByID(ctx, orderID)
+	o, items, err := s.orderRepo.GetByID(ctx, orderID)
 	if err != nil {
 		return err
 	}
@@ -423,19 +423,30 @@ func (s *orderService) UpdateOrderStatus(ctx context.Context, storeID string, or
 		return dto.NewError(http.StatusNotFound, "order not found")
 	}
 
-	// Validate allowed transitions
-	// paid -> processing -> shipped
+	if o.Status == "delivered" || o.Status == "canceled" {
+		return dto.NewError(http.StatusBadRequest, fmt.Sprintf("order status %s is terminal and cannot be modified", o.Status))
+	}
+
+	// Validate allowed transitions for seller:
+	// pending/paid -> processing
+	// processing -> shipped
+	// pending/paid/processing -> canceled
 	switch status {
 	case "processing":
-		if o.Status != "paid" {
-			return dto.NewError(http.StatusBadRequest, "invalid status transition to processing")
+		if o.Status != "pending" && o.Status != "paid" {
+			return dto.NewError(http.StatusBadRequest, fmt.Sprintf("invalid status transition from %s to processing", o.Status))
 		}
 	case "shipped":
 		if o.Status != "processing" {
-			return dto.NewError(http.StatusBadRequest, "invalid status transition to shipped")
+			return dto.NewError(http.StatusBadRequest, fmt.Sprintf("invalid status transition from %s to shipped", o.Status))
 		}
+	case "canceled":
+		if o.Status != "pending" && o.Status != "paid" && o.Status != "processing" {
+			return dto.NewError(http.StatusBadRequest, fmt.Sprintf("invalid status transition from %s to canceled", o.Status))
+		}
+		return s.orderRepo.CancelOrder(ctx, orderID, items)
 	default:
-		return dto.NewError(http.StatusBadRequest, "status transition not allowed from seller")
+		return dto.NewError(http.StatusBadRequest, "invalid status transition target")
 	}
 
 	return s.orderRepo.UpdateStatus(ctx, orderID, status)
