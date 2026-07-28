@@ -47,10 +47,12 @@ rate_limit:
 
 redis:
   addr: localhost:6379
+  username: ""
   password: ""
   db: 0
   pool_size: 10
   timeout: 5s
+  tls: false
 
 business:
   min_stock_checkout: 1
